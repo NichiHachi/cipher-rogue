@@ -7,7 +7,7 @@
 #pragma once
 class Enemy{
     public:
-        virtual void update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls)=0;
+        virtual void update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies)=0;
         virtual void draw(sf::RenderWindow& window)=0;
         virtual float getX()=0;
         virtual float getY()=0;

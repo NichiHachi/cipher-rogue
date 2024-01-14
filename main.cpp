@@ -1,9 +1,8 @@
 #include <SFML/Graphics/RenderWindow.hpp>
-#include <iostream>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <cmath>
-#include <set>
+#include <iostream>
 
 #include "Bullet.h"
 #include "Player.h"
@@ -14,6 +13,7 @@
 #include "EnemySpawner.h"
 #include "EnemySniper.h"
 #include "EnemyCharger.h"
+#include "EnemySeeker.h"
 
 const int displayX = 1000;
 const int displayY = 1000;
@@ -24,71 +24,92 @@ double calcul_angle(float startX, float startY, float endX, float endY){
     return atan2(startY-endY,endX-startX);
 }
 
-double angle_shot_predict(Player player, float objectX, float objectY, float speedBullet){
+double angle_shot_predict(Player player, float objectX, float objectY, float speedBullet, float playerSpeed){
     float diffX = player.getX()-objectX;
     float diffY = player.getY()-objectY;
     float distance = sqrt(diffX*diffX+diffY*diffY);
-    float timeBulletTravel = distance/speedBullet*1.5;
-    float playerNewX, playerNewY;
-    float angleNew = -1;
-    
+    float timeBulletTravel = distance/speedBullet;
+
+    // Prédire la nouvelle position du joueur
+    float playerNewX = player.getX();
+    float playerNewY = player.getY();
+    float angleNew = 0;
+
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && sf::Keyboard::isKeyPressed(sf::Keyboard::D)){
+        playerNewX += playerSpeed * timeBulletTravel * sqrt(2) / 2;
+        playerNewY -= playerSpeed * timeBulletTravel * sqrt(2) / 2;
         angleNew = M_PI/4;
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)){
+        playerNewX -= playerSpeed * timeBulletTravel * sqrt(2) / 2;
+        playerNewY -= playerSpeed * timeBulletTravel * sqrt(2) / 2;
         angleNew = M_PI*3/4;
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)){
+        playerNewX -= playerSpeed * timeBulletTravel * sqrt(2) / 2;
+        playerNewY += playerSpeed * timeBulletTravel * sqrt(2) / 2;
         angleNew = -M_PI*3/4;
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) && sf::Keyboard::isKeyPressed(sf::Keyboard::D)){
+        playerNewX += playerSpeed * timeBulletTravel * sqrt(2) / 2;
+        playerNewY += playerSpeed * timeBulletTravel * sqrt(2) / 2;
         angleNew = -M_PI/4;
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z)){
+        playerNewY -= playerSpeed * timeBulletTravel;
         angleNew = M_PI/2;
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)){
+        playerNewY += playerSpeed * timeBulletTravel;
         angleNew = -M_PI/2;
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)){
+        playerNewX += playerSpeed * timeBulletTravel;
         angleNew = 0;
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q)){
+        playerNewX -= playerSpeed * timeBulletTravel;
         angleNew = M_PI;
     }
-            
-    if(angleNew==-1){
-        playerNewX = player.getX();
-        playerNewY = player.getY();
-    }
-    else{
-        playerNewX = player.getX()+cos(angleNew)*player.getSpeed()*timeBulletTravel;
-        playerNewY = player.getY()-sin(angleNew)*player.getSpeed()*timeBulletTravel;
-    }
 
-    return calcul_angle(objectX,objectY,playerNewX,playerNewY);
+    // Calculer l'angle entre l'objet et la nouvelle position du joueur
+    float diffXNew = playerNewX - objectX;
+    float diffYNew = playerNewY - objectY;
+    float angleShot = atan2(diffYNew, diffXNew);
+
+    return angleShot;
 }
 
-bool is_in_wall_or_out_of_bounds(Bullet* bullet,std::vector<Wall> walls){
-    for(unsigned int idWall = 0; idWall < walls.size(); idWall++){
-        if(walls[idWall].isInWall(bullet->getX()+bulletRadius,bullet->getY()+bulletRadius)){
-            return true;
+void destroy_in_wall_or_out_of_bounds(std::vector<Bullet*>& bullets,std::vector<Wall> walls){
+    int bulletX, bulletY;
+    float bulletHitBoxRadius, angleBulletWall;
+    bool destroyed;
+    for(auto bullet = bullets.begin(); bullet != bullets.end();){
+        bulletX = (*bullet)->getX();
+        bulletY = (*bullet)->getY();
+        bulletHitBoxRadius = (*bullet)->getHitBoxRadius();
+        destroyed = false;
+        //If the bullet get out of bounds
+        if(bulletX < -bulletHitBoxRadius*2 || bulletY<-bulletHitBoxRadius*2 || 
+        bulletX>displayX+bulletHitBoxRadius*2 || bulletY>displayY+bulletHitBoxRadius*2){
+            delete *bullet;
+            bullet = bullets.erase(bullet);
+            destroyed = true;
         }
-        else if(walls[idWall].isInWall(bullet->getX()-bulletRadius,bullet->getY()+bulletRadius)){
-            return true;
+        else{
+            //If the bullet touch a wall
+            for(unsigned int idWall = 0; idWall < walls.size(); idWall++){
+                angleBulletWall = calcul_angle(walls[idWall].getX(),walls[idWall].getY(),bulletX,bulletY);
+                if(walls[idWall].isInWall(bulletX+cos(angleBulletWall)*bulletHitBoxRadius,bulletY+sin(angleBulletWall)*bulletHitBoxRadius)){
+                    delete *bullet;
+                    bullet = bullets.erase(bullet);
+                    destroyed = true;
+                    break;
+                }
+            }
         }
-        else if(walls[idWall].isInWall(bullet->getX()-bulletRadius,bullet->getY()-bulletRadius)){
-            return true;
-        }
-        else if(walls[idWall].isInWall(bullet->getX()+bulletRadius,bullet->getY()-bulletRadius)){
-            return true;
-        }
-        idWall ++;
+        if(!destroyed) bullet++;
     }
-    if(bullet->getX()<0 || bullet->getY()<0 || bullet->getX()>displayX || bullet->getY()>displayY){
-        return true;
-    }
-    return false;
 }
 
 void updateLoop(sf::RenderWindow& window, sf::Clock& clock, Player& player, std::vector<Bullet*>& bulletsEnemy, 
@@ -100,59 +121,46 @@ void updateLoop(sf::RenderWindow& window, sf::Clock& clock, Player& player, std:
 
         //-----BULLETS UPDATE-----
         //ENEMY'S BULLETS
-        for(auto bullet = bulletsEnemy.begin(); bullet != bulletsEnemy.end();){
-            (*bullet)->update();
-            ////If the enemy bullet touch the player HitBox: -1HP and destroy the bullet
-            if(player.getHit((*bullet)->getX(),(*bullet)->getY())){
-                //delete the bullet
-                delete *bullet;
-                bullet = bulletsEnemy.erase(bullet);
-            }
-            else if(is_in_wall_or_out_of_bounds(*bullet,walls)){
-                delete *bullet;
-                bullet = bulletsEnemy.erase(bullet);
-            }
-            else{
-                bullet++;
-            }
+        for(Bullet* bullet : bulletsEnemy){
+            bullet->update();
         }
 
+        destroy_in_wall_or_out_of_bounds(bulletsEnemy,walls);
+
         //ALLY'S BULLET
-        bool gotDestoyed;
+        for(Bullet* bullet : bulletsAlly){
+            bullet->update();
+        }
+
+        destroy_in_wall_or_out_of_bounds(bulletsAlly,walls);
+
+        bool destroyed;
         for(auto bulletAlly = bulletsAlly.begin(); bulletAlly != bulletsAlly.end();){
-            (*bulletAlly)->update();
-            gotDestoyed = false;
-            
             //If the ally bullet touch a enemy bullet that is destructible -> destroy both bullets
             int diffX, diffY;
+            float hitBoxBoth;
+            destroyed = false;
             for(auto bulletEnemy = bulletsEnemy.begin(); bulletEnemy != bulletsEnemy.end();){
                 if ((*bulletEnemy)->isDestructible()) {
                     diffX = (*bulletAlly)->getX() - (*bulletEnemy)->getX();
                     diffY = (*bulletAlly)->getY() - (*bulletEnemy)->getY();
-                    if (-bulletRadius < diffX  && diffX < bulletRadius && -bulletRadius > diffY && diffY < bulletRadius) {
+                    hitBoxBoth = (*bulletAlly)->getHitBoxRadius()+(*bulletEnemy)->getHitBoxRadius();
+                    if (diffX * diffX + diffY * diffY < hitBoxBoth*hitBoxBoth) {
                         delete *bulletAlly;
                         bulletAlly = bulletsAlly.erase(bulletAlly);
                         delete *bulletEnemy;
                         bulletEnemy = bulletsEnemy.erase(bulletEnemy);
-                        gotDestoyed = true;
+                        destroyed = true;
                         break;
                     }
                     else bulletEnemy++;
                 }
                 else bulletEnemy++;
             }
-            if(!gotDestoyed){
-                if(is_in_wall_or_out_of_bounds(*bulletAlly,walls)){
-                    delete *bulletAlly;
-                    bulletAlly = bulletsAlly.erase(bulletAlly);
-                }
-                else{
-                    bulletAlly++;
-                }
-            }
+            if(!destroyed) bulletAlly++;
         }
 
-        //Look if the enemies get shot. If they have 0HP, delete them
+        //-----ENEMIES AND ALLY BULLETS-----
         for(auto it = enemies.begin(); it != enemies.end();) {
             if((*it)->getShot(bulletsAlly)) {
                 delete *it;
@@ -163,22 +171,19 @@ void updateLoop(sf::RenderWindow& window, sf::Clock& clock, Player& player, std:
             }
         }
 
+        //-----PLAYER AND ENEMY BULLETS-----
+        player.getHit(bulletsEnemy);
+
         //-----ENEMIES UPDATE-----
         float angleEnemyToPlayer;
         for(Enemy* enemy : enemies){
             angleEnemyToPlayer = calcul_angle(enemy->getX(),enemy->getY(),player.getX(),player.getY());
-            enemy->update(bulletsEnemy,currentTime,angleEnemyToPlayer,walls);
+            enemy->update(bulletsEnemy, currentTime, angleEnemyToPlayer, walls, enemies);
         }
 }
 
 void drawElements(sf::RenderWindow& window, Player player, std::vector<Bullet*>bulletsEnemy, 
     std::vector<Bullet*>bulletsAlly, std::vector<Wall>walls, std::vector<Enemy*>enemies){
-
-        player.draw(window);
-        
-        for(Wall &wall : walls){
-            wall.draw(window);
-        }
 
         for(Bullet* bullet : bulletsAlly){
             bullet->draw(window);
@@ -191,6 +196,12 @@ void drawElements(sf::RenderWindow& window, Player player, std::vector<Bullet*>b
         //ENEMIES
         for(Enemy* enemy : enemies){
             (*enemy).draw(window);
+        }
+
+        player.draw(window);
+
+        for(Wall &wall : walls){
+            wall.draw(window);
         }
 
         player.drawHealth(window);
@@ -209,29 +220,31 @@ int main(void){
     std::vector<Bullet*> bulletsEnemy;
     std::vector<Bullet*> bulletsAlly;
 
+    //Init EnemyCharger
+    enemies.push_back(new EnemyCharger(400,400,2,1));
+    
     //Init EnemyShooter
-    enemies.push_back(new EnemyShooter(500,500));
-    enemies.push_back(new EnemyShooter(400,500));
-    enemies.push_back(new EnemyShooter(500,600));
+    enemies.push_back(new EnemyShooter(500,500,1,1));
+    enemies.push_back(new EnemyShooter(400,500,1,1));
+    enemies.push_back(new EnemyShooter(500,600,1,1));
 
     //Init EnemyTurret
-    enemies.push_back(new EnemyTurret(450,785));
+    enemies.push_back(new EnemyTurret(450,785,1,1));
 
     //Init EnemySpawner
-    enemies.push_back(new EnemySpawner(400,400));
+    enemies.push_back(new EnemySpawner(400,100,1,1));
 
     //Init EnemySniper
-    enemies.push_back(new EnemySniper(400,400));
+    enemies.push_back(new EnemySniper(600,400,1,1));
 
-    //Init EnemyCharger
-    enemies.push_back(new EnemyCharger(400,400));
+    //Init Seeker
+    enemies.push_back(new EnemySeeker(400,400,0,1));
 
     //Init Wall Array
     std::vector<Wall> walls;
-    walls.emplace_back(200,350);
+    walls.emplace_back(250,400);
     walls.emplace_back(200,400);
     walls.emplace_back(200,450);
-    walls.emplace_back(200,500);
 
     //Time track and Framerate
     sf::Clock clock;

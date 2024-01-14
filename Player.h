@@ -12,7 +12,7 @@ class Player{
         void spawn();
         void move(sf::RenderWindow& window, std::vector<Wall> walls);
         void shoot(std::vector<Bullet*>& bullets);
-        bool getHit(int objectX, int objectY);
+        void getHit(std::vector<Bullet*>& bullets);
         void draw(sf::RenderWindow& window);
         void drawHealth(sf::RenderWindow& window);
         float getX();
@@ -23,6 +23,6 @@ class Player{
 
     private:
         float x,y,speed,shootTimer,hitTimer;
-        int hp;
+        int hp,size;
         double angle;
 };

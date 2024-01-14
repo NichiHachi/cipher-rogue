@@ -13,6 +13,7 @@ Player::Player() {
     this->hp = 10;
     this->shootTimer = 0;
     this->hitTimer = 2;
+    this->size = 19;
 }
 
 void Player::update(std::vector<Bullet*> &bullets, sf::RenderWindow &window, float timePassed, std::vector<Wall> walls) {
@@ -56,81 +57,85 @@ void Player::move(sf::RenderWindow &window, std::vector<Wall> walls) {
         angleMove = M_PI;
     }
 
-    if (angleMove != -1) {
-        bool xInWall = false;
-        bool yInWall = false;
-        if (walls.size() != 0) {
-        for (Wall wall : walls) {
-            if (wall.isInWall(x + cos(angleMove) * speed, y)) {
-            xInWall = true;
-            }
-            if (wall.isInWall(x, y - sin(angleMove) * speed)) {
-            yInWall = true;
-            }
-        }
-        }
-        if (!xInWall) {
+    if(angleMove != -1){
         x += cos(angleMove) * speed;
-        }
-        if (!yInWall) {
         y -= sin(angleMove) * speed;
+        if (walls.size() != 0) {
+            float wallX, wallY, anglePlayerWall;
+            for (Wall wall : walls) {
+                wallX = wall.getX();
+                wallY = wall.getY();
+                anglePlayerWall = atan2(-y + wallY, -x + wallX);
+                if (wall.isInWall(x+cos(anglePlayerWall)*size, y+sin(anglePlayerWall)*size)){
+                    if(anglePlayerWall<M_PI/4 && anglePlayerWall>-M_PI/4){
+                        x -= size - ((wallX - wall.getSize()) - x);
+                    }
+                    else if(anglePlayerWall>M_PI*3/4 || anglePlayerWall<-M_PI*3/4){
+                        x += size - (x - (wallX + wall.getSize()));
+                    }
+                    else if(anglePlayerWall>M_PI/4 && anglePlayerWall<M_PI*3/4){
+                        y -= size - ((wallY - wall.getSize()) - y);
+                    }
+                    //anglePlayerWall<-M_PI/4 && anglePlayerWall>-M_PI*3/4
+                    else{
+                        y += size - (y - (wallY + wall.getSize()));
+                    }
+                }
+            }
         }
-    }
 
-    if (x < 19) {
-        x = 19;
-    } 
-    else if (x > 981) {
-        x = 981;
-    }
-
-    if (y < 19) {
-        y = 19;
-    } 
-    else if (y > 981) {
-        y = 981;
+        //If out of bounds, go back in bounds
+        if (x < size) x = size;
+        else if (x > 1000-size) x = 1000-size;
+        if (y < size) y = size;
+        else if (y > 1000-size) y = 1000-size;
     }
 }
 
 void Player::shoot(std::vector<Bullet*> &bullets) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         if (shootTimer > 0.2) {
-        bullets.push_back(new Bullet(x, y, angle, 10, true, false));
-        shootTimer = 0;
+            bullets.push_back(new Bullet(x, y, angle, 10, 10, true, false));
+            shootTimer = 0;
         }
     }
 }
 
-bool Player::getHit(int objectX, int objectY) {
-    int diffX = x - objectX;
-    int diffY = y - objectY;
-    // If the border of the object (enemy or bullet) touch the player (15+15 ->
-    // object hitbox + player hitbox)
-    if (std::sqrt(diffX * diffX + diffY * diffY) <= 30) {
-        if (hitTimer > 2) {
-        hp--;
-        hitTimer = 0;
+void Player::getHit(std::vector<Bullet*> &bullets) {
+    int diffX, diffY, hitBoxBoth;
+    for(auto bullet = bullets.begin(); bullet != bullets.end();){
+        diffX = x - (*bullet)->getX();
+        diffY = y - (*bullet)->getY();
+        hitBoxBoth = size+(*bullet)->getHitBoxRadius();
+        if (diffX * diffX + diffY * diffY < hitBoxBoth*hitBoxBoth) {
+            if(hitTimer > 2){
+                hp -= 1;
+                hitTimer = 0;
+            }
+            delete *bullet;
+            bullet = bullets.erase(bullet);
         }
-        return true;
+        else {
+            bullet++;
+        }
     }
-    return false;
 }
 
 void Player::draw(sf::RenderWindow &window) {
-    int hauteur = 24;
-    int rayon = 19;
+    int height = size*24/19;
+    int width = size;
     sf::VertexArray player_left_part(sf::Triangles, 3);
     sf::VertexArray player_right_part(sf::Triangles, 3);
-    float angle_point_triangle_1 = atan2(hauteur, rayon);
-    float angle_point_triangle_2 = atan2(hauteur, -rayon);
-    float distance_point_triangle = sqrt(hauteur * hauteur + rayon * rayon);
+    float angle_point_triangle_1 = atan2(height, width);
+    float angle_point_triangle_2 = atan2(height, -width);
+    float distance_point_triangle = sqrt(height * height + width * width);
 
     ////Define the coordonate of the player's point that are aline with the mouse
-    float player_sprite_down_x = x - hauteur * 0.6 * cos(angle);
-    float player_sprite_down_y = y + hauteur * 0.6 * sin(angle);
+    float player_sprite_down_x = x - height * 0.6 * cos(angle);
+    float player_sprite_down_y = y + height * 0.6 * sin(angle);
 
-    float player_sprite_up_x = x + hauteur * cos(angle);
-    float player_sprite_up_y = y - hauteur * sin(angle);
+    float player_sprite_up_x = x + height * cos(angle);
+    float player_sprite_up_y = y - height * sin(angle);
 
     float angle_triangle_left = angle_point_triangle_1 + angle + M_PI / 2;
     float player_sprite_left_x = x + distance_point_triangle * cos(angle_triangle_left);
@@ -146,9 +151,7 @@ void Player::draw(sf::RenderWindow &window) {
     player_left_part[2].position = sf::Vector2f(player_sprite_down_x, player_sprite_down_y);
 
     ////Define the color of the left part
-    player_left_part[0].color = sf::Color::White;
-    player_left_part[1].color = sf::Color::White;
-    player_left_part[2].color = sf::Color::White;
+    for(unsigned int i = 0; i < 3; i++) player_left_part[i].color = sf::Color::White;
 
     ////Define the position of right part points
     player_right_part[0].position = sf::Vector2f(player_sprite_right_x, player_sprite_right_y);
@@ -156,9 +159,7 @@ void Player::draw(sf::RenderWindow &window) {
     player_right_part[2].position = sf::Vector2f(player_sprite_down_x, player_sprite_down_y);
 
     ////Define the color of the right part
-    player_right_part[0].color = sf::Color::White;
-    player_right_part[1].color = sf::Color::White;
-    player_right_part[2].color = sf::Color::White;
+    for(unsigned int i = 0; i < 3; i++) player_right_part[i].color = sf::Color::White;
 
     window.draw(player_left_part);
     window.draw(player_right_part);
@@ -168,12 +169,9 @@ void Player::drawHealth(sf::RenderWindow &window) {
     sf::CircleShape circle;
     circle.setRadius(10);
     circle.setFillColor(sf::Color::Red);
-
     sf::VertexArray quad(sf::Quads, 4);
-    quad[0].color = sf::Color::Red;
-    quad[1].color = sf::Color::Red;
-    quad[2].color = sf::Color::Red;
-    quad[3].color = sf::Color::Red;
+    for(unsigned int i = 0; i < 4; i++) quad[i].color = sf::Color::Red;
+
     for (int i = 0; i < hp; i++) {
         circle.setPosition(10 * cos(M_PI*3/4) + 40*i + 20,
                         10 * sin(M_PI*3/4) + 10);

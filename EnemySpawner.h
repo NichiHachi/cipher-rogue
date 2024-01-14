@@ -5,30 +5,16 @@
 #include "Bullet.h"
 #include "Wall.h"
 
-class EnemySeeker{
-    public:
-        EnemySeeker(float x, float y, float angle);
-        void update(float targetAngle, std::vector<Wall> walls);
-        void draw(sf::RenderWindow& window);
-
-        void move(float targetAngle, std::vector<Wall> walls);
-
-    private:
-        float x,y,angle,speed;
-        int hp;
-};
-
 class EnemySpawner : public Enemy{
     public :
-        EnemySpawner(float x, float y);
-        void update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls);
+        EnemySpawner(float x, float y, float sizeFactor, float bulletSizeFactor);
+        void update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies);
         void draw(sf::RenderWindow& window);
         bool getShot(std::vector<Bullet*>& bullets) override;
         float getX() override {return x;};
         float getY() override {return y;};
 
     private:
-        float x,y,angle,speed,shootTimer;
-        int hp;
-        std::vector<EnemySeeker*> spawns;
+        float x,y,angle,speed,shootTimer,bulletSizeFactor;
+        int hp,size;
 };

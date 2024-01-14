@@ -8,16 +8,18 @@
 #include "EnemyShooter.h"
 #include "Wall.h"
 
-EnemyShooter::EnemyShooter(float x, float y) {
+EnemyShooter::EnemyShooter(float x, float y, float sizeFactor, float bulletSizeFactor) {
     this->x = x;
     this->y = y;
     this->speed = 1;
     this->angle = M_PI*3/2;
     this->hp = 6;
     this->shootTimer = 0;
+    this->size = 19*sizeFactor;
+    this->bulletSizeFactor = bulletSizeFactor;
 }
 
-void EnemyShooter::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls) {
+void EnemyShooter::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     move(targetAngle, walls);
 
     // Shoot every 2 secondes
@@ -29,7 +31,7 @@ void EnemyShooter::update(std::vector<Bullet*>& bullets, float timePassed, float
 }
 
 void EnemyShooter::shoot(std::vector<Bullet*> &bullets){
-    bullets.push_back(new Bullet(x, y, angle, 3, false, true));
+    bullets.push_back(new Bullet(x, y, angle, 3, 15, false, true));
 }
 
 void EnemyShooter::move(float targetAngle, std::vector<Wall> walls) {
@@ -50,42 +52,52 @@ void EnemyShooter::move(float targetAngle, std::vector<Wall> walls) {
         angle += 2 * M_PI;
     }
 
-    bool xInWall = false;
-    bool yInWall = false;
+    x += cos(angle) * speed;
+    y -= sin(angle) * speed;
+
+    //If in wall, replace in front of wall
     if (walls.size() != 0) {
+        float wallX, wallY, angleEnemyWall;
         for (Wall wall : walls) {
-            if (wall.isInWall(x + cos(angle) * speed, y)) {
-                xInWall = true;
-            }
-            if (wall.isInWall(x, y - sin(angle) * speed)) {
-                yInWall = true;
+            wallX = wall.getX();
+            wallY = wall.getY();
+            angleEnemyWall = atan2(-y + wallY, -x + wallX);
+            if (wall.isInWall(x+cos(angleEnemyWall)*size, y+sin(angleEnemyWall)*size)){
+                if(angleEnemyWall<M_PI/4 && angleEnemyWall>-M_PI/4){
+                    x -= size - ((wallX - wall.getSize()) - x);
+                }
+                else if(angleEnemyWall>M_PI*3/4 || angleEnemyWall<-M_PI*3/4){
+                    x += size - (x - (wallX + wall.getSize()));
+                }
+                else if(angleEnemyWall>M_PI/4 && angleEnemyWall<M_PI*3/4){
+                    y -= size - ((wallY - wall.getSize()) - y);
+                }
+                //angleEnemyWall<-M_PI/4 && angleEnemyWall>-M_PI*3/4
+                else{
+                    y += size - (y - (wallY + wall.getSize()));
+                }
             }
         }
-    }
-    if (!xInWall) {
-        x += cos(angle) * speed;
-    }
-    if (!yInWall) {
-        y -= sin(angle) * speed;
     }
 }
 
 void EnemyShooter::draw(sf::RenderWindow &window) {
-    int hauteur = 24;
-    int rayon = 19;
+    float height = size*24/19;
+    float width = size;
     sf::Color enemiesColor(100, 100, 100);
     sf::VertexArray enemy_left_part(sf::Triangles, 3);
     sf::VertexArray enemy_right_part(sf::Triangles, 3);
-    float angle_point_triangle_1 = atan2(hauteur, rayon);
-    float angle_point_triangle_2 = atan2(hauteur, -rayon);
-    float distance_point_triangle = sqrt(hauteur * hauteur + rayon * rayon);
+    
+    float angle_point_triangle_1 = atan2(height, width);
+    float angle_point_triangle_2 = atan2(height, -width);
+    float distance_point_triangle = sqrt(height * height + width * width);
 
     ////Define the coordonate of the enemy's point that are aline with the mouse
-    float enemy_sprite_down_x = x - hauteur * 0.6 * cos(angle);
-    float enemy_sprite_down_y = y + hauteur * 0.6 * sin(angle);
+    float enemy_sprite_down_x = x - height * 0.6 * cos(angle);
+    float enemy_sprite_down_y = y + height * 0.6 * sin(angle);
 
-    float enemy_sprite_up_x = x + hauteur * cos(angle);
-    float enemy_sprite_up_y = y - hauteur * sin(angle);
+    float enemy_sprite_up_x = x + height * cos(angle);
+    float enemy_sprite_up_y = y - height * sin(angle);
 
     float angle_triangle_left = angle_point_triangle_1 + angle + M_PI / 2;
     float enemy_sprite_left_x =
@@ -108,9 +120,7 @@ void EnemyShooter::draw(sf::RenderWindow &window) {
         sf::Vector2f(enemy_sprite_down_x, enemy_sprite_down_y);
 
     ////Define the color of the left part
-    enemy_left_part[0].color = enemiesColor;
-    enemy_left_part[1].color = enemiesColor;
-    enemy_left_part[2].color = enemiesColor;
+    for(unsigned int i = 0; i < 3; i++) enemy_left_part[i].color = enemiesColor;
 
     ////Define the position of right part points
     enemy_right_part[0].position =
@@ -121,9 +131,7 @@ void EnemyShooter::draw(sf::RenderWindow &window) {
         sf::Vector2f(enemy_sprite_down_x, enemy_sprite_down_y);
 
     ////Define the color of the right part
-    enemy_right_part[0].color = enemiesColor;
-    enemy_right_part[1].color = enemiesColor;
-    enemy_right_part[2].color = enemiesColor;
+    for(unsigned int i = 0; i < 3; i++) enemy_right_part[i].color = enemiesColor;
 
     window.draw(enemy_left_part);
     window.draw(enemy_right_part);
@@ -131,13 +139,14 @@ void EnemyShooter::draw(sf::RenderWindow &window) {
 
 
 bool EnemyShooter::getShot(std::vector<Bullet*>& bullets) {
-    int diffX, diffY;
+    float diffX, diffY, hitBoxBoth;
     for(auto bullet = bullets.begin(); bullet != bullets.end();){
         diffX = x - (*bullet)->getX();
         diffY = y - (*bullet)->getY();
+        hitBoxBoth = (*bullet)->getHitBoxRadius() + size;
         // If the border of the bullet touches the enemy
-        // sqrt(x² + y²) < 34 :
-        if (diffX * diffX + diffY * diffY < 34*34) {
+        // sqrt(x² + y²) < n <=> x² + y² < n² :
+        if (diffX * diffX + diffY * diffY < hitBoxBoth * hitBoxBoth) {
             hp -= 1;
             delete *bullet;
             bullet = bullets.erase(bullet);

@@ -6,16 +6,18 @@
 #include "EnemyCharger.h"
 #include "Wall.h"
 
-EnemyCharger::EnemyCharger(float x, float y) : Enemy() {
+EnemyCharger::EnemyCharger(float x, float y, float sizeFactor, float bulletSizeFactor){
     this->x = x;
     this->y = y;
     this->speed = 13;
     this->angle = M_PI*3/2;
     this->hp = 20;
     this->shootTimer = 0;
+    this->size = 30*sizeFactor;
+    this->bulletSizeFactor = bulletSizeFactor;
 }
 
-void EnemyCharger::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls) {
+void EnemyCharger::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     shootTimer += timePassed;
     if (shootTimer > 10) {
         move(walls);
@@ -26,105 +28,103 @@ void EnemyCharger::update(std::vector<Bullet*>& bullets, float timePassed, float
 }
 
 void EnemyCharger::move(std::vector<Wall> walls) {
-    bool xInWall = false;
-    bool yInWall = false;
+    x += cos(angle) * speed;
+    y -= sin(angle) * speed;
+
+    //If in wall, replace in front of wall
     if (walls.size() != 0) {
+        float wallX, wallY, angleEnemyWall;
         for (Wall wall : walls) {
-        if (wall.isInWall(x + cos(angle) * speed, y)) {
-            xInWall = true;
-            shootTimer = 0;
+            wallX = wall.getX();
+            wallY = wall.getY();
+            angleEnemyWall = atan2(-y + wallY, -x + wallX);
+            if (wall.isInWall(x+cos(angleEnemyWall)*size, y+sin(angleEnemyWall)*size)){
+                if(angleEnemyWall<M_PI/4 && angleEnemyWall>-M_PI/4){
+                    x -= size - ((wallX - wall.getSize()) - x);
+                }
+                else if(angleEnemyWall>M_PI*3/4 || angleEnemyWall<-M_PI*3/4){
+                    x += size - (x - (wallX + wall.getSize()));
+                }
+                else if(angleEnemyWall>M_PI/4 && angleEnemyWall<M_PI*3/4){
+                    y -= size - ((wallY - wall.getSize()) - y);
+                }
+                //angleEnemyWall<-M_PI/4 && angleEnemyWall>-M_PI*3/4
+                else{
+                    y += size - (y - (wallY + wall.getSize()));
+                }
+                shootTimer = 0;
+            }
         }
-        if (wall.isInWall(x, y - sin(angle) * speed)) {
-            yInWall = true;
-            shootTimer = 0;
-        }
-        }
-    }
-    if (!xInWall) {
-        x += cos(angle) * speed;
-    }
-    if (!yInWall) {
-        y -= sin(angle) * speed;
     }
 
-    if (x < 30) {
-        x = 30;
-        shootTimer = 0;
-    } 
-    else if (x > 970) {
-        x = 970;
+    //If out of bounds, go back in bounds
+    if (x < size){
+        x = size;
         shootTimer = 0;
     }
-
-    if (y < 30) {
-        y = 30;
+    else if (x > 1000-size){
+        x = 1000-size;
         shootTimer = 0;
-    } 
-    else if (y > 970) {
-        y = 970;
+    }
+    if (y < size){
+        y = size;
+        shootTimer = 0;
+    }
+    else if (y > 1000-size){
+        y = 1000-size;
         shootTimer = 0;
     }
 }
 
 void EnemyCharger::drawWarningZone(sf::RenderWindow &window) {
-        float ratioLength = 1500 * (shootTimer - 7) / 3;
+        float length = 1500 * (shootTimer - 7) / 3;
         sf::VertexArray warningZone(sf::Quads, 4);
 
-        warningZone[0].color = sf::Color::Red;
-        warningZone[1].color = sf::Color::Red;
-        warningZone[2].color = sf::Color::Red;
-        warningZone[3].color = sf::Color::Red;
+        for(unsigned int i = 0; i < 4; i++) warningZone[i].color = sf::Color::Red;
 
-        warningZone[0].position =
-            sf::Vector2f(9 * std::cos(angle) + 28 * std::sin(angle) + x,
-                        -9 * std::sin(angle) + 28 * std::cos(angle) + y);
-        warningZone[1].position =
-            sf::Vector2f(ratioLength * std::cos(angle) + 28 * std::sin(angle) + x,
-                        -ratioLength * std::sin(angle) + 28 * std::cos(angle) + y);
-        warningZone[2].position =
-            sf::Vector2f(ratioLength * std::cos(angle) - 28 * std::sin(angle) + x,
-                        -ratioLength * std::sin(angle) - 28 * std::cos(angle) + y);
-        warningZone[3].position =
-            sf::Vector2f(9 * std::cos(angle) - 28 * std::sin(angle) + x,
-                        -9 * std::sin(angle) - 28 * std::cos(angle) + y);
+        warningZone[0].position = sf::Vector2f(x + size * cos(angle + 2 * M_PI / 5),
+                                    y - size * sin(angle + 2 * M_PI / 5));
+        warningZone[1].position = sf::Vector2f(length * std::cos(angle) + x + size * cos(angle +  2 * M_PI / 5),
+                                    -length * sin(angle) + y - size * sin(angle + 2 * M_PI / 5));
+        warningZone[2].position = sf::Vector2f(length * std::cos(angle) + x + size * cos(angle +  8 * M_PI / 5),
+                                    -length * std::sin(angle) + y - size * sin(angle + 8 * M_PI / 5));
+        warningZone[3].position = sf::Vector2f(x + size * cos(angle +  8 * M_PI / 5),
+                                    y - size * sin(angle + 8 * M_PI / 5));
 
         window.draw(warningZone);
 }
 
 void EnemyCharger::draw(sf::RenderWindow &window) {
-    int rayon = 30;
-
-    sf::Color enemiesColor(100, 100, 100);
-    sf::VertexArray side(sf::Triangles, 3);
-
-    side[0].color = enemiesColor;
-    side[1].color = enemiesColor;
-    side[2].color = enemiesColor;
-
-    side[0].position = sf::Vector2f(x, y);
-
-    for (int i = 0; i < 5; i++) {
-        side[1].position = sf::Vector2f(x + rayon * cos(angle + i * 2 * M_PI / 5),
-                                        y + -rayon * sin(angle + i * 2 * M_PI / 5));
-        side[2].position =sf::Vector2f(x + rayon * cos(angle + (i + 1) * 2 * M_PI / 5),
-                                      y - rayon * sin(angle + (i + 1) * 2 * M_PI / 5));
-        window.draw(side);
-    }
-    
     //Draw the warning zone
     if(shootTimer > 7){
         drawWarningZone(window);
+    }
+
+    sf::Color enemiesColor(100, 100, 100);
+    sf::VertexArray side(sf::Triangles, 3);
+    for(unsigned int i = 0; i < 3; i++) side[i].color = enemiesColor;
+
+    side[0].position = sf::Vector2f(x, y);
+    //rayon = size
+    for (unsigned int i = 0; i < 5; i++) {
+        side[1].position = sf::Vector2f(x + size * cos(angle + i * 2 * M_PI / 5),
+                                        y + -size * sin(angle + i * 2 * M_PI / 5));
+        side[2].position =sf::Vector2f(x + size * cos(angle + (i + 1) * 2 * M_PI / 5),
+                                      y - size * sin(angle + (i + 1) * 2 * M_PI / 5));
+        window.draw(side);
     }
 }
 
 bool EnemyCharger::getShot(std::vector<Bullet*>& bullets) {
     int diffX, diffY;
+    float hitBoxBoth;
     for(auto bullet = bullets.begin(); bullet != bullets.end();){
         diffX = x - (*bullet)->getX();
         diffY = y - (*bullet)->getY();
+        hitBoxBoth = (*bullet)->getHitBoxRadius() + size;
         // If the border of the bullet touches the enemy
-        // sqrt(x² + y²) < 34 :
-        if (diffX * diffX + diffY * diffY < 34*34) {
+        // sqrt(x² + y²) < n <=> x² + y² < n² :
+        if (diffX * diffX + diffY * diffY < hitBoxBoth * hitBoxBoth) {
             hp -= 1;
             delete *bullet;
             bullet = bullets.erase(bullet);

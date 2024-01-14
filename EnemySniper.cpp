@@ -7,16 +7,18 @@
 #include "Bullet.h"
 #include "Wall.h"
 
-EnemySniper::EnemySniper(float x, float y) : Enemy() {
+EnemySniper::EnemySniper(float x, float y, float sizeFactor, float bulletSizeFactor) {
     this->x = x;
     this->y = y;
     this->speed = 0.4;
     this->angle = M_PI*3/2;
     this->hp = 5;
     this->shootTimer = 0;
+    this->size = 19*sizeFactor;
+    this->bulletSizeFactor = bulletSizeFactor;
 }
 
-void EnemySniper::update(std::vector<Bullet*> &bullets, float timePassed, float targetAngle, std::vector<Wall> walls) {
+void EnemySniper::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     move(targetAngle, walls);
 
     // Shoot every 3.5 secondes
@@ -28,7 +30,7 @@ void EnemySniper::update(std::vector<Bullet*> &bullets, float timePassed, float 
 }
 
 void EnemySniper::shoot(std::vector<Bullet*> &bullets){
-    bullets.push_back(new Bullet(x+cos(angle)*15, y+sin(angle)*15, angle, 12, false, false));
+    bullets.push_back(new Bullet(x+cos(angle)*15, y+sin(angle)*15, angle, 12, 14, false, false));
 }
 
 void EnemySniper::move(float targetAngle, std::vector<Wall> walls) {
@@ -49,68 +51,65 @@ void EnemySniper::move(float targetAngle, std::vector<Wall> walls) {
         angle += 2 * M_PI;
     }
 
-    bool xInWall = false;
-    bool yInWall = false;
+    x -= cos(angle) * speed;
+    y += sin(angle) * speed;
+
+    //If in wall, replace in front of wall
     if (walls.size() != 0) {
+        float wallX, wallY, angleEnemyWall;
         for (Wall wall : walls) {
-        if (wall.isInWall(x - cos(angle) * speed, y)) {
-            xInWall = true;
+            wallX = wall.getX();
+            wallY = wall.getY();
+            angleEnemyWall = atan2(-y + wallY, -x + wallX);
+            if (wall.isInWall(x+cos(angleEnemyWall)*size, y+sin(angleEnemyWall)*size)){
+                if(angleEnemyWall<M_PI/4 && angleEnemyWall>-M_PI/4){
+                    x -= size - ((wallX - wall.getSize()) - x);
+                }
+                else if(angleEnemyWall>M_PI*3/4 || angleEnemyWall<-M_PI*3/4){
+                    x += size - (x - (wallX + wall.getSize()));
+                }
+                else if(angleEnemyWall>M_PI/4 && angleEnemyWall<M_PI*3/4){
+                    y -= size - ((wallY - wall.getSize()) - y);
+                }
+                //angleEnemyWall<-M_PI/4 && angleEnemyWall>-M_PI*3/4
+                else{
+                    y += size - (y - (wallY + wall.getSize()));
+                }
+            }
         }
-        if (wall.isInWall(x, y + sin(angle) * speed)) {
-            yInWall = true;
-        }
-        }
-    }
-    if (!xInWall) {
-        x -= cos(angle) * speed;
-    }
-    if (!yInWall) {
-        y += sin(angle) * speed;
     }
 
-    if (x < 19) {
-        x = 19;
-    } 
-    else if (x > 981) {
-        x = 981;
-    }
-
-    if (y < 19) {
-        y = 19;
-    } 
-    else if (y > 981) {
-        y = 981;
-    }
+    //If out of bounds, go back in bounds
+    if (x < size) x = size;
+    else if (x > 1000-size) x = 1000-size;
+    if (y < size) y = size;
+    else if (y > 1000-size) y = 1000-size;
 }
 
 void EnemySniper::draw(sf::RenderWindow &window) {
-    int hauteur = 50;
-    int rayon = 19;
+    int height = size*50/19;
+    int width = size;
     sf::Color enemiesColor(100, 100, 100);
     sf::VertexArray enemyUp(sf::Triangles, 3);
     sf::VertexArray enemyDown(sf::Triangles, 3);
 
-    enemyUp[0].position =
-        sf::Vector2f(hauteur * cos(angle) + x, -hauteur * sin(angle) + y);
-    enemyUp[1].position = sf::Vector2f(rayon * cos(angle + M_PI / 2) + x,
-                                        -rayon * sin(angle + M_PI / 2) + y);
-    enemyUp[2].position = sf::Vector2f(rayon * cos(angle - M_PI / 2) + x,
-                                        -rayon * sin(angle - M_PI / 2) + y);
+    enemyUp[0].position = sf::Vector2f(height * cos(angle) + x, 
+                                        -height * sin(angle) + y);
+    enemyUp[1].position = sf::Vector2f(width * cos(angle + M_PI / 2) + x,
+                                        -width * sin(angle + M_PI / 2) + y);
+    enemyUp[2].position = sf::Vector2f(width * cos(angle - M_PI / 2) + x,
+                                        -width * sin(angle - M_PI / 2) + y);
 
-    enemyUp[0].color = enemiesColor;
-    enemyUp[1].color = enemiesColor;
-    enemyUp[2].color = enemiesColor;
+    for(unsigned int i=0; i<3; i++) enemyUp[i].color = enemiesColor;
 
-    enemyDown[0].position =
-        sf::Vector2f(-hauteur * cos(angle) / 3 + x, hauteur * sin(angle) / 3 + y);
-    enemyDown[1].position = sf::Vector2f(rayon * cos(angle + M_PI / 2) + x,
-                                        -rayon * sin(angle + M_PI / 2) + y);
-    enemyDown[2].position = sf::Vector2f(rayon * cos(angle - M_PI / 2) + x,
-                                        -rayon * sin(angle - M_PI / 2) + y);
+    enemyDown[0].position = sf::Vector2f(-height * cos(angle) / 3 + x, 
+                                        height * sin(angle) / 3 + y);
+    enemyDown[1].position = sf::Vector2f(width * cos(angle + M_PI / 2) + x,
+                                        -width * sin(angle + M_PI / 2) + y);
+    enemyDown[2].position = sf::Vector2f(width * cos(angle - M_PI / 2) + x,
+                                        -width * sin(angle - M_PI / 2) + y);
 
-    enemyDown[0].color = enemiesColor;
-    enemyDown[1].color = enemiesColor;
-    enemyDown[2].color = enemiesColor;
+    for(unsigned int i=0; i<3; i++) enemyDown[i].color = enemiesColor;
 
     window.draw(enemyUp);
     window.draw(enemyDown);
@@ -118,12 +117,14 @@ void EnemySniper::draw(sf::RenderWindow &window) {
 
 bool EnemySniper::getShot(std::vector<Bullet*>& bullets) {
     int diffX, diffY;
+    float hitBoxBoth;
     for(auto bullet = bullets.begin(); bullet != bullets.end();){
         diffX = x - (*bullet)->getX();
         diffY = y - (*bullet)->getY();
+        hitBoxBoth = (*bullet)->getHitBoxRadius() + size;
         // If the border of the bullet touches the enemy
-        // sqrt(x² + y²) < 34 :
-        if (diffX * diffX + diffY * diffY < 34*34) {
+        // sqrt(x² + y²) < n <=> x² + y² < n²:
+        if (diffX * diffX + diffY * diffY < hitBoxBoth * hitBoxBoth) {
             hp -= 1;
             delete *bullet;
             bullet = bullets.erase(bullet);

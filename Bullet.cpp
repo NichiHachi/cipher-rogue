@@ -4,11 +4,12 @@
 
 #include "Bullet.h"
 
-Bullet::Bullet(float x, float y, float angle, float speed, bool ally, bool destructible) {
+Bullet::Bullet(float x, float y, float angle, float speed, float hitBoxRadius, bool ally, bool destructible) {
     this->x = x;
     this->y = y;
     this->speed = speed;
     this->angle = angle;
+    this->hitBoxRadius = hitBoxRadius;
     this->ally = ally;
     this->destructible = destructible;
 }
@@ -19,36 +20,32 @@ void Bullet::update() {
 }
 
 void Bullet::draw(sf::RenderWindow &window) {
-    if (ally) {
+    if(ally) {
         sf::VertexArray quad(sf::Quads, 4);
-        quad[0].color = sf::Color::White;
-        quad[1].color = sf::Color::White;
-        quad[2].color = sf::Color::White;
-        quad[3].color = sf::Color::White;
 
-        quad[0].position = sf::Vector2f(20 * std::cos(angle) + 10 * std::sin(angle) + x,
-                                        -20 * std::sin(angle) + 10 * std::cos(angle) + y);
-        quad[1].position = sf::Vector2f(-20 * std::cos(angle) + 10 * std::sin(angle) + x,
-                                        20 * std::sin(angle) + 10 * std::cos(angle) + y);
-        quad[2].position = sf::Vector2f(-20 * std::cos(angle) - 10 * std::sin(angle) + x,
-                                        20 * std::sin(angle) - 10 * std::cos(angle) + y);
-        quad[3].position = sf::Vector2f(20 * std::cos(angle) - 10 * std::sin(angle) + x,
-                                        -20 * std::sin(angle) - 10 * std::cos(angle) + y);
+        for (int i = 0; i < 4; i++) quad[i].color = sf::Color::White;
+
+        int height = hitBoxRadius*2;
+        int width = hitBoxRadius;
+        
+        quad[0].position = sf::Vector2f(height * std::cos(angle) + width * std::sin(angle) + x,
+                                        -height * std::sin(angle) + width * std::cos(angle) + y);
+        quad[1].position = sf::Vector2f(-height * std::cos(angle) + width * std::sin(angle) + x,
+                                        height * std::sin(angle) + width * std::cos(angle) + y);
+        quad[2].position = sf::Vector2f(-height * std::cos(angle) - width * std::sin(angle) + x,
+                                        height * std::sin(angle) - width * std::cos(angle) + y);
+        quad[3].position = sf::Vector2f(height * std::cos(angle) - width * std::sin(angle) + x,
+                                        -height * std::sin(angle) - width * std::cos(angle) + y);
+        
         window.draw(quad);
     } 
     else {
-        int bulletRadius = 15;
         sf::Color enemiesBulletInvinsibleColor(255, 102, 51);
         sf::Color enemiesBulletDestructibleColor(70, 11, 102);
         sf::CircleShape circle;
-        circle.setRadius(bulletRadius);
-        if (destructible) {
-            circle.setFillColor(enemiesBulletDestructibleColor);
-        } 
-        else {
-            circle.setFillColor(enemiesBulletInvinsibleColor);
-        }
-        circle.setPosition(x - bulletRadius, y - bulletRadius);
+        circle.setRadius(hitBoxRadius);
+        circle.setFillColor(destructible ? enemiesBulletDestructibleColor : enemiesBulletInvinsibleColor);
+        circle.setPosition(x - hitBoxRadius, y - hitBoxRadius);
         window.draw(circle);
     }
 }
@@ -57,8 +54,8 @@ float Bullet::getX() { return x; }
 
 float Bullet::getY() { return y; }
 
-float Bullet::getAngle() { return angle; }
+float Bullet::getHitBoxRadius() { return hitBoxRadius; }
 
-bool Bullet::isAlly() { return ally; }
+float Bullet::getAngle() { return angle; }
 
 bool Bullet::isDestructible() { return destructible; }

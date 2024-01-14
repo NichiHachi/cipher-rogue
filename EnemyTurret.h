@@ -7,8 +7,8 @@
 
 class EnemyTurret : public Enemy{
     public:
-        EnemyTurret(float x, float y);
-        void update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls);
+        EnemyTurret(float x, float y, float sizeFactor, float bulletSizeFactor);
+        void update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies);
         void draw(sf::RenderWindow& window);
         bool getShot(std::vector<Bullet*>& bullets) override;
         float getX() override {return x;};
@@ -18,6 +18,6 @@ class EnemyTurret : public Enemy{
         void shoot(std::vector<Bullet*> &bullets);
 
     private:
-        float x,y,speed,angle,shootTimer;
-        int hp;
+        float x,y,speed,angle,shootTimer,bulletSizeFactor;
+        int hp,size;
 };
