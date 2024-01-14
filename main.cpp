@@ -190,7 +190,7 @@ void drawElements(sf::RenderWindow& window, Player player, std::vector<Bullet*>b
 
         //ENEMIES
         for(Enemy* enemy : enemies){
-            enemy->draw(window);
+            (*enemy).draw(window);
         }
 
         player.drawHealth(window);
@@ -210,7 +210,9 @@ int main(void){
     std::vector<Bullet*> bulletsAlly;
 
     //Init EnemyShooter
-    enemies.push_back(new EnemyShooter(600,700));
+    enemies.push_back(new EnemyShooter(500,500));
+    enemies.push_back(new EnemyShooter(400,500));
+    enemies.push_back(new EnemyShooter(500,600));
 
     //Init EnemyTurret
     enemies.push_back(new EnemyTurret(450,785));
@@ -239,24 +241,18 @@ int main(void){
     player.spawn();
 
     while(window.isOpen()){
-        player.spawn();
-        while(true){
-            sf::Event event;
-            while(window.pollEvent(event)){
-                if(event.type == sf::Event::Closed){
-                    window.close();
-                }
-            }
-
-            window.clear(backgroundColor);
-
-            updateLoop(window, clock, player, bulletsEnemy, bulletsAlly, walls, enemies);
-
-            drawElements(window, player, bulletsEnemy, bulletsAlly, walls, enemies);
-
-            window.display();
+        sf::Event event;
+        while (window.pollEvent(event)){
+            if (event.type == sf::Event::Closed)window.close();
         }
-    }
 
+        window.clear(backgroundColor);
+
+        updateLoop(window, clock, player, bulletsEnemy, bulletsAlly, walls, enemies);
+
+        drawElements(window, player, bulletsEnemy, bulletsAlly, walls, enemies);
+
+        window.display();
+    }
     return 0;
 }

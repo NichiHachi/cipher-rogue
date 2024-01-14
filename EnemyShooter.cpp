@@ -1,15 +1,23 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <cmath>
+#include <iostream>
 
 #include "Enemy.h"
 #include "Bullet.h"
 #include "EnemyShooter.h"
 #include "Wall.h"
 
-EnemyShooter::EnemyShooter(float x, float y) : Enemy (x, y, M_PI*3/2, 1, 6, 0) {}
+EnemyShooter::EnemyShooter(float x, float y) {
+    this->x = x;
+    this->y = y;
+    this->speed = 1;
+    this->angle = M_PI*3/2;
+    this->hp = 6;
+    this->shootTimer = 0;
+}
 
-void EnemyShooter::update(std::vector<Bullet*> &bullets, float timePassed, float targetAngle, std::vector<Wall> walls) {
+void EnemyShooter::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls) {
     move(targetAngle, walls);
 
     // Shoot every 2 secondes
@@ -46,12 +54,12 @@ void EnemyShooter::move(float targetAngle, std::vector<Wall> walls) {
     bool yInWall = false;
     if (walls.size() != 0) {
         for (Wall wall : walls) {
-        if (wall.isInWall(x + cos(angle) * speed, y)) {
-            xInWall = true;
-        }
-        if (wall.isInWall(x, y - sin(angle) * speed)) {
-            yInWall = true;
-        }
+            if (wall.isInWall(x + cos(angle) * speed, y)) {
+                xInWall = true;
+            }
+            if (wall.isInWall(x, y - sin(angle) * speed)) {
+                yInWall = true;
+            }
         }
     }
     if (!xInWall) {
@@ -119,4 +127,24 @@ void EnemyShooter::draw(sf::RenderWindow &window) {
 
     window.draw(enemy_left_part);
     window.draw(enemy_right_part);
+}
+
+
+bool EnemyShooter::getShot(std::vector<Bullet*>& bullets) {
+    int diffX, diffY;
+    for(auto bullet = bullets.begin(); bullet != bullets.end();){
+        diffX = x - (*bullet)->getX();
+        diffY = y - (*bullet)->getY();
+        // If the border of the bullet touches the enemy
+        // sqrt(x² + y²) < 34 :
+        if (diffX * diffX + diffY * diffY < 34*34) {
+            hp -= 1;
+            delete *bullet;
+            bullet = bullets.erase(bullet);
+        }
+        else {
+            bullet++;
+        }
+    }
+    return hp <= 0;
 }

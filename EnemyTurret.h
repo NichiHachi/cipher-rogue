@@ -10,6 +10,9 @@ class EnemyTurret : public Enemy{
         EnemyTurret(float x, float y);
         void update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls);
         void draw(sf::RenderWindow& window);
+        bool getShot(std::vector<Bullet*>& bullets) override;
+        float getX() override {return x;};
+        float getY() override {return y;};
 
         void move(std::vector<Wall> walls);
         void shoot(std::vector<Bullet*> &bullets);

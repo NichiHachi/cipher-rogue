@@ -1,7 +1,7 @@
 all: main
 
-main: main.cpp Bullet.o Player.o Enemy.o EnemyCharger.o EnemyShooter.o EnemySniper.o EnemySpawner.o EnemyTurret.o Wall.o
-	g++ main.cpp Bullet.o Player.o Enemy.o EnemyCharger.o EnemyShooter.o EnemySniper.o EnemySpawner.o EnemyTurret.o Wall.o -o main -lsfml-graphics -lsfml-window -lsfml-system
+main: main.cpp Bullet.o Player.o EnemyCharger.o EnemyShooter.o EnemySniper.o EnemySpawner.o EnemyTurret.o Wall.o
+	g++ main.cpp Bullet.o Player.o EnemyCharger.o EnemyShooter.o EnemySniper.o EnemySpawner.o EnemyTurret.o Wall.o -o main -lsfml-graphics -lsfml-window -lsfml-system
 
 Bullet.o: Bullet.cpp Bullet.h
 	g++ -c Bullet.cpp
@@ -27,9 +27,6 @@ EnemySpawner.o: EnemySpawner.cpp EnemySpawner.h
 EnemyTurret.o: EnemyTurret.cpp EnemyTurret.h
 	g++ -c EnemyTurret.cpp
 
-Enemy.o: Enemy.cpp Enemy.h
-	g++ -c Enemy.cpp
-
 clean:
-	rm main
 	rm *.o
+	rm main

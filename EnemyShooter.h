@@ -8,8 +8,11 @@
 class EnemyShooter : public Enemy{
     public:
         EnemyShooter(float x, float y);
-        void update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls);
-        void draw(sf::RenderWindow& window);
+        void update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls) override;
+        void draw(sf::RenderWindow& window) override;
+        bool getShot(std::vector<Bullet*>& bullets) override;
+        float getX() override {return x;};
+        float getY() override {return y;};
 
         void shoot(std::vector<Bullet*> &bullets);
         void move(float targetAngle, std::vector<Wall> walls);
