@@ -11,5 +11,8 @@ class Enemy{
         virtual void draw(sf::RenderWindow& window)=0;
         virtual float getX()=0;
         virtual float getY()=0;
-        virtual bool getShot(std::vector<Bullet*>& bullets)=0;
+        virtual bool receiveDamageIfShot(std::vector<Bullet*>& bullets)=0;
+        virtual int getSize()=0;
+        virtual bool isMovable()=0;
+        virtual void setCoordonates(float x, float y)=0;
 };

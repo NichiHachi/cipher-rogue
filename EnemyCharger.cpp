@@ -15,6 +15,7 @@ EnemyCharger::EnemyCharger(float x, float y, float sizeFactor, float bulletSizeF
     this->shootTimer = 0;
     this->size = 30*sizeFactor;
     this->bulletSizeFactor = bulletSizeFactor;
+    this->movable = false;
 }
 
 void EnemyCharger::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
@@ -31,29 +32,28 @@ void EnemyCharger::move(std::vector<Wall> walls) {
     x += cos(angle) * speed;
     y -= sin(angle) * speed;
 
-    //If in wall, replace in front of wall
-    if (walls.size() != 0) {
-        float wallX, wallY, angleEnemyWall;
-        for (Wall wall : walls) {
-            wallX = wall.getX();
-            wallY = wall.getY();
-            angleEnemyWall = atan2(-y + wallY, -x + wallX);
-            if (wall.isInWall(x+cos(angleEnemyWall)*size, y+sin(angleEnemyWall)*size)){
-                if(angleEnemyWall<M_PI/4 && angleEnemyWall>-M_PI/4){
-                    x -= size - ((wallX - wall.getSize()) - x);
-                }
-                else if(angleEnemyWall>M_PI*3/4 || angleEnemyWall<-M_PI*3/4){
-                    x += size - (x - (wallX + wall.getSize()));
-                }
-                else if(angleEnemyWall>M_PI/4 && angleEnemyWall<M_PI*3/4){
-                    y -= size - ((wallY - wall.getSize()) - y);
-                }
-                //angleEnemyWall<-M_PI/4 && angleEnemyWall>-M_PI*3/4
-                else{
-                    y += size - (y - (wallY + wall.getSize()));
-                }
-                shootTimer = 0;
+    //If in wall, move it in front of wall
+    float wallX, wallY, angleEnemyWall;
+    for (Wall wall : walls) {
+        wallX = wall.getX();
+        wallY = wall.getY();
+        angleEnemyWall = atan2(-y + wallY, -x + wallX);
+        //If the enemy nearest point from the wall is in the wall
+        if (wall.isInWall(x+cos(angleEnemyWall)*size, y+sin(angleEnemyWall)*size)){
+            if(angleEnemyWall<M_PI/4 && angleEnemyWall>-M_PI/4){
+                x -= size - ((wallX - wall.getSize()) - x);
             }
+            else if(angleEnemyWall>M_PI*3/4 || angleEnemyWall<-M_PI*3/4){
+                x += size - (x - (wallX + wall.getSize()));
+            }
+            else if(angleEnemyWall>M_PI/4 && angleEnemyWall<M_PI*3/4){
+                y -= size - ((wallY - wall.getSize()) - y);
+            }
+            //angleEnemyWall<-M_PI/4 && angleEnemyWall>-M_PI*3/4
+            else{
+                y += size - (y - (wallY + wall.getSize()));
+            }
+            shootTimer = 0;
         }
     }
 
@@ -115,7 +115,7 @@ void EnemyCharger::draw(sf::RenderWindow &window) {
     }
 }
 
-bool EnemyCharger::getShot(std::vector<Bullet*>& bullets) {
+bool EnemyCharger::receiveDamageIfShot(std::vector<Bullet*>& bullets) {
     int diffX, diffY;
     float hitBoxBoth;
     for(auto bullet = bullets.begin(); bullet != bullets.end();){

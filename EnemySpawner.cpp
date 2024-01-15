@@ -18,6 +18,7 @@ EnemySpawner::EnemySpawner(float x, float y, float sizeFactor, float bulletSizeF
     this->shootTimer = 0;
     this->size = 20*sizeFactor;
     this->bulletSizeFactor = bulletSizeFactor;
+    this->movable = false;
 }
 
 void EnemySpawner::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
@@ -53,7 +54,7 @@ void EnemySpawner::draw(sf::RenderWindow &window) {
     window.draw(quad);
 }
 
-bool EnemySpawner::getShot(std::vector<Bullet*>& bullets) {
+bool EnemySpawner::receiveDamageIfShot(std::vector<Bullet*>& bullets) {
     float diffX, diffY, hitBoxBoth;
     for(auto bullet = bullets.begin(); bullet != bullets.end();){
         diffX = x - (*bullet)->getX();

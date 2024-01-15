@@ -17,7 +17,6 @@
 
 const int displayX = 1000;
 const int displayY = 1000;
-const int bulletRadius = 15;
 const sf::Color backgroundColor(0,0,0);
 
 double calcul_angle(float startX, float startY, float endX, float endY){
@@ -162,7 +161,7 @@ void updateLoop(sf::RenderWindow& window, sf::Clock& clock, Player& player, std:
 
         //-----ENEMIES AND ALLY BULLETS-----
         for(auto it = enemies.begin(); it != enemies.end();) {
-            if((*it)->getShot(bulletsAlly)) {
+            if((*it)->receiveDamageIfShot(bulletsAlly)) {
                 delete *it;
                 it = enemies.erase(it);
             } 
@@ -172,7 +171,7 @@ void updateLoop(sf::RenderWindow& window, sf::Clock& clock, Player& player, std:
         }
 
         //-----PLAYER AND ENEMY BULLETS-----
-        player.getHit(bulletsEnemy);
+        player.receiveDamageIfShot(bulletsEnemy);
 
         //-----ENEMIES UPDATE-----
         float angleEnemyToPlayer;
@@ -180,6 +179,9 @@ void updateLoop(sf::RenderWindow& window, sf::Clock& clock, Player& player, std:
             angleEnemyToPlayer = calcul_angle(enemy->getX(),enemy->getY(),player.getX(),player.getY());
             enemy->update(bulletsEnemy, currentTime, angleEnemyToPlayer, walls, enemies);
         }
+
+        //-----PLAYER AND ENEMIES-----
+        player.receiveDamageIfHit(enemies);
 }
 
 void drawElements(sf::RenderWindow& window, Player player, std::vector<Bullet*>bulletsEnemy, 
@@ -224,21 +226,26 @@ int main(void){
     enemies.push_back(new EnemyCharger(400,400,2,1));
     
     //Init EnemyShooter
-    enemies.push_back(new EnemyShooter(500,500,1,1));
+    //enemies.push_back(new EnemyShooter(500,500,1,1));
     enemies.push_back(new EnemyShooter(400,500,1,1));
     enemies.push_back(new EnemyShooter(500,600,1,1));
 
     //Init EnemyTurret
-    enemies.push_back(new EnemyTurret(450,785,1,1));
+    //enemies.push_back(new EnemyTurret(450,785,1,1));
 
     //Init EnemySpawner
     enemies.push_back(new EnemySpawner(400,100,1,1));
+    enemies.push_back(new EnemySpawner(400,200,1,1));
+    enemies.push_back(new EnemySpawner(400,300,1,1));
+    enemies.push_back(new EnemySpawner(400,400,1,1));
+    enemies.push_back(new EnemySpawner(400,500,1,1));
 
     //Init EnemySniper
-    enemies.push_back(new EnemySniper(600,400,1,1));
+    //enemies.push_back(new EnemySniper(600,400,1,1));
 
     //Init Seeker
-    enemies.push_back(new EnemySeeker(400,400,0,1));
+    //enemies.push_back(new EnemySeeker(400,400,0,1));
+    //enemies.push_back(new EnemySeeker(400,420,0,1));
 
     //Init Wall Array
     std::vector<Wall> walls;

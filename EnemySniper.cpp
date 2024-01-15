@@ -16,10 +16,11 @@ EnemySniper::EnemySniper(float x, float y, float sizeFactor, float bulletSizeFac
     this->shootTimer = 0;
     this->size = 19*sizeFactor;
     this->bulletSizeFactor = bulletSizeFactor;
+    this->movable = true;
 }
 
 void EnemySniper::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
-    move(targetAngle, walls);
+    move(targetAngle, walls, enemies);
 
     // Shoot every 3.5 secondes
     shootTimer += timePassed;
@@ -33,7 +34,7 @@ void EnemySniper::shoot(std::vector<Bullet*> &bullets){
     bullets.push_back(new Bullet(x+cos(angle)*15, y+sin(angle)*15, angle, 12, 14, false, false));
 }
 
-void EnemySniper::move(float targetAngle, std::vector<Wall> walls) {
+void EnemySniper::move(float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     float angleDiff = targetAngle - angle;
     if (angleDiff > M_PI) {
         angleDiff -= 2 * M_PI;
@@ -53,28 +54,55 @@ void EnemySniper::move(float targetAngle, std::vector<Wall> walls) {
 
     x -= cos(angle) * speed;
     y += sin(angle) * speed;
+    
+    //If in enemy, collide with it
+    float enemyX, enemyY, angleEnemyEnemy, diffX, diffY, distance, moveDistance;
+    int enemySize;
+    for(Enemy* enemy : enemies){
+        if(enemy == this) continue; //Don't check collision with itself
+        enemyX = enemy->getX();
+        enemyY = enemy->getY();
+        enemySize = enemy->getSize();
+        diffX = x - enemyX;
+        diffY = y - enemyY;
+        //If the object is inside of the enemy
+        if (diffX * diffX + diffY * diffY < (enemySize+size) * (enemySize+size)){
+            angleEnemyEnemy = atan2(- y + enemyY, x - enemyX);
+            moveDistance = enemySize + size - sqrt(diffX * diffX + diffY * diffY);
+            // Move the enemy gradually towards the outside
+            if(enemy->isMovable()){
+                enemy->setCoordonates(enemyX + cos(M_PI + angleEnemyEnemy) * moveDistance / 4,
+                                      enemyY - sin(M_PI + angleEnemyEnemy) * moveDistance / 4);
+                x += cos(angleEnemyEnemy) * moveDistance / 4;
+                y -= sin(angleEnemyEnemy) * moveDistance / 4;
+            }
+            else{
+                x += cos(angleEnemyEnemy) * moveDistance / 2;
+                y -= sin(angleEnemyEnemy) * moveDistance / 2;
+            }
+        }
+    }
 
-    //If in wall, replace in front of wall
-    if (walls.size() != 0) {
-        float wallX, wallY, angleEnemyWall;
-        for (Wall wall : walls) {
-            wallX = wall.getX();
-            wallY = wall.getY();
-            angleEnemyWall = atan2(-y + wallY, -x + wallX);
-            if (wall.isInWall(x+cos(angleEnemyWall)*size, y+sin(angleEnemyWall)*size)){
-                if(angleEnemyWall<M_PI/4 && angleEnemyWall>-M_PI/4){
-                    x -= size - ((wallX - wall.getSize()) - x);
-                }
-                else if(angleEnemyWall>M_PI*3/4 || angleEnemyWall<-M_PI*3/4){
-                    x += size - (x - (wallX + wall.getSize()));
-                }
-                else if(angleEnemyWall>M_PI/4 && angleEnemyWall<M_PI*3/4){
-                    y -= size - ((wallY - wall.getSize()) - y);
-                }
-                //angleEnemyWall<-M_PI/4 && angleEnemyWall>-M_PI*3/4
-                else{
-                    y += size - (y - (wallY + wall.getSize()));
-                }
+    //If in wall, move it in front of wall
+    float wallX, wallY, angleEnemyWall;
+    for (Wall wall : walls) {
+        wallX = wall.getX();
+        wallY = wall.getY();
+        angleEnemyWall = atan2(-y + wallY, -x + wallX);
+        //If the enemy nearest point from the wall is in the wall
+        if (wall.isInWall(x+cos(angleEnemyWall)*size, y+sin(angleEnemyWall)*size)){
+            if(angleEnemyWall<M_PI/4 && angleEnemyWall>-M_PI/4){
+                x -= size - ((wallX - wall.getSize()) - x);
+            }
+            else if(angleEnemyWall>M_PI*3/4 || angleEnemyWall<-M_PI*3/4){
+                x += size - (x - (wallX + wall.getSize()));
+            }
+            else if(angleEnemyWall>M_PI/4 && angleEnemyWall<M_PI*3/4){
+                y -= size - ((wallY - wall.getSize()) - y);
+            }
+            //angleEnemyWall<-M_PI/4 && angleEnemyWall>-M_PI*3/4
+            else{
+                y += size - (y - (wallY + wall.getSize()));
             }
         }
     }
@@ -115,7 +143,7 @@ void EnemySniper::draw(sf::RenderWindow &window) {
     window.draw(enemyDown);
 }
 
-bool EnemySniper::getShot(std::vector<Bullet*>& bullets) {
+bool EnemySniper::receiveDamageIfShot(std::vector<Bullet*>& bullets) {
     int diffX, diffY;
     float hitBoxBoth;
     for(auto bullet = bullets.begin(); bullet != bullets.end();){

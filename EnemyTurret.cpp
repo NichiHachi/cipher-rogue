@@ -16,6 +16,7 @@ EnemyTurret::EnemyTurret(float x, float y, float sizeFactor, float bulletSizeFac
     this->shootTimer = 0;
     this->size = 30*sizeFactor;
     this->bulletSizeFactor = bulletSizeFactor;
+    this->movable = false;
 }
 
 void EnemyTurret::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
@@ -52,7 +53,7 @@ void EnemyTurret::draw(sf::RenderWindow &window) {
     }
 }
 
-bool EnemyTurret::getShot(std::vector<Bullet*>& bullets) {
+bool EnemyTurret::receiveDamageIfShot(std::vector<Bullet*>& bullets) {
     int diffX, diffY;
     float hitBoxBoth;
     for(auto bullet = bullets.begin(); bullet != bullets.end();){

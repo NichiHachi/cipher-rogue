@@ -101,26 +101,6 @@ void Player::shoot(std::vector<Bullet*> &bullets) {
     }
 }
 
-void Player::getHit(std::vector<Bullet*> &bullets) {
-    int diffX, diffY, hitBoxBoth;
-    for(auto bullet = bullets.begin(); bullet != bullets.end();){
-        diffX = x - (*bullet)->getX();
-        diffY = y - (*bullet)->getY();
-        hitBoxBoth = size+(*bullet)->getHitBoxRadius();
-        if (diffX * diffX + diffY * diffY < hitBoxBoth*hitBoxBoth) {
-            if(hitTimer > 2){
-                hp -= 1;
-                hitTimer = 0;
-            }
-            delete *bullet;
-            bullet = bullets.erase(bullet);
-        }
-        else {
-            bullet++;
-        }
-    }
-}
-
 void Player::draw(sf::RenderWindow &window) {
     int height = size*24/19;
     int width = size;
@@ -188,12 +168,36 @@ void Player::drawHealth(sf::RenderWindow &window) {
     }
 }
 
-float Player::getX() { return x; }
+void Player::receiveDamageIfShot(std::vector<Bullet*> &bullets) {
+    int diffX, diffY, hitBoxBoth;
+    for(auto bullet = bullets.begin(); bullet != bullets.end();){
+        diffX = x - (*bullet)->getX();
+        diffY = y - (*bullet)->getY();
+        hitBoxBoth = size+(*bullet)->getHitBoxRadius();
+        if (diffX * diffX + diffY * diffY < hitBoxBoth*hitBoxBoth) {
+            receiveDamage(1);
+            delete *bullet;
+            bullet = bullets.erase(bullet);
+        }
+        else {
+            bullet++;
+        }
+    }
+}
 
-float Player::getY() { return y; }
+void Player::receiveDamageIfHit(std::vector<Enemy*> enemies) {
+    float diffX, diffY, hitBoxBoth;
+    for(Enemy* enemy : enemies){
+        diffX = x - enemy->getX();
+        diffY = y - enemy->getY();
+        hitBoxBoth = size+enemy->getSize();
+        if (diffX * diffX + diffY * diffY < hitBoxBoth * hitBoxBoth) receiveDamage(1);
+    }
+}
 
-double Player::getAngle() { return angle; }
-
-float Player::getSpeed() { return speed; }
-
-int Player::getHP() { return hp; }
+void Player::receiveDamage(unsigned int damage){
+    if(hitTimer > 2){
+        hp -= damage;
+        hitTimer = 0;
+    }
+}

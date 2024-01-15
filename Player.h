@@ -4,6 +4,7 @@
 
 #include "Bullet.h"
 #include "Wall.h"
+#include "Enemy.h"
 
 class Player{
     public:
@@ -12,14 +13,13 @@ class Player{
         void spawn();
         void move(sf::RenderWindow& window, std::vector<Wall> walls);
         void shoot(std::vector<Bullet*>& bullets);
-        void getHit(std::vector<Bullet*>& bullets);
+        void receiveDamageIfShot(std::vector<Bullet*>& bullets);
+        void receiveDamageIfHit(std::vector<Enemy*> enemies);
+        void receiveDamage(unsigned int damage);
         void draw(sf::RenderWindow& window);
         void drawHealth(sf::RenderWindow& window);
-        float getX();
-        float getY();
-        double getAngle();
-        float getSpeed();
-        int getHP();
+        float getX() {return x;};
+        float getY() {return y;};
 
     private:
         float x,y,speed,shootTimer,hitTimer;
