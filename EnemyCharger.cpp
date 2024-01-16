@@ -5,18 +5,11 @@
 #include "Bullet.h"
 #include "EnemyCharger.h"
 #include "Wall.h"
+#include "EnemyStats.h"
 
-EnemyCharger::EnemyCharger(float x, float y, float sizeFactor, float bulletSizeFactor){
-    this->x = x;
-    this->y = y;
-    this->speed = 13;
-    this->angle = M_PI*3/2;
-    this->hp = 20;
-    this->shootTimer = 0;
-    this->size = 30*sizeFactor;
-    this->bulletSizeFactor = bulletSizeFactor;
-    this->movable = false;
-}
+EnemyStats EnemyCharger::stats;
+
+EnemyCharger::EnemyCharger(float x, float y) : Enemy(x, y, 13*stats.speedFactor, M_PI*3/2, 0, 20, 30*stats.sizeFactor, false) {}
 
 void EnemyCharger::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     shootTimer += timePassed;
@@ -113,25 +106,4 @@ void EnemyCharger::draw(sf::RenderWindow &window) {
                                       y - size * sin(angle + (i + 1) * 2 * M_PI / 5));
         window.draw(side);
     }
-}
-
-bool EnemyCharger::receiveDamageIfShot(std::vector<Bullet*>& bullets) {
-    int diffX, diffY;
-    float hitBoxBoth;
-    for(auto bullet = bullets.begin(); bullet != bullets.end();){
-        diffX = x - (*bullet)->getX();
-        diffY = y - (*bullet)->getY();
-        hitBoxBoth = (*bullet)->getHitBoxRadius() + size;
-        // If the border of the bullet touches the enemy
-        // sqrt(x² + y²) < n <=> x² + y² < n² :
-        if (diffX * diffX + diffY * diffY < hitBoxBoth * hitBoxBoth) {
-            hp -= 1;
-            delete *bullet;
-            bullet = bullets.erase(bullet);
-        }
-        else {
-            bullet++;
-        }
-    }
-    return hp <= 0;
 }

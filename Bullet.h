@@ -4,7 +4,7 @@
 #pragma once
 class Bullet{
     public:
-        Bullet(float x, float y, float angle, float speed, float hitBoxRadius ,bool ally, bool destructible);
+        Bullet(float x, float y, float angle, float speed, float hitBoxRadius, bool ally, bool destructible);
         void update();
         void draw(sf::RenderWindow& window);
         float getX();

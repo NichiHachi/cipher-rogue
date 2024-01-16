@@ -8,24 +8,17 @@
 #include "EnemySpawner.h"
 #include "EnemySeeker.h"
 #include "Wall.h"
+#include "EnemyStats.h"
 
-EnemySpawner::EnemySpawner(float x, float y, float sizeFactor, float bulletSizeFactor) {
-    this->x = x;
-    this->y = y;
-    this->angle = 0;
-    this->speed = 0;
-    this->hp = 10;
-    this->shootTimer = 0;
-    this->size = 20*sizeFactor;
-    this->bulletSizeFactor = bulletSizeFactor;
-    this->movable = false;
-}
+EnemyStats EnemySpawner::stats;
+
+EnemySpawner::EnemySpawner(float x, float y) : Enemy(x, y, 5*stats.speedFactor, 0, 0, 10, 20*stats.sizeFactor, false){}
 
 void EnemySpawner::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     shootTimer += timePassed;
     if (shootTimer >= 5) {
         for (int i = 0; i < 3; i++) {
-            enemies.push_back(new EnemySeeker(x, y, M_PI*2*i/3,1));
+            enemies.push_back(new EnemySeeker(x, y, M_PI*2*i/3));
         }
         shootTimer = 0;
     }
@@ -52,24 +45,4 @@ void EnemySpawner::draw(sf::RenderWindow &window) {
     quad[3].position = sf::Vector2f(x + width, y - height);
 
     window.draw(quad);
-}
-
-bool EnemySpawner::receiveDamageIfShot(std::vector<Bullet*>& bullets) {
-    float diffX, diffY, hitBoxBoth;
-    for(auto bullet = bullets.begin(); bullet != bullets.end();){
-        diffX = x - (*bullet)->getX();
-        diffY = y - (*bullet)->getY();
-        hitBoxBoth = (*bullet)->getHitBoxRadius() + size;
-        // If the border of the bullet touches the enemy
-        // sqrt(x² + y²) < n <=> x² + y² < n² :
-        if (diffX * diffX + diffY * diffY < hitBoxBoth * hitBoxBoth) {
-            hp -= 1;
-            delete *bullet;
-            bullet = bullets.erase(bullet);
-        }
-        else {
-            bullet++;
-        }
-    }
-    return hp <= 0;
 }
