@@ -2,24 +2,22 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 
+#include "Position.h"
 #include "Bullet.h"
 #include "Enemy.h"
 
-Enemy::Enemy(float x, float y, float speed, float angle, float shootTimer, int hp, int size, bool movable) : x(x), y(y), speed(speed), angle(angle), shootTimer(shootTimer), hp(hp), size(size), movable(movable){}
+Enemy::Enemy(Position position, float speed, float angle, float shootTimer, float speedBullet, int hp, int size, bool movable) : position(position), speed(speed), angle(angle), shootTimer(shootTimer), speedBullet(speedBullet), hp(hp), size(size), movable(movable){}
 
-/// @brief If a bullet touches the enemy, the enemy receives damage.
+/// @brief If a bullet touches the enemy, the enemy receives damage and the bullet destroyed.
 /// @param bullets Array of all the ally bullets.
-/// @return If the enemy dies, return true.
-bool Enemy::receiveDamageIfShot(std::vector<Bullet*>& bullets) {
-    int diffX, diffY;
+void Enemy::receiveDamageIfShot(std::vector<Bullet*>& bullets) {
+    Position diffPos;
     float hitBoxBoth;
     for(auto bullet = bullets.begin(); bullet != bullets.end();){
-        diffX = x - (*bullet)->getX();
-        diffY = y - (*bullet)->getY();
-        hitBoxBoth = (*bullet)->getHitBoxRadius() + size;
-        // If the border of the bullet touches the enemy
+        diffPos = position - (*bullet)->getPosition();
+        hitBoxBoth = (*bullet)->getSize() + size;
         // sqrt(x² + y²) < n <=> x² + y² < n² :
-        if (diffX * diffX + diffY * diffY < hitBoxBoth * hitBoxBoth) {
+        if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth) {
             receiveDamage(1);
             delete *bullet;
             bullet = bullets.erase(bullet);
@@ -28,67 +26,97 @@ bool Enemy::receiveDamageIfShot(std::vector<Bullet*>& bullets) {
             bullet++;
         }
     }
-    return hp <= 0;
 }
 
-/// @brief Adjust the position of the enemy if it's in a wall, in another enemy or out of bounds.
-/// @param enemies Array of all the enemies.
+/// @brief If the enemy is inside a wall, it is pushed out of it.
 /// @param walls Array of all the walls.
-void Enemy::adjustPositionBasedOnCollisions(std::vector<Enemy*>& enemies, std::vector<Wall> walls){
-    //If in enemy, collide with it
-    float enemyX, enemyY, angleEnemyEnemy, diffX, diffY, distance, moveDistance;
+/// @return True if the position of the enemy has been adjusted, false otherwise.
+bool Enemy::adjustPositionBasedOnWalls(std::vector<Wall> walls){
+    bool positionAdjusted = false;
+    Position wallPos;
+    float angleEnemyWall;
+    for (Wall wall : walls) {
+        wallPos = wall.getPosition();
+        angleEnemyWall = atan2(wallPos.y - position.y, wallPos.x - position.x);
+        //If the enemy nearest point from the middle of the wall is in the wall
+        if (wall.isInWall(position + Position(cos(angleEnemyWall),sin(angleEnemyWall))*size)){
+            if(angleEnemyWall < M_PI/4 && angleEnemyWall > -M_PI/4){
+                position.x -= size - ((wallPos.x - wall.getSize()) - position.x);
+            }
+            else if(angleEnemyWall > M_PI*3/4 || angleEnemyWall < -M_PI*3/4){
+                position.x += size - (position.x - (wallPos.x + wall.getSize()));
+            }
+            else if(angleEnemyWall > M_PI/4 && angleEnemyWall < M_PI*3/4){
+                position.y -= size - ((wallPos.y - wall.getSize()) - position.y);
+            }
+            //angleEnemyWall< -M_PI/4 && angleEnemyWall> -M_PI*3/4
+            else{
+                position.y += size - (position.y - (wallPos.y + wall.getSize()));
+            }
+            positionAdjusted = true;
+        }
+    }
+    return positionAdjusted;
+}
+
+
+/// @brief If the enemy is inside an other enemy, push both of them.
+/// @param enemies Array of all the enemies.
+/// @return True if the position of the enemy has been adjusted, false otherwise.
+bool Enemy::adjustPositionBasedOnEnemies(std::vector<Enemy *> &enemies){
+    bool positionAdjusted = false;
+    float angleEnemyEnemy, distance, moveDistance;
+    Position enemyPos, diffPos;
     int enemySize;
     for(Enemy* enemy : enemies){
         if(enemy == this) continue; //Don't check collision with itself
-        enemyX = enemy->getX();
-        enemyY = enemy->getY();
+        enemyPos = enemy->getPosition();
         enemySize = enemy->getSize();
-        diffX = x - enemyX;
-        diffY = y - enemyY;
+        diffPos = position - enemyPos;
         //If the object is inside of the enemy
-        if (diffX * diffX + diffY * diffY < (enemySize+size) * (enemySize+size)){
-            angleEnemyEnemy = atan2(enemyY - y, x - enemyX);
-            moveDistance = enemySize + size - sqrt(diffX * diffX + diffY * diffY);
+        if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < (enemySize+size) * (enemySize+size)){
+            angleEnemyEnemy = atan2(enemyPos.y - position.y, position.x - enemyPos.x);
+            moveDistance = enemySize + size - sqrt(diffPos.x * diffPos.x + diffPos.y * diffPos.y);
             // Move the enemy gradually towards the outside
             if(enemy->isMovable()){
-                enemy->setCoordonates(enemyX + cos(M_PI + angleEnemyEnemy) * moveDistance / 4,
-                                      enemyY - sin(M_PI + angleEnemyEnemy) * moveDistance / 4);
-                x += cos(angleEnemyEnemy) * moveDistance / 4;
-                y -= sin(angleEnemyEnemy) * moveDistance / 4;
+                enemy->setPosition(enemyPos + Position(cos(M_PI + angleEnemyEnemy) * moveDistance / 4,
+                                                      - sin(M_PI + angleEnemyEnemy) * moveDistance / 4));
+                                                      
+                position += Position(cos(angleEnemyEnemy) * moveDistance / 4,
+                                    - sin(angleEnemyEnemy) * moveDistance / 4);
             }
             else{
-                x += cos(angleEnemyEnemy) * moveDistance / 2;
-                y -= sin(angleEnemyEnemy) * moveDistance / 2;
+                position += Position(cos(angleEnemyEnemy) * moveDistance / 2,
+                                    - sin(angleEnemyEnemy) * moveDistance / 2);
             }
+            positionAdjusted = true;
         }
     }
+    return positionAdjusted;
+}
 
-    //If in wall, move it in front of wall
-    float wallX, wallY, angleEnemyWall;
-    for (Wall wall : walls) {
-        wallX = wall.getX();
-        wallY = wall.getY();
-        angleEnemyWall = atan2(-y + wallY, -x + wallX);
-        //If the enemy nearest point from the middle of the wall is in the wall
-        if (wall.isInWall(x+cos(angleEnemyWall)*size, y+sin(angleEnemyWall)*size)){
-            if(angleEnemyWall<M_PI/4 && angleEnemyWall>-M_PI/4){
-                x -= size - ((wallX - wall.getSize()) - x);
-            }
-            else if(angleEnemyWall>M_PI*3/4 || angleEnemyWall<-M_PI*3/4){
-                x += size - (x - (wallX + wall.getSize()));
-            }
-            else if(angleEnemyWall>M_PI/4 && angleEnemyWall<M_PI*3/4){
-                y -= size - ((wallY - wall.getSize()) - y);
-            }
-            //angleEnemyWall<-M_PI/4 && angleEnemyWall>-M_PI*3/4
-            else{
-                y += size - (y - (wallY + wall.getSize()));
-            }
-        }
+/// @brief If the enemy is out of bounds, push it back in bounds.
+/// @return True if the position of the enemy has been adjusted, false otherwise.
+bool Enemy::adjustPositionBasedOnOOB(){
+    bool positionAdjusted = false;
+
+    if (position.x < size) {
+        position.x = size;
+        positionAdjusted = true;
+    }
+    else if (position.x > 1000 - size) {
+        position.x = 1000 - size;
+        positionAdjusted = true;
     }
 
-    if (x < size) x = size;
-    else if (x > 1000-size) x = 1000-size;
-    if (y < size) y = size;
-    else if (y > 1000-size) y = 1000-size;
+    if (position.y < size) {
+        position.y = size;
+        positionAdjusted = true;
+    }
+    else if (position.y > 1000 - size) {
+        position.y = 1000 - size;
+        positionAdjusted = true;
+    }
+
+    return positionAdjusted;
 }

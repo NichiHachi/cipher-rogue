@@ -2,6 +2,7 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 
+#include "Position.h"
 #include "Bullet.h"
 #include "EnemyCharger.h"
 #include "Wall.h"
@@ -9,101 +10,72 @@
 
 EnemyStats EnemyCharger::stats;
 
-EnemyCharger::EnemyCharger(float x, float y) : Enemy(x, y, 13*stats.speedFactor, M_PI*3/2, 0, 20, 30*stats.sizeFactor, false) {}
+EnemyCharger::EnemyCharger(Position position) : Enemy(position, 13*stats.speedFactor, M_PI*3/2, 0, 5, 20, 30*stats.sizeFactor, false) {}
 
 void EnemyCharger::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     shootTimer += timePassed;
-    if (shootTimer > 10) {
-        move(walls);
-    }
-    else {
-        angle = targetAngle;
-    }
+    if (shootTimer > 10) move(walls);
+    else  angle = targetAngle;
 }
 
 void EnemyCharger::move(std::vector<Wall> walls) {
-    x += cos(angle) * speed;
-    y -= sin(angle) * speed;
+    position += Position(cos(angle), -sin(angle))*speed;
 
-    //If in wall, move it in front of wall
-    float wallX, wallY, angleEnemyWall;
-    for (Wall wall : walls) {
-        wallX = wall.getX();
-        wallY = wall.getY();
-        angleEnemyWall = atan2(-y + wallY, -x + wallX);
-        //If the enemy nearest point from the wall is in the wall
-        if (wall.isInWall(x+cos(angleEnemyWall)*size, y+sin(angleEnemyWall)*size)){
-            if(angleEnemyWall<M_PI/4 && angleEnemyWall>-M_PI/4){
-                x -= size - ((wallX - wall.getSize()) - x);
-            }
-            else if(angleEnemyWall>M_PI*3/4 || angleEnemyWall<-M_PI*3/4){
-                x += size - (x - (wallX + wall.getSize()));
-            }
-            else if(angleEnemyWall>M_PI/4 && angleEnemyWall<M_PI*3/4){
-                y -= size - ((wallY - wall.getSize()) - y);
-            }
-            //angleEnemyWall<-M_PI/4 && angleEnemyWall>-M_PI*3/4
-            else{
-                y += size - (y - (wallY + wall.getSize()));
-            }
-            shootTimer = 0;
-        }
-    }
-
-    //If out of bounds, go back in bounds
-    if (x < size){
-        x = size;
-        shootTimer = 0;
-    }
-    else if (x > 1000-size){
-        x = 1000-size;
-        shootTimer = 0;
-    }
-    if (y < size){
-        y = size;
-        shootTimer = 0;
-    }
-    else if (y > 1000-size){
-        y = 1000-size;
-        shootTimer = 0;
-    }
+    //If the enemy touch a wall or the screen border, it stops
+    if(adjustPositionBasedOnWalls(walls)) shootTimer = 0;
+    if(adjustPositionBasedOnOOB()) shootTimer = 0;
 }
 
 void EnemyCharger::drawWarningZone(sf::RenderWindow &window) {
-        float length = 1500 * (shootTimer - 7) / 3;
+        float length = 500 * (shootTimer - 7);
         sf::VertexArray warningZone(sf::Quads, 4);
 
         for(unsigned int i = 0; i < 4; i++) warningZone[i].color = sf::Color::Red;
 
-        warningZone[0].position = sf::Vector2f(x + size * cos(angle + 2 * M_PI / 5),
-                                    y - size * sin(angle + 2 * M_PI / 5));
-        warningZone[1].position = sf::Vector2f(length * std::cos(angle) + x + size * cos(angle +  2 * M_PI / 5),
-                                    -length * sin(angle) + y - size * sin(angle + 2 * M_PI / 5));
-        warningZone[2].position = sf::Vector2f(length * std::cos(angle) + x + size * cos(angle +  8 * M_PI / 5),
-                                    -length * std::sin(angle) + y - size * sin(angle + 8 * M_PI / 5));
-        warningZone[3].position = sf::Vector2f(x + size * cos(angle +  8 * M_PI / 5),
-                                    y - size * sin(angle + 8 * M_PI / 5));
+        sf::Vector2f lengthWarningZone = sf::Vector2f(cos(angle), -sin(angle))*length;
+
+        warningZone[0].position = sf::Vector2f(position.x + cos(angle + 2 * M_PI / 5)*size,
+                                               position.y - sin(angle + 2 * M_PI / 5)*size);
+
+        //We extand the point that start from the charger to the length of the warning zone
+        warningZone[1].position = warningZone[0].position + lengthWarningZone;
+
+        warningZone[3].position = sf::Vector2f(position.x + cos(angle + 8 * M_PI / 5)*size,
+                                               position.y - sin(angle + 8 * M_PI / 5)*size);
+        
+        //Same here
+        warningZone[2].position = warningZone[3].position + lengthWarningZone;
 
         window.draw(warningZone);
 }
 
 void EnemyCharger::draw(sf::RenderWindow &window) {
-    //Draw the warning zone
-    if(shootTimer > 7){
-        drawWarningZone(window);
-    }
-
     sf::Color enemiesColor(100, 100, 100);
     sf::VertexArray side(sf::Triangles, 3);
     for(unsigned int i = 0; i < 3; i++) side[i].color = enemiesColor;
 
-    side[0].position = sf::Vector2f(x, y);
-    //rayon = size
-    for (unsigned int i = 0; i < 5; i++) {
-        side[1].position = sf::Vector2f(x + size * cos(angle + i * 2 * M_PI / 5),
-                                        y + -size * sin(angle + i * 2 * M_PI / 5));
-        side[2].position =sf::Vector2f(x + size * cos(angle + (i + 1) * 2 * M_PI / 5),
-                                      y - size * sin(angle + (i + 1) * 2 * M_PI / 5));
+    sf::Vector2f chargerCenter = sf::Vector2f(position.x,position.y);
+
+    side[0].position = chargerCenter;
+    side[2].position = chargerCenter + sf::Vector2f(cos(angle), -sin(angle))*(float)size;
+
+    //side[1].position = side[2].position because we take the last point of the previous triangle as the first point of the next triangle
+    //We could do it like this :
+    //side[1].position = chargerCenter + sf::Vector2f(cos(angle + (i-1) * 2 * M_PI / 5), -sin(angle + (i-1) + 2 * M_PI / 5))*(float)size;
+    //But it's less efficient
+
+    for (unsigned int i = 1; i < 6; i++) {
+        side[1].position = side[2].position;
+
+        side[2].position = chargerCenter + sf::Vector2f(cos(angle + i * 2 * M_PI / 5), 
+                                                        -sin(angle + i * 2 * M_PI / 5))*(float)size;
+
         window.draw(side);
+    }
+}
+
+void EnemyCharger::drawEffects(sf::RenderWindow &window) {
+    if(shootTimer > 7){
+        drawWarningZone(window);
     }
 }

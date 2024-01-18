@@ -1,16 +1,18 @@
+#pragma once
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
-#pragma once
+#include "Position.h"
+
 class Wall{
     public:
-        Wall(float x, float y);
+        Wall(Position position);
         void draw(sf::RenderWindow& window);
-        bool isInWall(float objectX, float objectY);
-        float getX();
-        float getY();
-        float getSize();
+        bool isInWall(Position objectPos) const;
+        Position getPosition() const {return position;};
+        int getSize() const {return size;};
 
     private:
-        float x,y,size;
+        int size;
+        Position position;
 };

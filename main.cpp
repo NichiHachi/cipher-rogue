@@ -20,94 +20,87 @@ const int displayX = 1000;
 const int displayY = 1000;
 const sf::Color backgroundColor(0,0,0);
 
-double calcul_angle(float startX, float startY, float endX, float endY){
-    return atan2(startY-endY,endX-startX);
+double calcul_angle(Position start, Position end){
+    return atan2(start.y - end.y, end.x - start.x);
 }
 
-double angle_shot_predict(Player player, float objectX, float objectY, float speedBullet, float playerSpeed){
-    float diffX = player.getX()-objectX;
-    float diffY = player.getY()-objectY;
-    float distance = sqrt(diffX*diffX+diffY*diffY);
-    float timeBulletTravel = distance/speedBullet;
+//Change because it sucks :c
 
-    // Prédire la nouvelle position du joueur
-    float playerNewX = player.getX();
-    float playerNewY = player.getY();
+/// @brief Predict where the player will be when the bullet will touch him.
+/// @param player The player.
+/// @param enemy The enemy that shoot.
+/// @return The predicted angle
+float angle_shot_predict(Player player, Enemy* enemy){
+    Position diffPos = player.getPosition() - enemy->getPosition();
+    float timeBulletTravel = sqrt(diffPos.x*diffPos.x+diffPos.y*diffPos.y)/enemy->getSpeedBullet();
+
+    Position playerNewPos = player.getPosition();
     float angleNew = 0;
 
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && sf::Keyboard::isKeyPressed(sf::Keyboard::D)){
-        playerNewX += playerSpeed * timeBulletTravel * sqrt(2) / 2;
-        playerNewY -= playerSpeed * timeBulletTravel * sqrt(2) / 2;
+        playerNewPos += Position(player.getSpeed() * timeBulletTravel * sqrt(2) / 2,
+                                    -player.getSpeed() * timeBulletTravel * sqrt(2) / 2);
         angleNew = M_PI/4;
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)){
-        playerNewX -= playerSpeed * timeBulletTravel * sqrt(2) / 2;
-        playerNewY -= playerSpeed * timeBulletTravel * sqrt(2) / 2;
-        angleNew = M_PI*3/4;
+        playerNewPos -= Position(player.getSpeed() * timeBulletTravel * sqrt(2) / 2,
+                                    player.getSpeed() * timeBulletTravel * sqrt(2) / 2);
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)){
-        playerNewX -= playerSpeed * timeBulletTravel * sqrt(2) / 2;
-        playerNewY += playerSpeed * timeBulletTravel * sqrt(2) / 2;
-        angleNew = -M_PI*3/4;
+        playerNewPos += Position(-player.getSpeed() * timeBulletTravel * sqrt(2) / 2,
+                                    player.getSpeed() * timeBulletTravel * sqrt(2) / 2);
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) && sf::Keyboard::isKeyPressed(sf::Keyboard::D)){
-        playerNewX += playerSpeed * timeBulletTravel * sqrt(2) / 2;
-        playerNewY += playerSpeed * timeBulletTravel * sqrt(2) / 2;
-        angleNew = -M_PI/4;
+        playerNewPos += Position(player.getSpeed() * timeBulletTravel * sqrt(2) / 2,
+                                    player.getSpeed() * timeBulletTravel * sqrt(2) / 2);
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z)){
-        playerNewY -= playerSpeed * timeBulletTravel;
-        angleNew = M_PI/2;
+        playerNewPos.y -= player.getSpeed() * timeBulletTravel;
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)){
-        playerNewY += playerSpeed * timeBulletTravel;
-        angleNew = -M_PI/2;
+        playerNewPos.y += player.getSpeed() * timeBulletTravel;
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)){
-        playerNewX += playerSpeed * timeBulletTravel;
-        angleNew = 0;
+        playerNewPos.x += player.getSpeed() * timeBulletTravel;
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q)){
-        playerNewX -= playerSpeed * timeBulletTravel;
-        angleNew = M_PI;
+        playerNewPos.x -= player.getSpeed() * timeBulletTravel;
     }
 
-    // Calculer l'angle entre l'objet et la nouvelle position du joueur
-    float diffXNew = playerNewX - objectX;
-    float diffYNew = playerNewY - objectY;
-    float angleShot = atan2(diffYNew, diffXNew);
-
-    return angleShot;
+    //Return the angle between the enemy and the new player position
+    return calcul_angle(enemy->getPosition(), playerNewPos);
 }
 
-void destroy_in_wall_or_out_of_bounds(std::vector<Bullet*>& bullets,std::vector<Wall> walls){
-    int bulletX, bulletY;
-    float bulletHitBoxRadius, angleBulletWall;
+void destroy_in_wall_or_out_of_bounds(std::vector<Bullet*>& bullets, std::vector<Wall> walls) {
+    Position bulletPos;
+    float bulletSize, angleBulletWall;
     bool destroyed;
-    for(auto bullet = bullets.begin(); bullet != bullets.end();){
-        bulletX = (*bullet)->getX();
-        bulletY = (*bullet)->getY();
-        bulletHitBoxRadius = (*bullet)->getHitBoxRadius();
+
+    for (auto bullet = bullets.begin(); bullet != bullets.end();) {
         destroyed = false;
-        //If the bullet get out of bounds
-        if(bulletX < -bulletHitBoxRadius*2 || bulletY<-bulletHitBoxRadius*2 || 
-        bulletX>displayX+bulletHitBoxRadius*2 || bulletY>displayY+bulletHitBoxRadius*2){
+        bulletPos = (*bullet)->getPosition();
+        bulletSize = (*bullet)->getSize();
+
+        // If the bullet is out of bounds
+        if (bulletPos.x < -bulletSize * 2 || bulletPos.y < -bulletSize * 2 ||
+            bulletPos.x > displayX + bulletSize * 2 || bulletPos.y > displayY + bulletSize * 2) {
             delete *bullet;
             bullet = bullets.erase(bullet);
-            destroyed = true;
-        }
-        else{
-            //If the bullet touch a wall
-            for(unsigned int idWall = 0; idWall < walls.size(); idWall++){
-                angleBulletWall = calcul_angle(walls[idWall].getX(),walls[idWall].getY(),bulletX,bulletY);
-                if(walls[idWall].isInWall(bulletX+cos(angleBulletWall)*bulletHitBoxRadius,bulletY+sin(angleBulletWall)*bulletHitBoxRadius)){
-                    delete *bullet;
-                    bullet = bullets.erase(bullet);
-                    destroyed = true;
-                    break;
-                }
+            continue;
+        } 
+
+        // If the bullet touches a wall
+        for (const Wall wall : walls) {
+            angleBulletWall = calcul_angle(wall.getPosition(), bulletPos);
+            Position bulletWallPos = bulletPos + Position(cos(angleBulletWall), sin(angleBulletWall)) * bulletSize;
+            if (wall.isInWall(bulletWallPos)) {
+                delete *bullet;
+                bullet = bullets.erase(bullet);
+                destroyed = true;
+                break;
             }
         }
+
         if(!destroyed) bullet++;
     }
 }
@@ -134,59 +127,70 @@ void updateLoop(sf::RenderWindow& window, sf::Clock& clock, Player& player, std:
 
         destroy_in_wall_or_out_of_bounds(bulletsAlly,walls);
 
-        bool destroyed;
+        Position diffPos;
+        float hitBoxBoth;
+        bool allyBulletDestroyed;
         for(auto bulletAlly = bulletsAlly.begin(); bulletAlly != bulletsAlly.end();){
             //If the ally bullet touch a enemy bullet that is destructible -> destroy both bullets
-            int diffX, diffY;
-            float hitBoxBoth;
-            destroyed = false;
+            allyBulletDestroyed = false;
             for(auto bulletEnemy = bulletsEnemy.begin(); bulletEnemy != bulletsEnemy.end();){
-                if ((*bulletEnemy)->isDestructible()) {
-                    diffX = (*bulletAlly)->getX() - (*bulletEnemy)->getX();
-                    diffY = (*bulletAlly)->getY() - (*bulletEnemy)->getY();
-                    hitBoxBoth = (*bulletAlly)->getHitBoxRadius()+(*bulletEnemy)->getHitBoxRadius();
-                    if (diffX * diffX + diffY * diffY < hitBoxBoth*hitBoxBoth) {
-                        delete *bulletAlly;
-                        bulletAlly = bulletsAlly.erase(bulletAlly);
-                        delete *bulletEnemy;
-                        bulletEnemy = bulletsEnemy.erase(bulletEnemy);
-                        destroyed = true;
-                        break;
-                    }
-                    else bulletEnemy++;
+                if (!(*bulletEnemy)->isDestructible()) {
+                    bulletEnemy++;
+                    continue;
                 }
-                else bulletEnemy++;
-            }
-            if(!destroyed) bulletAlly++;
-        }
 
-        //-----ENEMIES AND ALLY BULLETS-----
-        for(auto it = enemies.begin(); it != enemies.end();) {
-            if((*it)->receiveDamageIfShot(bulletsAlly)) {
-                delete *it;
-                it = enemies.erase(it);
-            } 
-            else {
-                it++;
+                diffPos = (*bulletAlly)->getPosition() - (*bulletEnemy)->getPosition();
+                hitBoxBoth = (*bulletAlly)->getSize() + (*bulletEnemy)->getSize();
+                if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth*hitBoxBoth) {
+                    delete *bulletAlly;
+                    bulletAlly = bulletsAlly.erase(bulletAlly);
+                    delete *bulletEnemy;
+                    bulletEnemy = bulletsEnemy.erase(bulletEnemy);
+                    allyBulletDestroyed = true;
+                    break;
+                }
+                
+                bulletEnemy++;
             }
+
+            if(!allyBulletDestroyed) bulletAlly++;
         }
 
         //-----PLAYER AND ENEMY BULLETS-----
         player.receiveDamageIfShot(bulletsEnemy);
 
         //-----ENEMIES UPDATE-----
-        float angleEnemyToPlayer;
+        float targetAngle;
         for(Enemy* enemy : enemies){
-            angleEnemyToPlayer = calcul_angle(enemy->getX(),enemy->getY(),player.getX(),player.getY());
-            enemy->update(bulletsEnemy, currentTime, angleEnemyToPlayer, walls, enemies);
+            if(enemy->getType() == "Sniper") targetAngle = angle_shot_predict(player,enemy);
+            else targetAngle = calcul_angle(enemy->getPosition(),player.getPosition());
+            enemy->update(bulletsEnemy, currentTime, targetAngle, walls, enemies);
+        }
+
+        //-----ENEMIES AND ALLY BULLETS-----
+        for(Enemy* enemy : enemies) {
+            enemy->receiveDamageIfShot(bulletsAlly);
         }
 
         //-----PLAYER AND ENEMIES-----
         player.receiveDamageIfHit(enemies);
+
+        //-----ENEMIES DEAD-----
+        for(auto enemy = enemies.begin(); enemy != enemies.end();) {
+            if((*enemy)->isDead()){
+                delete *enemy;
+                enemy = enemies.erase(enemy);
+            } 
+            else enemy++;
+        }
 }
 
 void drawElements(sf::RenderWindow& window, Player player, std::vector<Bullet*>bulletsEnemy, 
     std::vector<Bullet*>bulletsAlly, std::vector<Wall>walls, std::vector<Enemy*>enemies){
+
+        for(Enemy* enemy : enemies){
+            enemy->drawEffects(window);
+        }
 
         for(Bullet* bullet : bulletsAlly){
             bullet->draw(window);
@@ -198,7 +202,7 @@ void drawElements(sf::RenderWindow& window, Player player, std::vector<Bullet*>b
 
         //ENEMIES
         for(Enemy* enemy : enemies){
-            (*enemy).draw(window);
+            enemy->draw(window);
         }
 
         player.draw(window);
@@ -224,25 +228,25 @@ int main(void){
     std::vector<Bullet*> bulletsAlly;
 
     //Init EnemyCharger
-    enemies.push_back(new EnemyCharger(400,400));
+    enemies.push_back(new EnemyCharger(Position(400,400)));
     
     //Init EnemyShooter
     //enemies.push_back(new EnemyShooter(500,500,1,1));
-    enemies.push_back(new EnemyShooter(400,500));
-    enemies.push_back(new EnemyShooter(500,600));
+    enemies.push_back(new EnemyShooter(Position(400,500)));
+    enemies.push_back(new EnemyShooter(Position(500,600)));
 
     //Init EnemyTurret
-    //enemies.push_back(new EnemyTurret(450,785,1,1));
+    enemies.push_back(new EnemyTurret(Position(450,785)));
 
     //Init EnemySpawner
-    enemies.push_back(new EnemySpawner(400,100));
+    enemies.push_back(new EnemySpawner(Position(400,100)));
     //enemies.push_back(new EnemySpawner(400,200,1,1));
     //enemies.push_back(new EnemySpawner(400,300,1,1));
     //enemies.push_back(new EnemySpawner(400,400,1,1));
     //enemies.push_back(new EnemySpawner(400,500,1,1));
 
     //Init EnemySniper
-    enemies.push_back(new EnemySniper(600,400));
+    enemies.push_back(new EnemySniper(Position(600,400)));
 
     //Init Seeker
     //enemies.push_back(new EnemySeeker(400,400,0,1));
@@ -250,9 +254,9 @@ int main(void){
 
     //Init Wall Array
     std::vector<Wall> walls;
-    walls.emplace_back(250,400);
-    walls.emplace_back(200,400);
-    walls.emplace_back(200,450);
+    walls.emplace_back(Position(250,400));
+    walls.emplace_back(Position(200,400));
+    walls.emplace_back(Position(200,450));
 
     //Time track and Framerate
     sf::Clock clock;

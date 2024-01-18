@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 
+#include "Position.h"
 #include "Enemy.h"
 #include "Bullet.h"
 #include "EnemySeeker.h"
@@ -11,7 +12,7 @@
 
 EnemyStats EnemySeeker::stats;
 
-EnemySeeker::EnemySeeker(float x, float y, float angleSpawn) : Enemy(x, y, 3.75*stats.speedFactor, angleSpawn, 0, 4, 15*stats.sizeFactor, true) {}
+EnemySeeker::EnemySeeker(Position position, float angleSpawn) : Enemy(position, 3.75*stats.speedFactor, angleSpawn, 0, 5, 4, 15*stats.sizeFactor, true) {}
 
 void EnemySeeker::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     move(targetAngle, walls, enemies);
@@ -19,38 +20,42 @@ void EnemySeeker::update(std::vector<Bullet*>& bullets, float timePassed, float 
 
 void EnemySeeker::move(float targetAngle, std::vector<Wall> walls, std::vector<Enemy*> enemies) {
     float angleDiff = targetAngle - angle;
-    if (angleDiff > M_PI) {
+
+    // Make sure the angle is between -PI and PI
+    if (angleDiff > M_PI) 
         angleDiff -= 2*M_PI;
-    } 
-    else if (angleDiff < -M_PI) {
+    else if (angleDiff < -M_PI) 
         angleDiff += 2*M_PI;
-    }
 
     angle += angleDiff*0.05;
-    if (angle > M_PI) {
+
+    if (angle > M_PI) 
         angle -= 2*M_PI;
-    } 
-    else if (angle < -M_PI) {
+    else if (angle < -M_PI) 
         angle += 2*M_PI;
-    }
 
-    x += cos(angle) * speed;
-    y -= sin(angle) * speed;
+    position += Position(cos(angle),-sin(angle))*speed;
 
-    adjustPositionBasedOnCollisions(enemies, walls);
+    adjustPositionBasedOnEnemies(enemies);
+    adjustPositionBasedOnWalls(walls);
+    adjustPositionBasedOnOOB();
 }
 
 void EnemySeeker::draw(sf::RenderWindow &window) {
     sf::Color enemiesColor(100, 100, 100);
     sf::VertexArray enemy(sf::Triangles, 3);
-
-    enemy[0].position = sf::Vector2f(x + cos(angle) * size, y - sin(angle) * size);
-    enemy[1].position = sf::Vector2f(x + cos(angle + M_PI * 2 / 3) * size,
-                                    y - sin(angle + M_PI * 2 / 3) * size);
-    enemy[2].position = sf::Vector2f(x + cos(angle - M_PI * 2 / 3) * size,
-                                    y - sin(angle - M_PI * 2 / 3) * size);
-
     for(unsigned int i = 0; i < 3; i++) enemy[i].color = enemiesColor;
 
+    enemy[0].position = sf::Vector2f(position.x + cos(angle) * size, 
+                                     position.y - sin(angle) * size);
+    enemy[1].position = sf::Vector2f(position.x + cos(angle + M_PI * 2 / 3) * size,
+                                     position.y - sin(angle + M_PI * 2 / 3) * size);
+    enemy[2].position = sf::Vector2f(position.x + cos(angle - M_PI * 2 / 3) * size,
+                                     position.y - sin(angle - M_PI * 2 / 3) * size);
+
     window.draw(enemy);
+}
+
+void EnemySeeker::drawEffects(sf::RenderWindow &window){
+    //Nothing
 }

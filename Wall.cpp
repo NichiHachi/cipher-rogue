@@ -2,32 +2,24 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 
+#include "Position.h"
 #include "Wall.h"
 
-Wall::Wall(float x, float y) {
-    this->x = x;
-    this->y = y;
-    this->size = 25;
-}
+Wall::Wall(Position position) : position(position), size(25) {}
 
 void Wall::draw(sf::RenderWindow &window) {
     sf::VertexArray quad(sf::Quads, 4);
-    quad[0].color = sf::Color::White;
-    quad[1].color = sf::Color::White;
-    quad[2].color = sf::Color::White;
-    quad[3].color = sf::Color::White;
+    for(unsigned int i = 0; i < 4; i++) quad[i].color = sf::Color::White;
 
-    quad[0].position = sf::Vector2f(x + size, y + size);
-    quad[1].position = sf::Vector2f(x - size, y + size);
-    quad[2].position = sf::Vector2f(x - size, y - size);
-    quad[3].position = sf::Vector2f(x + size, y - size);
+    quad[0].position = sf::Vector2f(position.x + size, position.y + size);
+    quad[1].position = sf::Vector2f(position.x - size, position.y + size);
+    quad[2].position = sf::Vector2f(position.x - size, position.y - size);
+    quad[3].position = sf::Vector2f(position.x + size, position.y - size);
+
     window.draw(quad);
 }
 
-bool Wall::isInWall(float objectX, float objectY) { return (objectX < x + size && objectX > x - size && objectY < y + size && objectY > y - size); }
-
-float Wall::getX() { return x; }
-
-float Wall::getY() { return y; }
-
-float Wall::getSize() { return size; }
+bool Wall::isInWall(Position objectPos) const { 
+    return (objectPos.x - size < position.x && position.x < objectPos.x + size && 
+            objectPos.y - size < position.y && position.y < objectPos.y + size); 
+}

@@ -2,6 +2,7 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 
+#include "Position.h"
 #include "Bullet.h"
 #include "Wall.h"
 #include "Enemy.h"
@@ -18,11 +19,12 @@ class Player{
         void receiveDamage(unsigned int damage);
         void draw(sf::RenderWindow& window);
         void drawHealth(sf::RenderWindow& window);
-        float getX() {return x;};
-        float getY() {return y;};
 
+        Position getPosition() const {return position;};
+        float getSpeed() const {return speed;};
     private:
-        float x,y,speed,shootTimer,hitTimer;
+        Position position;
+        float speed,shootTimer,hitTimer;
         int hp,size;
         double angle;
 };

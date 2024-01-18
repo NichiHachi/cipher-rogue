@@ -2,6 +2,7 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 
+#include "Position.h"
 #include "EnemySniper.h"
 #include "Enemy.h"
 #include "Bullet.h"
@@ -10,7 +11,7 @@
 
 EnemyStats EnemySniper::stats;
 
-EnemySniper::EnemySniper(float x, float y) : Enemy(x, y, 0.4*stats.speedFactor, M_PI*3/2, 0, 5, 19*stats.sizeFactor, true) {}
+EnemySniper::EnemySniper(Position position) : Enemy(position, 0.4*stats.speedFactor, M_PI*3/2, 0, 12, 5, 19*stats.sizeFactor, true) {}
 
 void EnemySniper::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     move(targetAngle, walls, enemies);
@@ -24,7 +25,7 @@ void EnemySniper::update(std::vector<Bullet*>& bullets, float timePassed, float 
 }
 
 void EnemySniper::shoot(std::vector<Bullet*> &bullets){
-    bullets.push_back(new Bullet(x+cos(angle)*15, y+sin(angle)*15, angle, 12, 14, false, false));
+    bullets.push_back(new Bullet(position + Position(cos(angle),sin(angle))*size, angle, speedBullet, 14, false, false));
 }
 
 void EnemySniper::move(float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
@@ -45,38 +46,42 @@ void EnemySniper::move(float targetAngle, std::vector<Wall> walls, std::vector<E
         angle += 2 * M_PI;
     }
 
-    x -= cos(angle) * speed;
-    y += sin(angle) * speed;
+    position += Position(-cos(angle),sin(angle))*speed;
     
-    
-    adjustPositionBasedOnCollisions(enemies, walls);
+    adjustPositionBasedOnEnemies(enemies);
+    adjustPositionBasedOnWalls(walls);
+    adjustPositionBasedOnOOB();
 }
 
 void EnemySniper::draw(sf::RenderWindow &window) {
     int height = size*50/19;
     int width = size;
     sf::Color enemiesColor(100, 100, 100);
-    sf::VertexArray enemyUp(sf::Triangles, 3);
-    sf::VertexArray enemyDown(sf::Triangles, 3);
 
-    enemyUp[0].position = sf::Vector2f(height * cos(angle) + x, 
-                                        -height * sin(angle) + y);
-    enemyUp[1].position = sf::Vector2f(width * cos(angle + M_PI / 2) + x,
-                                        -width * sin(angle + M_PI / 2) + y);
-    enemyUp[2].position = sf::Vector2f(width * cos(angle - M_PI / 2) + x,
-                                        -width * sin(angle - M_PI / 2) + y);
+    sf::VertexArray enemy_half_part(sf::Triangles, 3);
+    for(unsigned int i=0; i<3; i++) enemy_half_part[i].color = enemiesColor;
 
-    for(unsigned int i=0; i<3; i++) enemyUp[i].color = enemiesColor;
+    //Init the left and right points of the enemy
+    enemy_half_part[0].position = sf::Vector2f(position.x + cos(angle + M_PI / 2) * width,
+                                               position.y - sin(angle + M_PI / 2) * width);
 
-    enemyDown[0].position = sf::Vector2f(-height * cos(angle) / 3 + x, 
-                                        height * sin(angle) / 3 + y);
-    enemyDown[1].position = sf::Vector2f(width * cos(angle + M_PI / 2) + x,
-                                        -width * sin(angle + M_PI / 2) + y);
-    enemyDown[2].position = sf::Vector2f(width * cos(angle - M_PI / 2) + x,
-                                        -width * sin(angle - M_PI / 2) + y);
 
-    for(unsigned int i=0; i<3; i++) enemyDown[i].color = enemiesColor;
+    enemy_half_part[1].position = sf::Vector2f(position.x + cos(angle - M_PI / 2) * width,
+                                               position.y - sin(angle - M_PI / 2) * width);
 
-    window.draw(enemyUp);
-    window.draw(enemyDown);
+    //Draw the top part
+    enemy_half_part[2].position = sf::Vector2f(position.x + cos(angle) * height, 
+                                               position.y - sin(angle) * height);
+
+    window.draw(enemy_half_part);
+
+    //Draw the bottom part
+    enemy_half_part[2].position = sf::Vector2f(position.x - cos(angle) * height / 3, 
+                                               position.y + sin(angle) * height / 3);
+
+    window.draw(enemy_half_part);
+}
+
+void EnemySniper::drawEffects(sf::RenderWindow &window){
+    //Nothing
 }

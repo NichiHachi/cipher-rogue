@@ -2,21 +2,13 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 
+#include "Position.h"
 #include "Bullet.h"
 
-Bullet::Bullet(float x, float y, float angle, float speed, float hitBoxRadius, bool ally, bool destructible) {
-    this->x = x;
-    this->y = y;
-    this->speed = speed;
-    this->angle = angle;
-    this->hitBoxRadius = hitBoxRadius;
-    this->ally = ally;
-    this->destructible = destructible;
-}
+Bullet::Bullet(Position position, float angle, float speed, float size, bool ally, bool destructible) : position(position), angle(angle), speed(speed), size(size), ally(ally), destructible(destructible){}
 
 void Bullet::update() {
-    x += speed * cos(angle);
-    y -= speed * sin(angle);
+    position += Position(cos(angle) , -sin(angle))*speed;
 }
 
 void Bullet::draw(sf::RenderWindow &window) {
@@ -25,17 +17,17 @@ void Bullet::draw(sf::RenderWindow &window) {
 
         for (int i = 0; i < 4; i++) quad[i].color = sf::Color::White;
 
-        int height = hitBoxRadius*2;
-        int width = hitBoxRadius;
+        int height = size*2;
+        int width = size;
         
-        quad[0].position = sf::Vector2f(height * std::cos(angle) + width * std::sin(angle) + x,
-                                        -height * std::sin(angle) + width * std::cos(angle) + y);
-        quad[1].position = sf::Vector2f(-height * std::cos(angle) + width * std::sin(angle) + x,
-                                        height * std::sin(angle) + width * std::cos(angle) + y);
-        quad[2].position = sf::Vector2f(-height * std::cos(angle) - width * std::sin(angle) + x,
-                                        height * std::sin(angle) - width * std::cos(angle) + y);
-        quad[3].position = sf::Vector2f(height * std::cos(angle) - width * std::sin(angle) + x,
-                                        -height * std::sin(angle) - width * std::cos(angle) + y);
+        quad[0].position = sf::Vector2f(height * std::cos(angle) + width * std::sin(angle) + position.x,
+                                        -height * std::sin(angle) + width * std::cos(angle) + position.y);
+        quad[1].position = sf::Vector2f(-height * std::cos(angle) + width * std::sin(angle) + position.x,
+                                        height * std::sin(angle) + width * std::cos(angle) + position.y);
+        quad[2].position = sf::Vector2f(-height * std::cos(angle) - width * std::sin(angle) + position.x,
+                                        height * std::sin(angle) - width * std::cos(angle) + position.y);
+        quad[3].position = sf::Vector2f(height * std::cos(angle) - width * std::sin(angle) + position.x,
+                                        -height * std::sin(angle) - width * std::cos(angle) + position.y);
         
         window.draw(quad);
     } 
@@ -43,19 +35,11 @@ void Bullet::draw(sf::RenderWindow &window) {
         sf::Color enemiesBulletInvinsibleColor(255, 102, 51);
         sf::Color enemiesBulletDestructibleColor(70, 11, 102);
         sf::CircleShape circle;
-        circle.setRadius(hitBoxRadius);
+        
+        circle.setRadius(size);
         circle.setFillColor(destructible ? enemiesBulletDestructibleColor : enemiesBulletInvinsibleColor);
-        circle.setPosition(x - hitBoxRadius, y - hitBoxRadius);
+        circle.setPosition(position.x - size, position.y - size);
+
         window.draw(circle);
     }
 }
-
-float Bullet::getX() { return x; }
-
-float Bullet::getY() { return y; }
-
-float Bullet::getHitBoxRadius() { return hitBoxRadius; }
-
-float Bullet::getAngle() { return angle; }
-
-bool Bullet::isDestructible() { return destructible; }

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 
+#include "Position.h"
 #include "Enemy.h"
 #include "Bullet.h"
 #include "EnemyShooter.h"
@@ -11,7 +12,7 @@
 
 EnemyStats EnemyShooter::stats;
 
-EnemyShooter::EnemyShooter(float x, float y) : Enemy(x, y, 1*stats.speedFactor, M_PI*3/2, 0, 6, 19*stats.sizeFactor, true) {}
+EnemyShooter::EnemyShooter(Position position) : Enemy(position, 1*stats.speedFactor, M_PI*3/2, 0, 3, 6, 19*stats.sizeFactor, true) {}
 
 void EnemyShooter::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     move(targetAngle, walls, enemies);
@@ -25,7 +26,7 @@ void EnemyShooter::update(std::vector<Bullet*>& bullets, float timePassed, float
 }
 
 void EnemyShooter::shoot(std::vector<Bullet*> &bullets){
-    bullets.push_back(new Bullet(x, y, angle, 3, 15, false, true));
+    bullets.push_back(new Bullet(position, angle, speedBullet, 15, false, true));
 }
 
 void EnemyShooter::move(float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
@@ -46,64 +47,52 @@ void EnemyShooter::move(float targetAngle, std::vector<Wall> walls, std::vector<
         angle += 2 * M_PI;
     }
 
-    x += cos(angle) * speed;
-    y -= sin(angle) * speed;
+    position += Position(cos(angle),-sin(angle))*speed;
     
-    adjustPositionBasedOnCollisions(enemies, walls);
+    adjustPositionBasedOnEnemies(enemies);
+    adjustPositionBasedOnWalls(walls);
+    adjustPositionBasedOnOOB();
 }
 
 void EnemyShooter::draw(sf::RenderWindow &window) {
-    float height = size*24/19;
-    float width = size;
-    sf::Color enemiesColor(100, 100, 100);
-    sf::VertexArray enemy_left_part(sf::Triangles, 3);
-    sf::VertexArray enemy_right_part(sf::Triangles, 3);
-    
+    int height = size*24/19;
+    int width = size;
     float angle_point_triangle_1 = atan2(height, width);
     float angle_point_triangle_2 = atan2(height, -width);
     float distance_point_triangle = sqrt(height * height + width * width);
+    sf::Color enemiesColor(100, 100, 100);
 
-    ////Define the coordonate of the enemy's point that are aline with the mouse
-    float enemy_sprite_down_x = x - height * 0.6 * cos(angle);
-    float enemy_sprite_down_y = y + height * 0.6 * sin(angle);
+    sf::VertexArray shooter_half_part(sf::Triangles, 3);
 
-    float enemy_sprite_up_x = x + height * cos(angle);
-    float enemy_sprite_up_y = y - height * sin(angle);
+    //Define the color of the shooter
+    for(unsigned int i = 0; i < 3; i++) shooter_half_part[i].color = enemiesColor;
+
+    //Define the coordonate of the shooter's point that are aline with the mouse
+    Position shooter_down = position + Position(-cos(angle),sin(angle)) * (float)(height*0.6);
+    Position shooter_up = position + Position(cos(angle),-sin(angle)) * height;
 
     float angle_triangle_left = angle_point_triangle_1 + angle + M_PI / 2;
-    float enemy_sprite_left_x =
-        x + distance_point_triangle * cos(angle_triangle_left);
-    float enemy_sprite_left_y =
-        y - distance_point_triangle * sin(angle_triangle_left);
+    Position shooter_left = position + Position(cos(angle_triangle_left),-sin(angle_triangle_left)) * distance_point_triangle;
 
     float angle_triangle_right = angle_point_triangle_2 + angle + M_PI / 2;
-    float enemy_sprite_right_x =
-        x + distance_point_triangle * cos(angle_triangle_right);
-    float enemy_sprite_right_y =
-        y - distance_point_triangle * sin(angle_triangle_right);
+    Position shooter_right = position + Position(cos(angle_triangle_right),-sin(angle_triangle_right)) * distance_point_triangle;
 
-    ////Define the position of the left part points
-    enemy_left_part[0].position =
-        sf::Vector2f(enemy_sprite_left_x, enemy_sprite_left_y);
-    enemy_left_part[1].position =
-        sf::Vector2f(enemy_sprite_up_x, enemy_sprite_up_y);
-    enemy_left_part[2].position =
-        sf::Vector2f(enemy_sprite_down_x, enemy_sprite_down_y);
+    shooter_half_part[1].position = sf::Vector2f(shooter_up.x, shooter_up.y);
+    shooter_half_part[2].position = sf::Vector2f(shooter_down.x, shooter_down.y);
 
-    ////Define the color of the left part
-    for(unsigned int i = 0; i < 3; i++) enemy_left_part[i].color = enemiesColor;
+    //Define the position of the left part points
+    shooter_half_part[0].position = sf::Vector2f(shooter_left.x, shooter_left.y);
 
-    ////Define the position of right part points
-    enemy_right_part[0].position =
-        sf::Vector2f(enemy_sprite_right_x, enemy_sprite_right_y);
-    enemy_right_part[1].position =
-        sf::Vector2f(enemy_sprite_up_x, enemy_sprite_up_y);
-    enemy_right_part[2].position =
-        sf::Vector2f(enemy_sprite_down_x, enemy_sprite_down_y);
+    //Draw the left part
+    window.draw(shooter_half_part);
 
-    ////Define the color of the right part
-    for(unsigned int i = 0; i < 3; i++) enemy_right_part[i].color = enemiesColor;
+    //Define the position of right part points
+    shooter_half_part[0].position = sf::Vector2f(shooter_right.x, shooter_right.y);
 
-    window.draw(enemy_left_part);
-    window.draw(enemy_right_part);
+    //Draw the right part
+    window.draw(shooter_half_part);
+}
+
+void EnemyShooter::drawEffects(sf::RenderWindow &window){
+    //Nothing
 }
