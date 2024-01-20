@@ -7,15 +7,18 @@
 #include "EnemyCharger.h"
 #include "Wall.h"
 #include "EnemyStats.h"
+#include "Player.h"
 
 EnemyStats EnemyCharger::stats;
 
-EnemyCharger::EnemyCharger(Position position) : Enemy(position, 13*stats.speedFactor, M_PI*3/2, 0, 5, 20, 30*stats.sizeFactor, false) {}
+EnemyCharger::EnemyCharger(Position position) : Enemy(position, 13*stats.speedFactor, M_PI*3/2, 0, 5*stats.speedBulletFactor, 20, 30*stats.sizeFactor, false) {}
 
-void EnemyCharger::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
+void EnemyCharger::update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     shootTimer += timePassed;
-    if (shootTimer > 10) move(walls);
-    else  angle = targetAngle;
+    if (shootTimer > 10) 
+        move(walls);
+    else 
+        angle = getAngleToObject(player.getPosition());
 }
 
 void EnemyCharger::move(std::vector<Wall> walls) {
@@ -26,7 +29,7 @@ void EnemyCharger::move(std::vector<Wall> walls) {
     if(adjustPositionBasedOnOOB()) shootTimer = 0;
 }
 
-void EnemyCharger::drawWarningZone(sf::RenderWindow &window) {
+void EnemyCharger::drawWarningZone(sf::RenderWindow &window ) {
         float length = 500 * (shootTimer - 7);
         sf::VertexArray warningZone(sf::Quads, 4);
 
@@ -49,7 +52,7 @@ void EnemyCharger::drawWarningZone(sf::RenderWindow &window) {
         window.draw(warningZone);
 }
 
-void EnemyCharger::draw(sf::RenderWindow &window) {
+void EnemyCharger::draw(sf::RenderWindow &window ) {
     sf::Color enemiesColor(100, 100, 100);
     sf::VertexArray side(sf::Triangles, 3);
     for(unsigned int i = 0; i < 3; i++) side[i].color = enemiesColor;
@@ -74,8 +77,8 @@ void EnemyCharger::draw(sf::RenderWindow &window) {
     }
 }
 
-void EnemyCharger::drawEffects(sf::RenderWindow &window) {
+void EnemyCharger::drawEffects(sf::RenderWindow &window ) {
     if(shootTimer > 7){
-        drawWarningZone(window);
+        drawWarningZone(window );
     }
 }

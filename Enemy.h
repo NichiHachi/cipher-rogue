@@ -5,13 +5,14 @@
 #include "Position.h"
 #include "Bullet.h"
 #include "Wall.h"
+#include "Player.h"
 
 #pragma once
 class Enemy{
     public:
-        virtual void update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies)=0;
-        virtual void draw(sf::RenderWindow& window)=0;
-        virtual void drawEffects(sf::RenderWindow& window)=0;
+        virtual void update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies)=0;
+        virtual void draw(sf::RenderWindow& window )=0;
+        virtual void drawEffects(sf::RenderWindow& window )=0;
         virtual std::string getType()=0;
         virtual ~Enemy(){};
 
@@ -35,4 +36,6 @@ class Enemy{
         bool adjustPositionBasedOnEnemies(std::vector<Enemy*>& enemies);
         bool adjustPositionBasedOnWalls(std::vector<Wall> walls);
         bool adjustPositionBasedOnOOB();
+        float getAngleToObject(Position objectPosition);
+        float getAngleToFuturPlayerPosition(Player player);
 };

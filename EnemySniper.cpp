@@ -8,12 +8,14 @@
 #include "Bullet.h"
 #include "Wall.h"
 #include "EnemyStats.h"
+#include "Player.h"
 
 EnemyStats EnemySniper::stats;
 
-EnemySniper::EnemySniper(Position position) : Enemy(position, 0.4*stats.speedFactor, M_PI*3/2, 0, 12, 5, 19*stats.sizeFactor, true) {}
+EnemySniper::EnemySniper(Position position) : Enemy(position, 0.4*stats.speedFactor, M_PI*3/2, 0, 12*stats.speedBulletFactor, 5, 19*stats.sizeFactor, true) {}
 
-void EnemySniper::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
+void EnemySniper::update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
+    float targetAngle = getAngleToFuturPlayerPosition(player);
     move(targetAngle, walls, enemies);
 
     // Shoot every 3.5 secondes
@@ -37,7 +39,7 @@ void EnemySniper::move(float targetAngle, std::vector<Wall> walls, std::vector<E
         angleDiff += 2 * M_PI;
     }
 
-    angle += angleDiff * 0.1;
+    angle += angleDiff * 0.1 * stats.turnSpeedFactor;
 
     if (angle > M_PI) {
         angle -= 2 * M_PI;
@@ -53,7 +55,7 @@ void EnemySniper::move(float targetAngle, std::vector<Wall> walls, std::vector<E
     adjustPositionBasedOnOOB();
 }
 
-void EnemySniper::draw(sf::RenderWindow &window) {
+void EnemySniper::draw(sf::RenderWindow &window ) {
     int height = size*50/19;
     int width = size;
     sf::Color enemiesColor(100, 100, 100);
@@ -82,6 +84,6 @@ void EnemySniper::draw(sf::RenderWindow &window) {
     window.draw(enemy_half_part);
 }
 
-void EnemySniper::drawEffects(sf::RenderWindow &window){
+void EnemySniper::drawEffects(sf::RenderWindow &window ){
     //Nothing
 }

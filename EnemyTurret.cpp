@@ -13,7 +13,7 @@ EnemyStats EnemyTurret::stats;
 
 EnemyTurret::EnemyTurret(Position position) : Enemy(position, 5*stats.speedFactor, 0, 0, 3, 10, 30*stats.sizeFactor, false) {}
 
-void EnemyTurret::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
+void EnemyTurret::update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     shootTimer += timePassed;
     if(shootTimer >= 0.5){
         shoot(bullets);
@@ -32,7 +32,7 @@ void EnemyTurret::move(std::vector<Wall> walls){
     //Nothing
 }
 
-void EnemyTurret::draw(sf::RenderWindow &window) {
+void EnemyTurret::draw(sf::RenderWindow &window ) {
     sf::Color enemiesColor(100, 100, 100);
     sf::VertexArray enemy_part(sf::Triangles, 3);
 
@@ -57,6 +57,6 @@ void EnemyTurret::draw(sf::RenderWindow &window) {
     }
 }
 
-void EnemyTurret::drawEffects(sf::RenderWindow &window){
+void EnemyTurret::drawEffects(sf::RenderWindow &window ){
     //Nothing
 }

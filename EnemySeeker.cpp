@@ -9,12 +9,14 @@
 #include "EnemySeeker.h"
 #include "Wall.h"
 #include "EnemyStats.h"
+#include "Player.h"
 
 EnemyStats EnemySeeker::stats;
 
-EnemySeeker::EnemySeeker(Position position, float angleSpawn) : Enemy(position, 3.75*stats.speedFactor, angleSpawn, 0, 5, 4, 15*stats.sizeFactor, true) {}
+EnemySeeker::EnemySeeker(Position position, float angleSpawn) : Enemy(position, 3.75*stats.speedFactor, angleSpawn, 0, 5*stats.speedBulletFactor, 4, 15*stats.sizeFactor, true) {}
 
-void EnemySeeker::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
+void EnemySeeker::update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
+    float targetAngle = getAngleToObject(player.getPosition());
     move(targetAngle, walls, enemies);
 }
 
@@ -27,7 +29,7 @@ void EnemySeeker::move(float targetAngle, std::vector<Wall> walls, std::vector<E
     else if (angleDiff < -M_PI) 
         angleDiff += 2*M_PI;
 
-    angle += angleDiff*0.05;
+    angle += angleDiff * 0.05 * stats.turnSpeedFactor;
 
     if (angle > M_PI) 
         angle -= 2*M_PI;
@@ -41,7 +43,7 @@ void EnemySeeker::move(float targetAngle, std::vector<Wall> walls, std::vector<E
     adjustPositionBasedOnOOB();
 }
 
-void EnemySeeker::draw(sf::RenderWindow &window) {
+void EnemySeeker::draw(sf::RenderWindow &window ) {
     sf::Color enemiesColor(100, 100, 100);
     sf::VertexArray enemy(sf::Triangles, 3);
     for(unsigned int i = 0; i < 3; i++) enemy[i].color = enemiesColor;
@@ -56,6 +58,6 @@ void EnemySeeker::draw(sf::RenderWindow &window) {
     window.draw(enemy);
 }
 
-void EnemySeeker::drawEffects(sf::RenderWindow &window){
+void EnemySeeker::drawEffects(sf::RenderWindow &window ){
     //Nothing
 }

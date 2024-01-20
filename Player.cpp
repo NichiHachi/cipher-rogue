@@ -1,14 +1,16 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <cmath>
-#include <algorithm>
 
+#include "Enemy.h"
 #include "Position.h"
 #include "Bullet.h"
 #include "Player.h"
 #include "Wall.h"
 
-Player::Player() : position(Position(0,0)), speed(5), hp(10), shootTimer(0), hitTimer(2), size(19) {}
+PlayerStats Player::stats;
+
+Player::Player() : position(Position(0,0)), speed(5*stats.speedFactor), hp(49), hpMax(10), shootTimer(0), hitTimer(2), size(19), speedBullet(10*stats.speedBulletFactor) {}
 
 void Player::update(std::vector<Bullet*> &bullets, sf::RenderWindow &window, float timePassed, std::vector<Wall> walls) {
     move(window, walls);
@@ -41,42 +43,43 @@ void Player::move(sf::RenderWindow &window, const std::vector<Wall> walls) {
         position += Position(xAxisMove,-yAxisMove)*speed;
     }
  
-    //Refaire 
     for (Wall wall : walls) {
         Position wallPos = wall.getPosition();
-        float anglePlayerWall = atan2(wallPos.y - position.y, wallPos.x - position.x);
-        if (wall.isInWall(position + Position(cos(anglePlayerWall),sin(anglePlayerWall))*size)){
-            if (anglePlayerWall < M_PI / 4 && anglePlayerWall > -M_PI / 4)
-                position.x -= size - ((wallPos.x - wall.getSize()) - position.x);
-
-            else if (anglePlayerWall > M_PI * 3 / 4 || anglePlayerWall < -M_PI * 3 / 4)
+        float angleWallPlayer = atan2(wallPos.y - position.y, position.x - wallPos.x);
+        if (wall.isInWall(position + Position(-cos(angleWallPlayer),sin(angleWallPlayer))*size)){
+            if(-M_PI/4 <= angleWallPlayer && angleWallPlayer <= M_PI/4){
                 position.x += size - (position.x - (wallPos.x + wall.getSize()));
-
-            else if (anglePlayerWall > M_PI / 4 && anglePlayerWall < M_PI * 3 / 4) 
+            }
+            else if(angleWallPlayer >= M_PI*3/4 || angleWallPlayer <= -M_PI*3/4){
+                position.x -= size - ((wallPos.x - wall.getSize()) - position.x);
+            } 
+            else if(M_PI/4 <= angleWallPlayer && angleWallPlayer <= M_PI*3/4){
                 position.y -= size - ((wallPos.y - wall.getSize()) - position.y);
-
-            else 
+            } 
+            //angleWallPlayer< -M_PI/4 && angleWallPlayer > -M_PI*3/4
+            else{
                 position.y += size - (position.y - (wallPos.y + wall.getSize()));
             }
         }
-
-        //If out of bounds, go back in bounds
-        if (position.x < size) position.x = size;
-        else if (position.x > 1000-size) position.x = 1000-size;
-        if (position.y < size) position.y = size;
-        else if (position.y > 1000-size) position.y = 1000-size;
     }
+
+    //If out of bounds, go back in bounds
+    if (position.x < size) position.x = size;
+    else if (position.x > 1000-size) position.x = 1000-size;
+    if (position.y < size) position.y = size;
+    else if (position.y > 1000-size) position.y = 1000-size;
+}
 
 void Player::shoot(std::vector<Bullet*> &bullets) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         if (shootTimer > 0.2) {
-            bullets.push_back(new Bullet(position, angle, 10, 10, true, false));
+            bullets.push_back(new Bullet(position, angle, speedBullet, 10, true, false));
             shootTimer = 0;
         }
     }
 }
 
-void Player::draw(sf::RenderWindow &window) {
+void Player::draw(sf::RenderWindow &window ) {
     int height = size*24/19;
     int width = size;
     float angle_point_triangle_1 = atan2(height, width);
@@ -116,25 +119,31 @@ void Player::draw(sf::RenderWindow &window) {
 }
 
 void Player::drawHealth(sf::RenderWindow &window) {
-    sf::CircleShape circle;
-    circle.setRadius(10);
-    circle.setFillColor(sf::Color::Red);
+    int height = 30;
+    int length = 30;
+    int numberPerLine = 7;
+    sf::Vector2f startPosition(950,950);
+
+    sf::Color colorLayer[6] = {
+        sf::Color::Red,
+        sf::Color(255, 165, 0), // Orange
+        sf::Color::Green,
+        sf::Color::Cyan,
+        sf::Color::Blue,
+        sf::Color::Magenta
+    };
+
     sf::VertexArray quad(sf::Quads, 4);
-    for(unsigned int i = 0; i < 4; i++) quad[i].color = sf::Color::Red;
 
-    for (int i = 0; i < hp; i++) {
-        circle.setPosition(10 * cos(M_PI*3/4) + 40*i + 20,
-                        10 * sin(M_PI*3/4) + 10);
-        window.draw(circle);
-        circle.setPosition(10 * cos(M_PI/4) + 40*i + 20,
-                        10 * sin(M_PI/4) + 10);
-        window.draw(circle);
-
-        quad[0].position = sf::Vector2f(40*i + 30, 21);
-        quad[1].position = sf::Vector2f(40*i + 44, 35);
-        quad[2].position = sf::Vector2f(40*i + 30, 49);
-        quad[3].position = sf::Vector2f(40*i + 16, 35);
-        window.draw(quad);
+    for(int hpNumber=0; hpNumber<hp; hpNumber++){
+        if(hpNumber%numberPerLine == 0) {
+            for(unsigned int i = 0; i < 4; i++) quad[i].color = colorLayer[std::min(hpNumber/numberPerLine,5)];
+        }
+        quad[0].position = startPosition + sf::Vector2f(length/2,-height/2) - sf::Vector2f(length * (hpNumber%numberPerLine) + 10 , 0);
+        quad[1].position = startPosition + sf::Vector2f(length/6,height/2) - sf::Vector2f(length * (hpNumber%numberPerLine) + 10 , 0);
+        quad[2].position = startPosition + sf::Vector2f(-length/2,height/2) - sf::Vector2f(length * (hpNumber%numberPerLine) + 10 , 0);
+        quad[3].position = startPosition + sf::Vector2f(-length/6,-height/2) - sf::Vector2f(length * (hpNumber%numberPerLine) + 10 , 0);
+        window.draw(quad); 
     }
 }
 

@@ -15,60 +15,16 @@
 #include "EnemyCharger.h"
 #include "EnemySeeker.h"
 #include "EnemyStats.h"
+#include "PlayerStats.h"
+#include <string>
 
 const int displayX = 1000;
 const int displayY = 1000;
 const sf::Color backgroundColor(0,0,0);
+const int FPS = 60;
 
-double calcul_angle(Position start, Position end){
+float calcul_angle(Position start, Position end){
     return atan2(start.y - end.y, end.x - start.x);
-}
-
-//Change because it sucks :c
-
-/// @brief Predict where the player will be when the bullet will touch him.
-/// @param player The player.
-/// @param enemy The enemy that shoot.
-/// @return The predicted angle
-float angle_shot_predict(Player player, Enemy* enemy){
-    Position diffPos = player.getPosition() - enemy->getPosition();
-    float timeBulletTravel = sqrt(diffPos.x*diffPos.x+diffPos.y*diffPos.y)/enemy->getSpeedBullet();
-
-    Position playerNewPos = player.getPosition();
-    float angleNew = 0;
-
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && sf::Keyboard::isKeyPressed(sf::Keyboard::D)){
-        playerNewPos += Position(player.getSpeed() * timeBulletTravel * sqrt(2) / 2,
-                                    -player.getSpeed() * timeBulletTravel * sqrt(2) / 2);
-        angleNew = M_PI/4;
-    }
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)){
-        playerNewPos -= Position(player.getSpeed() * timeBulletTravel * sqrt(2) / 2,
-                                    player.getSpeed() * timeBulletTravel * sqrt(2) / 2);
-    }
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) && sf::Keyboard::isKeyPressed(sf::Keyboard::Q)){
-        playerNewPos += Position(-player.getSpeed() * timeBulletTravel * sqrt(2) / 2,
-                                    player.getSpeed() * timeBulletTravel * sqrt(2) / 2);
-    }
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) && sf::Keyboard::isKeyPressed(sf::Keyboard::D)){
-        playerNewPos += Position(player.getSpeed() * timeBulletTravel * sqrt(2) / 2,
-                                    player.getSpeed() * timeBulletTravel * sqrt(2) / 2);
-    }
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z)){
-        playerNewPos.y -= player.getSpeed() * timeBulletTravel;
-    }
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)){
-        playerNewPos.y += player.getSpeed() * timeBulletTravel;
-    }
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)){
-        playerNewPos.x += player.getSpeed() * timeBulletTravel;
-    }
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q)){
-        playerNewPos.x -= player.getSpeed() * timeBulletTravel;
-    }
-
-    //Return the angle between the enemy and the new player position
-    return calcul_angle(enemy->getPosition(), playerNewPos);
 }
 
 void destroy_in_wall_or_out_of_bounds(std::vector<Bullet*>& bullets, std::vector<Wall> walls) {
@@ -92,7 +48,7 @@ void destroy_in_wall_or_out_of_bounds(std::vector<Bullet*>& bullets, std::vector
         // If the bullet touches a wall
         for (const Wall wall : walls) {
             angleBulletWall = calcul_angle(wall.getPosition(), bulletPos);
-            Position bulletWallPos = bulletPos + Position(cos(angleBulletWall), sin(angleBulletWall)) * bulletSize;
+            Position bulletWallPos = bulletPos + Position(-cos(angleBulletWall), sin(angleBulletWall)) * bulletSize;
             if (wall.isInWall(bulletWallPos)) {
                 delete *bullet;
                 bullet = bullets.erase(bullet);
@@ -105,9 +61,61 @@ void destroy_in_wall_or_out_of_bounds(std::vector<Bullet*>& bullets, std::vector
     }
 }
 
-void updateLoop(sf::RenderWindow& window, sf::Clock& clock, Player& player, std::vector<Bullet*>& bulletsEnemy, 
+bool cursorVisible = true;
+float timeCursor = 0;
+
+void drawCursor(sf::RenderWindow& window, sf::Text& text) {
+    if (cursorVisible) {
+        sf::RectangleShape cursor(sf::Vector2f(2, text.getCharacterSize()));
+        cursor.setPosition(text.getPosition().x + text.getLocalBounds().width + 5, text.getPosition().y + 2);
+        cursor.setFillColor(sf::Color::White);
+        window.draw(cursor);
+    }
+
+    if (timeCursor >= 0.5) {
+        cursorVisible = !cursorVisible;
+        timeCursor = 0;
+    }
+}
+
+std::vector<std::string> deadEnemies;
+std::string displayedMessage = "";
+float timeDrawn = 0;
+
+
+void printDeadEnemies(std::string& displayedMessage, sf::RenderWindow& window, float timer) {
+    timeCursor += timer;
+    if(deadEnemies.empty()) return;
+
+    timeDrawn += timer;
+
+    std::string fullMessage = "Delete [] " + deadEnemies[0];
+
+    if(displayedMessage.size() < fullMessage.size() && timeDrawn > 0.1) {
+        displayedMessage += fullMessage[displayedMessage.size()];
+        timeDrawn = 0;
+    }
+    else if(timeDrawn > 1) {
+        timeDrawn = 0;
+        deadEnemies.erase(deadEnemies.begin());
+        displayedMessage = "";
+    }
+    
+
+    sf::Text text;
+    sf::Font font;
+    if (!font.loadFromFile("./fonts/FiraCode.ttf")) {}
+    text.setFont(font);
+    text.setFillColor(sf::Color::White);
+    text.setPosition(10, 975);
+    text.setString(displayedMessage);
+    text.setCharacterSize(15);
+    drawCursor(window, text);
+    window.draw(text);
+}
+
+void updateLoop(sf::RenderWindow& window, float currentTime, Player& player, std::vector<Bullet*>& bulletsEnemy, 
                 std::vector<Bullet*>& bulletsAlly, std::vector<Wall>walls, std::vector<Enemy*>& enemies){
-        float currentTime = clock.restart().asSeconds();
 
         //-----PLAYER UPDATE-----
         player.update(bulletsAlly,window,currentTime,walls);
@@ -162,9 +170,7 @@ void updateLoop(sf::RenderWindow& window, sf::Clock& clock, Player& player, std:
         //-----ENEMIES UPDATE-----
         float targetAngle;
         for(Enemy* enemy : enemies){
-            if(enemy->getType() == "Sniper") targetAngle = angle_shot_predict(player,enemy);
-            else targetAngle = calcul_angle(enemy->getPosition(),player.getPosition());
-            enemy->update(bulletsEnemy, currentTime, targetAngle, walls, enemies);
+            enemy->update(bulletsEnemy, currentTime, player, walls, enemies);
         }
 
         //-----ENEMIES AND ALLY BULLETS-----
@@ -178,6 +184,7 @@ void updateLoop(sf::RenderWindow& window, sf::Clock& clock, Player& player, std:
         //-----ENEMIES DEAD-----
         for(auto enemy = enemies.begin(); enemy != enemies.end();) {
             if((*enemy)->isDead()){
+                deadEnemies.push_back((*enemy)->getType());
                 delete *enemy;
                 enemy = enemies.erase(enemy);
             } 
@@ -205,17 +212,50 @@ void drawElements(sf::RenderWindow& window, Player player, std::vector<Bullet*>b
             enemy->draw(window);
         }
 
-        player.draw(window);
+        player.draw(window );
 
         for(Wall &wall : walls){
             wall.draw(window);
         }
 
-        player.drawHealth(window);
+        player.drawHealth(window );
+}
+
+void setStatsScaleWithFPS(int FPS) {
+    float ratioFPS = (float)60/FPS;
+
+    Player::stats.speedFactor = ratioFPS;
+    Player::stats.speedBulletFactor = ratioFPS;
+
+    EnemyShooter::stats.speedFactor = ratioFPS;
+    EnemyShooter::stats.turnSpeedFactor = ratioFPS;
+    EnemyShooter::stats.speedBulletFactor = ratioFPS;
+
+    EnemyCharger::stats.speedFactor = ratioFPS;
+    EnemyCharger::stats.turnSpeedFactor = ratioFPS;
+    EnemyCharger::stats.speedBulletFactor = ratioFPS;
+
+    EnemySniper::stats.speedFactor = ratioFPS;
+    EnemySniper::stats.turnSpeedFactor = ratioFPS;
+    EnemySniper::stats.speedBulletFactor = ratioFPS;
+
+    EnemySeeker::stats.speedFactor = ratioFPS;
+    EnemySeeker::stats.turnSpeedFactor = ratioFPS;
+    EnemySeeker::stats.speedBulletFactor = ratioFPS;
+
+    EnemySpawner::stats.speedFactor = ratioFPS;
+    EnemySpawner::stats.turnSpeedFactor = ratioFPS;
+    EnemySpawner::stats.speedBulletFactor = ratioFPS;
+
+    EnemyTurret::stats.speedFactor = ratioFPS;
+    EnemyTurret::stats.turnSpeedFactor = ratioFPS;
+    EnemyTurret::stats.speedBulletFactor = ratioFPS;
 }
 
 int main(void){
     sf::RenderWindow window(sf::VideoMode(displayX,displayY), "Nichi Hachi");
+
+    setStatsScaleWithFPS(FPS);
 
     //Init Player
     Player player;
@@ -233,7 +273,7 @@ int main(void){
     //Init EnemyShooter
     //enemies.push_back(new EnemyShooter(500,500,1,1));
     enemies.push_back(new EnemyShooter(Position(400,500)));
-    enemies.push_back(new EnemyShooter(Position(500,600)));
+    //enemies.push_back(new EnemyShooter(Position(500,600)));
 
     //Init EnemyTurret
     enemies.push_back(new EnemyTurret(Position(450,785)));
@@ -260,9 +300,9 @@ int main(void){
 
     //Time track and Framerate
     sf::Clock clock;
-    window.setFramerateLimit(60);
+    float currentTime;
+    window.setFramerateLimit(FPS);
 
-    std::vector<int> listLevel;
     player.spawn();
 
     while(window.isOpen()){
@@ -273,7 +313,11 @@ int main(void){
 
         window.clear(backgroundColor);
 
-        updateLoop(window, clock, player, bulletsEnemy, bulletsAlly, walls, enemies);
+        currentTime = clock.restart().asSeconds();
+
+        updateLoop(window, currentTime, player, bulletsEnemy, bulletsAlly, walls, enemies);
+
+        printDeadEnemies(displayedMessage,window, currentTime);
 
         drawElements(window, player, bulletsEnemy, bulletsAlly, walls, enemies);
 

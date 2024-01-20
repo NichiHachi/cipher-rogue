@@ -10,12 +10,13 @@
 #include "EnemySeeker.h"
 #include "Wall.h"
 #include "EnemyStats.h"
+#include "Player.h"
 
 EnemyStats EnemySpawner::stats;
 
 EnemySpawner::EnemySpawner(Position position) : Enemy(position, 5*stats.speedFactor, 0, 0, 0, 10, 20*stats.sizeFactor, false){}
 
-void EnemySpawner::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
+void EnemySpawner::update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
     shootTimer += timePassed;
     if (shootTimer >= 5) {
         for (int i = 0; i < 3; i++) {
@@ -25,7 +26,7 @@ void EnemySpawner::update(std::vector<Bullet*>& bullets, float timePassed, float
     }
 }
 
-void EnemySpawner::draw(sf::RenderWindow &window) {
+void EnemySpawner::draw(sf::RenderWindow &window ) {
     float height = size;
     float width = size*7/20;
     sf::Color enemiesColor(100, 100, 100);
@@ -48,6 +49,6 @@ void EnemySpawner::draw(sf::RenderWindow &window) {
     window.draw(quad);
 }
 
-void EnemySpawner::drawEffects(sf::RenderWindow &window){
+void EnemySpawner::drawEffects(sf::RenderWindow &window ){
     //Nothing
 }

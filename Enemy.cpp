@@ -5,6 +5,7 @@
 #include "Position.h"
 #include "Bullet.h"
 #include "Enemy.h"
+#include "Player.h"
 
 Enemy::Enemy(Position position, float speed, float angle, float shootTimer, float speedBullet, int hp, int size, bool movable) : position(position), speed(speed), angle(angle), shootTimer(shootTimer), speedBullet(speedBullet), hp(hp), size(size), movable(movable){}
 
@@ -37,19 +38,19 @@ bool Enemy::adjustPositionBasedOnWalls(std::vector<Wall> walls){
     float angleEnemyWall;
     for (Wall wall : walls) {
         wallPos = wall.getPosition();
-        angleEnemyWall = atan2(wallPos.y - position.y, wallPos.x - position.x);
+        angleEnemyWall = atan2(wallPos.y - position.y, position.x - wallPos.x);
         //If the enemy nearest point from the middle of the wall is in the wall
-        if (wall.isInWall(position + Position(cos(angleEnemyWall),sin(angleEnemyWall))*size)){
-            if(angleEnemyWall < M_PI/4 && angleEnemyWall > -M_PI/4){
-                position.x -= size - ((wallPos.x - wall.getSize()) - position.x);
-            }
-            else if(angleEnemyWall > M_PI*3/4 || angleEnemyWall < -M_PI*3/4){
+        if (wall.isInWall(position + Position(-cos(angleEnemyWall),sin(angleEnemyWall))*size)){
+            if(-M_PI/4 <= angleEnemyWall && angleEnemyWall <= M_PI/4){
                 position.x += size - (position.x - (wallPos.x + wall.getSize()));
             }
-            else if(angleEnemyWall > M_PI/4 && angleEnemyWall < M_PI*3/4){
+            else if(angleEnemyWall >= M_PI*3/4 || angleEnemyWall <= -M_PI*3/4){
+                position.x -= size - ((wallPos.x - wall.getSize()) - position.x);
+            } 
+            else if(M_PI/4 <= angleEnemyWall && angleEnemyWall <= M_PI*3/4){
                 position.y -= size - ((wallPos.y - wall.getSize()) - position.y);
-            }
-            //angleEnemyWall< -M_PI/4 && angleEnemyWall> -M_PI*3/4
+            } 
+            //angleEnemyWall< -M_PI/4 && angleEnemyWall > -M_PI*3/4
             else{
                 position.y += size - (position.y - (wallPos.y + wall.getSize()));
             }
@@ -119,4 +120,32 @@ bool Enemy::adjustPositionBasedOnOOB(){
     }
 
     return positionAdjusted;
+}
+
+float Enemy::getAngleToObject(Position objectPosition){
+    return atan2(position.y - objectPosition.y, objectPosition.x - position.x);
+}
+
+float Enemy::getAngleToFuturPlayerPosition(Player player){
+    Position diffPos = player.getPosition() - position;
+    float timeBulletTravel = sqrt(diffPos.x*diffPos.x + diffPos.y*diffPos.y)/speedBullet;
+
+    Position playerNewPos = player.getPosition();
+
+    int xAxisMove = 0;
+    int yAxisMove = 0;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) yAxisMove++;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) xAxisMove--;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)) yAxisMove--;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)) xAxisMove++;
+    
+    if (yAxisMove != 0 && xAxisMove != 0) {
+        playerNewPos += Position(xAxisMove*sqrt(2)/2,-yAxisMove*sqrt(2)/2)*player.getSpeed()*timeBulletTravel;
+    }
+    else{
+        playerNewPos += Position(xAxisMove,-yAxisMove)*player.getSpeed()*timeBulletTravel;
+    }
+
+    //Return the angle between the enemy and the new player position
+    return getAngleToObject(playerNewPos);
 }

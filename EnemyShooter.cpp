@@ -9,12 +9,14 @@
 #include "EnemyShooter.h"
 #include "Wall.h"
 #include "EnemyStats.h"
+#include "Player.h"
 
 EnemyStats EnemyShooter::stats;
 
-EnemyShooter::EnemyShooter(Position position) : Enemy(position, 1*stats.speedFactor, M_PI*3/2, 0, 3, 6, 19*stats.sizeFactor, true) {}
+EnemyShooter::EnemyShooter(Position position) : Enemy(position, 1*stats.speedFactor, M_PI*3/2, 0, 3*stats.speedBulletFactor, 6, 19*stats.sizeFactor, true) {}
 
-void EnemyShooter::update(std::vector<Bullet*>& bullets, float timePassed, float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
+void EnemyShooter::update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
+    float targetAngle = getAngleToObject(player.getPosition());
     move(targetAngle, walls, enemies);
 
     // Shoot every 2 secondes
@@ -38,7 +40,7 @@ void EnemyShooter::move(float targetAngle, std::vector<Wall> walls, std::vector<
         angleDiff += 2 * M_PI;
     }
 
-    angle += angleDiff * 0.2;
+    angle += angleDiff * 0.2 * stats.turnSpeedFactor;
 
     if (angle > M_PI) {
         angle -= 2 * M_PI;
@@ -54,7 +56,7 @@ void EnemyShooter::move(float targetAngle, std::vector<Wall> walls, std::vector<
     adjustPositionBasedOnOOB();
 }
 
-void EnemyShooter::draw(sf::RenderWindow &window) {
+void EnemyShooter::draw(sf::RenderWindow &window ) {
     int height = size*24/19;
     int width = size;
     float angle_point_triangle_1 = atan2(height, width);
@@ -93,6 +95,6 @@ void EnemyShooter::draw(sf::RenderWindow &window) {
     window.draw(shooter_half_part);
 }
 
-void EnemyShooter::drawEffects(sf::RenderWindow &window){
+void EnemyShooter::drawEffects(sf::RenderWindow &window ){
     //Nothing
 }
