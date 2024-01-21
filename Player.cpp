@@ -1,34 +1,38 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <cmath>
+#include <memory>
 
+#include "Player.h"
 #include "Enemy.h"
 #include "Position.h"
 #include "Bullet.h"
-#include "Player.h"
+#include "BulletBombshell.h"
+#include "BulletStandard.h"
 #include "Wall.h"
+#include "PlayerStats.h"
 
 PlayerStats Player::stats;
 
 Player::Player() : position(Position(0,0)), speed(5*stats.speedFactor), hp(49), hpMax(10), shootTimer(0), hitTimer(2), size(19), speedBullet(10*stats.speedBulletFactor) {}
 
-void Player::update(std::vector<Bullet*> &bullets, sf::RenderWindow &window, float timePassed, std::vector<Wall> walls) {
-    move(window, walls);
+void Player::update(sf::RenderWindow& window, std::vector<std::unique_ptr<Bullet>> &bullets, 
+                    std::vector<std::unique_ptr<Wall>> &walls, float deltaTime) {
+    move(walls);
+
+    shootTimer += deltaTime;
+    hitTimer += deltaTime;
 
     sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
     angle = atan2(position.y - mousePosition.y, mousePosition.x - position.x);
-
-    shootTimer += timePassed;
-    hitTimer += timePassed;
-
-    shoot(bullets);
+    shoot(bullets, Position(mousePosition.x, mousePosition.y));
 }
 
 void Player::spawn(){
     position = Position(500,900);
 }
 
-void Player::move(sf::RenderWindow &window, const std::vector<Wall> walls) {
+void Player::move(std::vector<std::unique_ptr<Wall>> &walls) {
     int xAxisMove = 0;
     int yAxisMove = 0;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) yAxisMove++;
@@ -43,22 +47,22 @@ void Player::move(sf::RenderWindow &window, const std::vector<Wall> walls) {
         position += Position(xAxisMove,-yAxisMove)*speed;
     }
  
-    for (Wall wall : walls) {
-        Position wallPos = wall.getPosition();
+    for (const auto& wall : walls) {
+        Position wallPos = wall->getPosition();
         float angleWallPlayer = atan2(wallPos.y - position.y, position.x - wallPos.x);
-        if (wall.isInWall(position + Position(-cos(angleWallPlayer),sin(angleWallPlayer))*size)){
+        if (wall->isInWall(position + Position(-cos(angleWallPlayer),sin(angleWallPlayer))*size)){
             if(-M_PI/4 <= angleWallPlayer && angleWallPlayer <= M_PI/4){
-                position.x += size - (position.x - (wallPos.x + wall.getSize()));
+                position.x += size - (position.x - (wallPos.x + wall->getSize()));
             }
             else if(angleWallPlayer >= M_PI*3/4 || angleWallPlayer <= -M_PI*3/4){
-                position.x -= size - ((wallPos.x - wall.getSize()) - position.x);
+                position.x -= size - ((wallPos.x - wall->getSize()) - position.x);
             } 
             else if(M_PI/4 <= angleWallPlayer && angleWallPlayer <= M_PI*3/4){
-                position.y -= size - ((wallPos.y - wall.getSize()) - position.y);
+                position.y -= size - ((wallPos.y - wall->getSize()) - position.y);
             } 
             //angleWallPlayer< -M_PI/4 && angleWallPlayer > -M_PI*3/4
             else{
-                position.y += size - (position.y - (wallPos.y + wall.getSize()));
+                position.y += size - (position.y - (wallPos.y + wall->getSize()));
             }
         }
     }
@@ -70,16 +74,16 @@ void Player::move(sf::RenderWindow &window, const std::vector<Wall> walls) {
     else if (position.y > 1000-size) position.y = 1000-size;
 }
 
-void Player::shoot(std::vector<Bullet*> &bullets) {
+void Player::shoot(std::vector<std::unique_ptr<Bullet>> &bullets, Position targetPosition) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         if (shootTimer > 0.2) {
-            bullets.push_back(new Bullet(position, angle, speedBullet, 10, true, false));
+            bullets.push_back(std::make_unique<BulletBombshell>(position, targetPosition, speedBullet, 10, true, true));
             shootTimer = 0;
         }
     }
 }
 
-void Player::draw(sf::RenderWindow &window ) {
+void Player::draw(sf::RenderWindow &window) {
     int height = size*24/19;
     int width = size;
     float angle_point_triangle_1 = atan2(height, width);
@@ -147,7 +151,7 @@ void Player::drawHealth(sf::RenderWindow &window) {
     }
 }
 
-void Player::receiveDamageIfShot(std::vector<Bullet*> &bullets) {
+void Player::receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>> &bullets) {
     Position diffPos;
     int hitBoxBoth;
     for(auto bullet = bullets.begin(); bullet != bullets.end();){
@@ -155,7 +159,7 @@ void Player::receiveDamageIfShot(std::vector<Bullet*> &bullets) {
         hitBoxBoth = size+(*bullet)->getSize();
         if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth*hitBoxBoth) {
             receiveDamage(1);
-            delete *bullet;
+            bullet -> reset();
             bullet = bullets.erase(bullet);
         }
         else {
@@ -164,13 +168,14 @@ void Player::receiveDamageIfShot(std::vector<Bullet*> &bullets) {
     }
 }
 
-void Player::receiveDamageIfHit(std::vector<Enemy*> enemies) {
+void Player::receiveDamageIfHit(std::vector<std::unique_ptr<Enemy>> &enemies) {
     Position diffPos;
     int hitBoxBoth;
-    for(Enemy* enemy : enemies){
+    for(const auto& enemy : enemies){
         diffPos = position - enemy->getPosition();
-        hitBoxBoth = size+enemy->getSize();
-        if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth) receiveDamage(1);
+        hitBoxBoth = size + enemy->getSize();
+        if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth) 
+            receiveDamage(1);
     }
 }
 

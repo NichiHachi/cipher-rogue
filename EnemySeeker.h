@@ -15,12 +15,12 @@ class EnemySeeker : public Enemy{
         static EnemyStats stats;
 
         EnemySeeker(Position position, float angleSpawn);
-        void update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) override;
-        void draw(sf::RenderWindow& window ) override;
-        void drawEffects(sf::RenderWindow& window ) override;
+        void update(std::vector<std::unique_ptr<Bullet>>& bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>>& enemies, float deltaTime) override;
+        void draw(sf::RenderWindow& window) override;
+        void drawEffects(sf::RenderWindow& window) override;
         std::string getType() override { return "Seeker"; };
 
-        void move(float targetAngle, std::vector<Wall> walls, std::vector<Enemy*> enemies);
+        void move(float targetAngle, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>> &enemies);
 
     private:
 };

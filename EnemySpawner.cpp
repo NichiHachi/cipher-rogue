@@ -16,17 +16,15 @@ EnemyStats EnemySpawner::stats;
 
 EnemySpawner::EnemySpawner(Position position) : Enemy(position, 5*stats.speedFactor, 0, 0, 0, 10, 20*stats.sizeFactor, false){}
 
-void EnemySpawner::update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
-    shootTimer += timePassed;
+void EnemySpawner::update(std::vector<std::unique_ptr<Bullet>>& bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>> &enemies, float deltaTime) {
+    shootTimer += deltaTime;
     if (shootTimer >= 5) {
-        for (int i = 0; i < 3; i++) {
-            enemies.push_back(new EnemySeeker(position, M_PI*2*i/3));
-        }
+        enemies.push_back(std::make_unique<EnemySeeker>(position, M_PI*2/3));
         shootTimer = 0;
     }
 }
 
-void EnemySpawner::draw(sf::RenderWindow &window ) {
+void EnemySpawner::draw(sf::RenderWindow &window) {
     float height = size;
     float width = size*7/20;
     sf::Color enemiesColor(100, 100, 100);
@@ -49,6 +47,6 @@ void EnemySpawner::draw(sf::RenderWindow &window ) {
     window.draw(quad);
 }
 
-void EnemySpawner::drawEffects(sf::RenderWindow &window ){
+void EnemySpawner::drawEffects(sf::RenderWindow &window){
     //Nothing
 }

@@ -7,7 +7,7 @@
 class Wall{
     public:
         Wall(Position position);
-        void draw(sf::RenderWindow& window );
+        void draw(sf::RenderWindow& window);
         bool isInWall(Position objectPos) const;
         Position getPosition() const {return position;};
         int getSize() const {return size;};

@@ -9,18 +9,21 @@
 
 Enemy::Enemy(Position position, float speed, float angle, float shootTimer, float speedBullet, int hp, int size, bool movable) : position(position), speed(speed), angle(angle), shootTimer(shootTimer), speedBullet(speedBullet), hp(hp), size(size), movable(movable){}
 
-/// @brief If a bullet touches the enemy, the enemy receives damage and the bullet destroyed.
-/// @param bullets Array of all the ally bullets.
-void Enemy::receiveDamageIfShot(std::vector<Bullet*>& bullets) {
+void Enemy::receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>>& bullets) {
     Position diffPos;
     float hitBoxBoth;
     for(auto bullet = bullets.begin(); bullet != bullets.end();){
+        if((*bullet)->getSize() <= 0){
+            bullet++;
+            continue;
+        }
+
         diffPos = position - (*bullet)->getPosition();
         hitBoxBoth = (*bullet)->getSize() + size;
         // sqrt(x² + y²) < n <=> x² + y² < n² :
         if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth) {
             receiveDamage(1);
-            delete *bullet;
+            bullet -> reset();
             bullet = bullets.erase(bullet);
         }
         else {
@@ -29,30 +32,27 @@ void Enemy::receiveDamageIfShot(std::vector<Bullet*>& bullets) {
     }
 }
 
-/// @brief If the enemy is inside a wall, it is pushed out of it.
-/// @param walls Array of all the walls.
-/// @return True if the position of the enemy has been adjusted, false otherwise.
-bool Enemy::adjustPositionBasedOnWalls(std::vector<Wall> walls){
+bool Enemy::adjustPositionBasedOnWalls(std::vector<std::unique_ptr<Wall>> &walls){
     bool positionAdjusted = false;
     Position wallPos;
     float angleEnemyWall;
-    for (Wall wall : walls) {
-        wallPos = wall.getPosition();
+    for (auto& wall : walls) {
+        wallPos = wall->getPosition();
         angleEnemyWall = atan2(wallPos.y - position.y, position.x - wallPos.x);
         //If the enemy nearest point from the middle of the wall is in the wall
-        if (wall.isInWall(position + Position(-cos(angleEnemyWall),sin(angleEnemyWall))*size)){
+        if (wall->isInWall(position + Position(-cos(angleEnemyWall),sin(angleEnemyWall))*size)){
             if(-M_PI/4 <= angleEnemyWall && angleEnemyWall <= M_PI/4){
-                position.x += size - (position.x - (wallPos.x + wall.getSize()));
+                position.x += size - (position.x - (wallPos.x + wall->getSize()));
             }
             else if(angleEnemyWall >= M_PI*3/4 || angleEnemyWall <= -M_PI*3/4){
-                position.x -= size - ((wallPos.x - wall.getSize()) - position.x);
+                position.x -= size - ((wallPos.x - wall->getSize()) - position.x);
             } 
             else if(M_PI/4 <= angleEnemyWall && angleEnemyWall <= M_PI*3/4){
-                position.y -= size - ((wallPos.y - wall.getSize()) - position.y);
+                position.y -= size - ((wallPos.y - wall->getSize()) - position.y);
             } 
             //angleEnemyWall< -M_PI/4 && angleEnemyWall > -M_PI*3/4
             else{
-                position.y += size - (position.y - (wallPos.y + wall.getSize()));
+                position.y += size - (position.y - (wallPos.y + wall->getSize()));
             }
             positionAdjusted = true;
         }
@@ -60,17 +60,13 @@ bool Enemy::adjustPositionBasedOnWalls(std::vector<Wall> walls){
     return positionAdjusted;
 }
 
-
-/// @brief If the enemy is inside an other enemy, push both of them.
-/// @param enemies Array of all the enemies.
-/// @return True if the position of the enemy has been adjusted, false otherwise.
-bool Enemy::adjustPositionBasedOnEnemies(std::vector<Enemy *> &enemies){
+bool Enemy::adjustPositionBasedOnEnemies(std::vector<std::unique_ptr<Enemy>> &enemies){
     bool positionAdjusted = false;
     float angleEnemyEnemy, distance, moveDistance;
     Position enemyPos, diffPos;
     int enemySize;
-    for(Enemy* enemy : enemies){
-        if(enemy == this) continue; //Don't check collision with itself
+    for(auto& enemy : enemies){
+        if(enemy.get() == this) continue; //Don't check collision with itself
         enemyPos = enemy->getPosition();
         enemySize = enemy->getSize();
         diffPos = position - enemyPos;
@@ -96,8 +92,6 @@ bool Enemy::adjustPositionBasedOnEnemies(std::vector<Enemy *> &enemies){
     return positionAdjusted;
 }
 
-/// @brief If the enemy is out of bounds, push it back in bounds.
-/// @return True if the position of the enemy has been adjusted, false otherwise.
 bool Enemy::adjustPositionBasedOnOOB(){
     bool positionAdjusted = false;
 

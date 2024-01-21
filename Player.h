@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <cmath>
+#include <memory>
 
 #include "Position.h"
 #include "Bullet.h"
@@ -15,15 +16,15 @@ class Player{
         static PlayerStats stats;
 
         Player();
-        void update(std::vector<Bullet*>& bullets,sf::RenderWindow& window,float timePassed, std::vector<Wall> walls);
+        void update(sf::RenderWindow &window, std::vector<std::unique_ptr<Bullet>> &bullets, 
+                    std::vector<std::unique_ptr<Wall>> &walls, float deltaTime);
         void spawn();
-        void move(sf::RenderWindow& window, std::vector<Wall> walls);
-        void shoot(std::vector<Bullet*>& bullets);
-        void receiveDamageIfShot(std::vector<Bullet*>& bullets);
-        void receiveDamageIfHit(std::vector<Enemy*> enemies);
+        void shoot(std::vector<std::unique_ptr<Bullet>> &bullets, Position targetPosition);
+        void receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>> &bullets);
+        void receiveDamageIfHit(std::vector<std::unique_ptr<Enemy>> &enemies);
         void receiveDamage(unsigned int damage);
-        void draw(sf::RenderWindow& window );
-        void drawHealth(sf::RenderWindow& window );
+        void draw(sf::RenderWindow& window);
+        void drawHealth(sf::RenderWindow& window);
 
         Position getPosition() const {return position;};
         float getSpeed() const {return speed;};
@@ -32,4 +33,6 @@ class Player{
         float speed,shootTimer,hitTimer,speedBullet;
         int size, hp, hpMax;
         double angle;
+
+        void move(std::vector<std::unique_ptr<Wall>> &walls);
 };

@@ -3,10 +3,11 @@
 #include <cmath>
 #include <iostream>
 
+#include "EnemyShooter.h"
 #include "Position.h"
 #include "Enemy.h"
 #include "Bullet.h"
-#include "EnemyShooter.h"
+#include "BulletStandard.h"
 #include "Wall.h"
 #include "EnemyStats.h"
 #include "Player.h"
@@ -15,23 +16,23 @@ EnemyStats EnemyShooter::stats;
 
 EnemyShooter::EnemyShooter(Position position) : Enemy(position, 1*stats.speedFactor, M_PI*3/2, 0, 3*stats.speedBulletFactor, 6, 19*stats.sizeFactor, true) {}
 
-void EnemyShooter::update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
+void EnemyShooter::update(std::vector<std::unique_ptr<Bullet>>& bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>>& enemies, float deltaTime) {
     float targetAngle = getAngleToObject(player.getPosition());
     move(targetAngle, walls, enemies);
 
     // Shoot every 2 secondes
-    shootTimer += timePassed;
+    shootTimer += deltaTime;
     if(shootTimer > 2){
         shoot(bullets);
         shootTimer = 0;
     }
 }
 
-void EnemyShooter::shoot(std::vector<Bullet*> &bullets){
-    bullets.push_back(new Bullet(position, angle, speedBullet, 15, false, true));
+void EnemyShooter::shoot(std::vector<std::unique_ptr<Bullet>> &bullets){
+    bullets.push_back(std::make_unique<BulletStandard>(position, angle, speedBullet, 15, false, true));
 }
 
-void EnemyShooter::move(float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
+void EnemyShooter::move(float targetAngle, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>> &enemies) {
     float angleDiff = targetAngle - angle;
     if (angleDiff > M_PI) {
         angleDiff -= 2 * M_PI;
@@ -56,7 +57,7 @@ void EnemyShooter::move(float targetAngle, std::vector<Wall> walls, std::vector<
     adjustPositionBasedOnOOB();
 }
 
-void EnemyShooter::draw(sf::RenderWindow &window ) {
+void EnemyShooter::draw(sf::RenderWindow &window) {
     int height = size*24/19;
     int width = size;
     float angle_point_triangle_1 = atan2(height, width);
@@ -95,6 +96,6 @@ void EnemyShooter::draw(sf::RenderWindow &window ) {
     window.draw(shooter_half_part);
 }
 
-void EnemyShooter::drawEffects(sf::RenderWindow &window ){
+void EnemyShooter::drawEffects(sf::RenderWindow &window){
     //Nothing
 }

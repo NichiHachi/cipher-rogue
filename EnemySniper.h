@@ -14,13 +14,13 @@ class EnemySniper : public Enemy{
         static EnemyStats stats;
 
         EnemySniper(Position position);
-        void update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) override;
-        void draw(sf::RenderWindow& window ) override;
-        void drawEffects(sf::RenderWindow& window ) override;
+        void update(std::vector<std::unique_ptr<Bullet>>& bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>>& enemies, float deltaTime) override;
+        void draw(sf::RenderWindow& window) override;
+        void drawEffects(sf::RenderWindow& window) override;
         std::string getType() override { return "Sniper"; };
 
-        void shoot(std::vector<Bullet*> &bullets);
-        void move(float targetAngle, std::vector<Wall> walls, std::vector<Enemy*>& enemies);
+        void shoot(std::vector<std::unique_ptr<Bullet>> &bullets);
+        void move(float targetAngle, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>> &enemies);
 
     private:
 };

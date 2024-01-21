@@ -14,13 +14,13 @@ class EnemyCharger : public Enemy{
         static EnemyStats stats;
 
         EnemyCharger(Position position);
-        void update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) override;
-        void draw(sf::RenderWindow& window ) override;
-        void drawEffects(sf::RenderWindow& window ) override;
+        void update(std::vector<std::unique_ptr<Bullet>> &bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>>& enemies, float deltaTime) override;
+        void draw(sf::RenderWindow& window) override;
+        void drawEffects(sf::RenderWindow& window) override;
         std::string getType() override { return "Charger"; };
 
-        void move(std::vector<Wall> walls);
-        void drawWarningZone(sf::RenderWindow& window );
+        void move(std::vector<std::unique_ptr<Wall>> &walls);
+        void drawWarningZone(sf::RenderWindow& window);
 
     private:
 };

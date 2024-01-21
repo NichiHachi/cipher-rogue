@@ -7,7 +7,7 @@
 
 Wall::Wall(Position position) : position(position), size(25) {}
 
-void Wall::draw(sf::RenderWindow &window ) {
+void Wall::draw(sf::RenderWindow &window) {
     sf::VertexArray quad(sf::Quads, 4);
     for(unsigned int i = 0; i < 4; i++) quad[i].color = sf::Color::White;
 

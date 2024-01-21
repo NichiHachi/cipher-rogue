@@ -1,10 +1,19 @@
 all: main
 
-main: main.cpp Bullet.o Player.o Enemy.o EnemyCharger.o EnemyShooter.o EnemySniper.o EnemySpawner.o EnemySeeker.o EnemyTurret.o Wall.o
-	g++ main.cpp Bullet.o Player.o Enemy.o EnemyCharger.o EnemyShooter.o EnemySniper.o EnemySpawner.o EnemySeeker.o EnemyTurret.o Wall.o -o main -lsfml-graphics -lsfml-window -lsfml-system
+main: main.cpp Bullet.o Player.o Enemy.o EnemyCharger.o EnemyShooter.o EnemySniper.o EnemySpawner.o EnemySeeker.o EnemyTurret.o Wall.o Game.o BulletStandard.o BulletBombshell.o
+	g++ main.cpp Bullet.o Player.o Enemy.o EnemyCharger.o EnemyShooter.o EnemySniper.o EnemySpawner.o EnemySeeker.o EnemyTurret.o Wall.o Game.o BulletStandard.o BulletBombshell.o -o main -lsfml-graphics -lsfml-window -lsfml-system
+
+Game.o: Game.cpp Game.h
+	g++ -c Game.cpp
 
 Bullet.o: Bullet.cpp Bullet.h
 	g++ -c Bullet.cpp
+
+BulletStandard.o: BulletStandard.cpp BulletStandard.h
+	g++ -c BulletStandard.cpp
+
+BulletBombshell.o: BulletBombshell.cpp BulletBombshell.h
+	g++ -c BulletBombshell.cpp
 
 Wall.o: Wall.cpp Wall.h
 	g++ -c Wall.cpp

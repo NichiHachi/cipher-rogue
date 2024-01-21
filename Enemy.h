@@ -1,5 +1,7 @@
+#pragma once
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
+#include <memory>
 #include <string>
 
 #include "Position.h"
@@ -7,16 +9,15 @@
 #include "Wall.h"
 #include "Player.h"
 
-#pragma once
 class Enemy{
     public:
-        virtual void update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies)=0;
-        virtual void draw(sf::RenderWindow& window )=0;
-        virtual void drawEffects(sf::RenderWindow& window )=0;
+        virtual void update(std::vector<std::unique_ptr<Bullet>>& bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>>& enemies, float deltaTime)=0;
+        virtual void draw(sf::RenderWindow& window)=0;
+        virtual void drawEffects(sf::RenderWindow& window)=0;
         virtual std::string getType()=0;
         virtual ~Enemy(){};
 
-        void receiveDamageIfShot(std::vector<Bullet*>& bullets);
+        void receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>>& bullets);
         void setPosition(Position newPosition) {this->position = newPosition;};
         void receiveDamage(int damage) {hp -= damage;};
 
@@ -33,8 +34,8 @@ class Enemy{
         const bool movable;
 
         Enemy(Position position, float speed, float angle, float shootTimer, float speedBullet, int hp, int size, bool movable);
-        bool adjustPositionBasedOnEnemies(std::vector<Enemy*>& enemies);
-        bool adjustPositionBasedOnWalls(std::vector<Wall> walls);
+        bool adjustPositionBasedOnEnemies(std::vector<std::unique_ptr<Enemy>>& enemies);
+        bool adjustPositionBasedOnWalls(std::vector<std::unique_ptr<Wall>> &walls);
         bool adjustPositionBasedOnOOB();
         float getAngleToObject(Position objectPosition);
         float getAngleToFuturPlayerPosition(Player player);

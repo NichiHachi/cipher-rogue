@@ -5,6 +5,7 @@
 #include "Position.h"
 #include "Enemy.h"
 #include "Bullet.h"
+#include "BulletStandard.h"
 #include "Wall.h"
 #include "EnemyTurret.h"
 #include "EnemyStats.h"
@@ -13,26 +14,26 @@ EnemyStats EnemyTurret::stats;
 
 EnemyTurret::EnemyTurret(Position position) : Enemy(position, 5*stats.speedFactor, 0, 0, 3, 10, 30*stats.sizeFactor, false) {}
 
-void EnemyTurret::update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
-    shootTimer += timePassed;
+void EnemyTurret::update(std::vector<std::unique_ptr<Bullet>>& bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>>& enemies, float deltaTime) {
+    shootTimer += deltaTime;
     if(shootTimer >= 0.5){
         shoot(bullets);
         shootTimer = 0;
     }
 }
 
-void EnemyTurret::shoot(std::vector<Bullet*> &bullets){
+void EnemyTurret::shoot(std::vector<std::unique_ptr<Bullet>> &bullets){
     for(int i=0;i<4;i++){
-        bullets.push_back(new Bullet(position, angle+M_PI*i/2, speedBullet, 15, false, true));
+        bullets.push_back(std::make_unique<BulletStandard>(position, angle+M_PI*i/2, speedBullet, 15, false, true));
     }
     angle += M_PI/6;
 }
 
-void EnemyTurret::move(std::vector<Wall> walls){
+void EnemyTurret::move(std::vector<std::unique_ptr<Wall>> &walls){
     //Nothing
 }
 
-void EnemyTurret::draw(sf::RenderWindow &window ) {
+void EnemyTurret::draw(sf::RenderWindow &window) {
     sf::Color enemiesColor(100, 100, 100);
     sf::VertexArray enemy_part(sf::Triangles, 3);
 
@@ -57,6 +58,6 @@ void EnemyTurret::draw(sf::RenderWindow &window ) {
     }
 }
 
-void EnemyTurret::drawEffects(sf::RenderWindow &window ){
+void EnemyTurret::drawEffects(sf::RenderWindow &window){
     //Nothing
 }

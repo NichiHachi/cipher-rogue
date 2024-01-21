@@ -15,12 +15,12 @@ EnemyStats EnemySeeker::stats;
 
 EnemySeeker::EnemySeeker(Position position, float angleSpawn) : Enemy(position, 3.75*stats.speedFactor, angleSpawn, 0, 5*stats.speedBulletFactor, 4, 15*stats.sizeFactor, true) {}
 
-void EnemySeeker::update(std::vector<Bullet*>& bullets, float timePassed, Player player, std::vector<Wall> walls, std::vector<Enemy*>& enemies) {
+void EnemySeeker::update(std::vector<std::unique_ptr<Bullet>> &bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>> &enemies, float deltaTime) {
     float targetAngle = getAngleToObject(player.getPosition());
     move(targetAngle, walls, enemies);
 }
 
-void EnemySeeker::move(float targetAngle, std::vector<Wall> walls, std::vector<Enemy*> enemies) {
+void EnemySeeker::move(float targetAngle, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>> &enemies) {
     float angleDiff = targetAngle - angle;
 
     // Make sure the angle is between -PI and PI
@@ -43,7 +43,7 @@ void EnemySeeker::move(float targetAngle, std::vector<Wall> walls, std::vector<E
     adjustPositionBasedOnOOB();
 }
 
-void EnemySeeker::draw(sf::RenderWindow &window ) {
+void EnemySeeker::draw(sf::RenderWindow &window) {
     sf::Color enemiesColor(100, 100, 100);
     sf::VertexArray enemy(sf::Triangles, 3);
     for(unsigned int i = 0; i < 3; i++) enemy[i].color = enemiesColor;
@@ -58,6 +58,6 @@ void EnemySeeker::draw(sf::RenderWindow &window ) {
     window.draw(enemy);
 }
 
-void EnemySeeker::drawEffects(sf::RenderWindow &window ){
+void EnemySeeker::drawEffects(sf::RenderWindow &window){
     //Nothing
 }
