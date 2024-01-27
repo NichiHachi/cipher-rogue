@@ -52,15 +52,17 @@ void Game::destroyInWallOrOutOfBounds(std::vector<std::unique_ptr<Bullet>> &bull
     bool destroyed;
 
     for (auto bullet = bullets.begin(); bullet != bullets.end();) {
-        if((*bullet)->isDeletable()){
-            bullet -> reset();
-            bullet = bullets.erase(bullet);    
-            continue;
-        }
-
         destroyed = false;
         bulletPos = (*bullet)->getPosition();
         bulletSize = (*bullet)->getSize();
+
+
+        if(bulletPos.x < - bulletSize * 2 || bulletPos.y < - bulletSize * 2 ||
+        bulletPos.x > 1000 + bulletSize * 2 || bulletPos.y > 1000 + bulletSize * 2){
+            bullet -> reset();
+            bullet = bullets.erase(bullet);
+            continue;
+        }
 
         // If the bullet touches a wall
         for (const auto& wall : walls) {
@@ -79,9 +81,107 @@ void Game::destroyInWallOrOutOfBounds(std::vector<std::unique_ptr<Bullet>> &bull
     }
 }
 
+void Game::destroyWalls(std::vector<std::unique_ptr<Wall>> &walls){
+    Position wallPos, bombshellPos;
+    float angleWallBombshell;
+    for(const auto&bombshell : bombshells){
+        bombshellPos = bombshell->getPosition();
+        for(auto wall = walls.begin(); wall != walls.end();){
+            wallPos = (*wall)->getPosition();
+            angleWallBombshell = atan2(wallPos.y - bombshellPos.y, bombshellPos.x - wallPos.x);
+            Position bulletWallPos = bombshellPos + Position(-cos(angleWallBombshell), sin(angleWallBombshell)) * bombshell->getSize();
+            if ((*wall)->isInWall(bulletWallPos)) {
+                wall->reset();
+                wall = walls.erase(wall);
+            }
+            else{
+                wall++;
+            }
+        }
+    }
+}
+
+void Game::bulletCollisions(){
+    Position diffPos;
+    float hitBoxBoth;
+    bool allyBulletDestroyed;
+    for(auto bulletAlly = bulletsAlly.begin(); bulletAlly != bulletsAlly.end();){
+        if((*bulletAlly)->getSize() <= 0){
+            bulletAlly++;
+            continue;
+        }
+
+        //If the ally bullet touch a enemy bullet that is destructible -> destroy both bullets
+        allyBulletDestroyed = false;
+        for(auto bulletEnemy = bulletsEnemy.begin(); bulletEnemy != bulletsEnemy.end();){
+            if (!(*bulletEnemy)->isDestructible() || (*bulletEnemy)->getSize() <= 0){
+                bulletEnemy++;
+                continue;
+            }
+
+            diffPos = (*bulletAlly)->getPosition() - (*bulletEnemy)->getPosition();
+            hitBoxBoth = (*bulletAlly)->getSize() + (*bulletEnemy)->getSize();
+            if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth*hitBoxBoth) {
+                if((*bulletAlly)->isDestructible()){
+                    bulletAlly -> reset();
+                    bulletAlly = bulletsAlly.erase(bulletAlly);
+                    allyBulletDestroyed = true;
+                }
+                bulletEnemy -> reset();
+                bulletEnemy = bulletsEnemy.erase(bulletEnemy);
+                break;
+            }
+        
+            bulletEnemy++;
+        }
+
+        if(!allyBulletDestroyed) bulletAlly++;
+    }
+
+    Position bombshellPos;
+    float bombshellSize;
+    for(const auto&bombshell : bombshells){
+        bombshellPos = bombshell->getPosition();
+        bombshellSize = bombshell->getSize();
+        
+        if(bombshellSize <= 0)   
+            continue;
+
+        for(auto bulletEnemy = bulletsEnemy.begin(); bulletEnemy != bulletsEnemy.end();){
+            if(!(*bulletEnemy)->isDestructible()){
+                bulletEnemy++;
+                continue;
+            }
+            diffPos = bombshellPos - (*bulletEnemy)->getPosition();
+            hitBoxBoth = bombshellSize + (*bulletEnemy)->getSize();
+            if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth*hitBoxBoth) {
+                bulletEnemy -> reset();
+                bulletEnemy = bulletsEnemy.erase(bulletEnemy);
+                continue;
+            }
+            bulletEnemy++;
+        }
+
+        for(auto bulletAlly = bulletsAlly.begin(); bulletAlly != bulletsAlly.end();){
+            if(!(*bulletAlly)->isDestructible()){
+                bulletAlly++;
+                continue;
+            }
+            diffPos = bombshellPos - (*bulletAlly)->getPosition();
+            hitBoxBoth = bombshellSize + (*bulletAlly)->getSize();
+            if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth*hitBoxBoth) {
+                bulletAlly -> reset();
+                bulletAlly = bulletsAlly.erase(bulletAlly);
+                continue;
+            }
+            bulletAlly++;
+        }
+    }
+}
+
 void Game::update(sf::RenderWindow& window, float deltaTime){
         //-----PLAYER UPDATE-----
-        player.update(window,bulletsAlly,walls,deltaTime);
+        player.update(window,bulletsAlly,bombshells,walls,deltaTime);
 
 
         //-----ENEMIES UPDATE-----
@@ -92,60 +192,38 @@ void Game::update(sf::RenderWindow& window, float deltaTime){
         //-----BULLETS UPDATE-----
         //ENEMY'S BULLETS
         for(auto& bullet : bulletsEnemy){
-            bullet->update(deltaTime);
+            bullet->update();
         }
 
         destroyInWallOrOutOfBounds(bulletsEnemy);
 
         //ALLY'S BULLET
         for(auto& bullet : bulletsAlly){
-            bullet->update(deltaTime);
+            bullet->update();
         }
 
         destroyInWallOrOutOfBounds(bulletsAlly);
 
-        Position diffPos;
-        float hitBoxBoth;
-        bool allyBulletDestroyed;
-        for(auto bulletAlly = bulletsAlly.begin(); bulletAlly != bulletsAlly.end();){
-            if((*bulletAlly)->getSize() <= 0){
-                bulletAlly++;
-                continue;
+        //BOMBSHELLS
+        for(auto bombshell = bombshells.begin(); bombshell != bombshells.end();) {
+            (*bombshell)->update(deltaTime);
+            if((*bombshell)->isDeletable()){
+                bombshell -> reset();
+                bombshell = bombshells.erase(bombshell);
             }
-
-            //If the ally bullet touch a enemy bullet that is destructible -> destroy both bullets
-            allyBulletDestroyed = false;
-            for(auto bulletEnemy = bulletsEnemy.begin(); bulletEnemy != bulletsEnemy.end();){
-                if (!(*bulletEnemy)->isDestructible() || (*bulletEnemy)->getSize() <= 0){
-                    bulletEnemy++;
-                    continue;
-                }
-
-                diffPos = (*bulletAlly)->getPosition() - (*bulletEnemy)->getPosition();
-                hitBoxBoth = (*bulletAlly)->getSize() + (*bulletEnemy)->getSize();
-                if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth*hitBoxBoth) {
-                    if((*bulletAlly)->isDestructible()){
-                        bulletAlly -> reset();
-                        bulletAlly = bulletsAlly.erase(bulletAlly);
-                        allyBulletDestroyed = true;
-                    }
-                    bulletEnemy -> reset();
-                    bulletEnemy = bulletsEnemy.erase(bulletEnemy);
-                    break;
-                }
-            
-                bulletEnemy++;
-            }
-
-            if(!allyBulletDestroyed) bulletAlly++;
+            else bombshell++;
         }
 
+        destroyWalls(walls);
+
+        bulletCollisions();
+        
         //-----PLAYER AND ENEMY BULLETS-----
-        player.receiveDamageIfShot(bulletsEnemy);
+        player.receiveDamageIfShot(bulletsEnemy, bombshells);
 
         //-----ENEMIES AND ALLY BULLETS-----
         for(auto& enemy : enemies) {
-            enemy->receiveDamageIfShot(bulletsAlly);
+            enemy->receiveDamageIfShot(bulletsAlly, bombshells);
         }
 
         //-----PLAYER AND ENEMIES-----
@@ -168,6 +246,10 @@ void Game::draw(sf::RenderWindow& window, float deltaTime){
 
         for(auto& enemy : enemies){
             enemy->drawEffects(window);
+        }
+
+        for(auto& bombshell : bombshells){
+            bombshell->draw(window);
         }
 
         for(auto& bullet : bulletsAlly){

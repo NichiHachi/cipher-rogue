@@ -4,12 +4,13 @@
 
 #include "Position.h"
 #include "Bullet.h"
+#include "Bombshell.h"
 #include "Enemy.h"
 #include "Player.h"
 
 Enemy::Enemy(Position position, float speed, float angle, float shootTimer, float speedBullet, int hp, int size, bool movable) : position(position), speed(speed), angle(angle), shootTimer(shootTimer), speedBullet(speedBullet), hp(hp), size(size), movable(movable){}
 
-void Enemy::receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>>& bullets) {
+void Enemy::receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>>& bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells){
     Position diffPos;
     float hitBoxBoth;
     for(auto bullet = bullets.begin(); bullet != bullets.end();){
@@ -28,6 +29,18 @@ void Enemy::receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>>& bullets) {
         }
         else {
             bullet++;
+        }
+    }
+
+    for(auto& bombshell : bombshells){
+        if(!bombshell->hasExploded()) continue;
+        if(!bombshell->isAlly() || std::find(bombshell->hitEnemies.begin(), bombshell->hitEnemies.end(), this) != bombshell->hitEnemies.end()) continue;
+
+        diffPos = position - bombshell->getPosition();
+        hitBoxBoth = size + bombshell->getSize();
+        if(diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth){
+            receiveDamage(2);
+            bombshell->hitEnemies.push_back(this);
         }
     }
 }

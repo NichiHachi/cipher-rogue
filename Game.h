@@ -3,6 +3,7 @@
 #include <string>
 
 #include "Bullet.h"
+#include "Bombshell.h"
 #include "Player.h"
 #include "Wall.h"
 #include "Enemy.h"
@@ -12,6 +13,7 @@ class Game{
         Player player;
         std::vector<std::unique_ptr<Bullet>> bulletsEnemy;
         std::vector<std::unique_ptr<Bullet>> bulletsAlly;
+        std::vector<std::unique_ptr<Bombshell>> bombshells;
         std::vector<std::unique_ptr<Wall>> walls;
         std::vector<std::unique_ptr<Enemy>> enemies;
         std::vector<std::string> messageTerminal;
@@ -33,4 +35,6 @@ class Game{
         void setStatsScaleWithFPS(int FPS);
         void fakeTerminalDraw(sf::RenderWindow& window, float deltaTime);
         void drawCursor(sf::RenderWindow& window, float deltaTime);
+        void destroyWalls(std::vector<std::unique_ptr<Wall>> &walls);
+        void bulletCollisions();
 };

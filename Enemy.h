@@ -6,8 +6,12 @@
 
 #include "Position.h"
 #include "Bullet.h"
+#include "Bombshell.h"
 #include "Wall.h"
 #include "Player.h"
+
+class Player;
+class Bombshell;
 
 class Enemy{
     public:
@@ -17,7 +21,7 @@ class Enemy{
         virtual std::string getType()=0;
         virtual ~Enemy(){};
 
-        void receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>>& bullets);
+        void receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>>& bullets, std::vector<std::unique_ptr<Bombshell>>& bombshells);
         void setPosition(Position newPosition) {this->position = newPosition;};
         void receiveDamage(int damage) {hp -= damage;};
 

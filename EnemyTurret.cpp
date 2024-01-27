@@ -5,7 +5,7 @@
 #include "Position.h"
 #include "Enemy.h"
 #include "Bullet.h"
-#include "BulletStandard.h"
+#include "Bullet.h"
 #include "Wall.h"
 #include "EnemyTurret.h"
 #include "EnemyStats.h"
@@ -24,7 +24,7 @@ void EnemyTurret::update(std::vector<std::unique_ptr<Bullet>>& bullets, Player p
 
 void EnemyTurret::shoot(std::vector<std::unique_ptr<Bullet>> &bullets){
     for(int i=0;i<4;i++){
-        bullets.push_back(std::make_unique<BulletStandard>(position, angle+M_PI*i/2, speedBullet, 15, false, true));
+        bullets.push_back(std::make_unique<Bullet>(position, angle+M_PI*i/2, speedBullet, 15, false, true));
     }
     angle += M_PI/6;
 }

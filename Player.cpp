@@ -7,8 +7,7 @@
 #include "Enemy.h"
 #include "Position.h"
 #include "Bullet.h"
-#include "BulletBombshell.h"
-#include "BulletStandard.h"
+#include "Bombshell.h"
 #include "Wall.h"
 #include "PlayerStats.h"
 
@@ -16,7 +15,7 @@ PlayerStats Player::stats;
 
 Player::Player() : position(Position(0,0)), speed(5*stats.speedFactor), hp(49), hpMax(10), shootTimer(0), hitTimer(2), size(19), speedBullet(10*stats.speedBulletFactor) {}
 
-void Player::update(sf::RenderWindow& window, std::vector<std::unique_ptr<Bullet>> &bullets, 
+void Player::update(sf::RenderWindow& window, std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells,
                     std::vector<std::unique_ptr<Wall>> &walls, float deltaTime) {
     move(walls);
 
@@ -25,7 +24,7 @@ void Player::update(sf::RenderWindow& window, std::vector<std::unique_ptr<Bullet
 
     sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
     angle = atan2(position.y - mousePosition.y, mousePosition.x - position.x);
-    shoot(bullets, Position(mousePosition.x, mousePosition.y));
+    shoot(bullets, bombshells, Position(mousePosition.x, mousePosition.y));
 }
 
 void Player::spawn(){
@@ -74,10 +73,10 @@ void Player::move(std::vector<std::unique_ptr<Wall>> &walls) {
     else if (position.y > 1000-size) position.y = 1000-size;
 }
 
-void Player::shoot(std::vector<std::unique_ptr<Bullet>> &bullets, Position targetPosition) {
+void Player::shoot(std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells, Position targetPosition) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         if (shootTimer > 0.2) {
-            bullets.push_back(std::make_unique<BulletBombshell>(position, targetPosition, speedBullet, 10, true, true));
+            bombshells.push_back(std::make_unique<Bombshell>(position, targetPosition, speedBullet, 10, true, true));
             shootTimer = 0;
         }
     }
@@ -151,9 +150,9 @@ void Player::drawHealth(sf::RenderWindow &window) {
     }
 }
 
-void Player::receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>> &bullets) {
+void Player::receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells) {
     Position diffPos;
-    int hitBoxBoth;
+    float hitBoxBoth;
     for(auto bullet = bullets.begin(); bullet != bullets.end();){
         diffPos = position - (*bullet)->getPosition();
         hitBoxBoth = size+(*bullet)->getSize();
@@ -164,6 +163,18 @@ void Player::receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>> &bullets) 
         }
         else {
             bullet++;
+        }
+    }
+    
+    for(auto& bombshell : bombshells){
+        if(!bombshell->hasExploded()) continue;
+        if( bombshell->isAlly() || bombshell->hitPlayer) continue;
+
+        diffPos = position - bombshell->getPosition();
+        hitBoxBoth = size + bombshell->getSize();
+        if(diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth){
+            receiveDamage(2);
+            bombshell->hitPlayer = true;
         }
     }
 }
