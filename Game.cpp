@@ -41,7 +41,7 @@ Game::Game(int FPS) {
     //enemies.push_back(std::make_unique<EnemyTurret>(Position(200, 200)));
     //enemies.push_back(std::make_unique<EnemySpawner>(Position(300, 300)));
     //enemies.push_back(std::make_unique<EnemySniper>(Position(400, 400)));
-    //enemies.push_back(std::make_unique<EnemyCharger>(Position(500, 600)));
+    enemies.push_back(std::make_unique<EnemyCharger>(Position(500, 600)));
 }
 
 Game::~Game(){}
@@ -241,15 +241,15 @@ void Game::update(sf::RenderWindow& window, float deltaTime){
 }
 
 void Game::draw(sf::RenderWindow& window, float deltaTime){
-        fakeTerminalDraw(window, deltaTime);
-        drawCursor(window, deltaTime);
+        drawFakeTerminal(window, deltaTime);
+        drawCursorTerminal(window, deltaTime);
 
         for(auto& enemy : enemies){
             enemy->drawEffects(window);
         }
 
         for(auto& bombshell : bombshells){
-            bombshell->draw(window);
+            bombshell->drawExplosion(window);
         }
 
         for(auto& bullet : bulletsAlly){
@@ -269,6 +269,10 @@ void Game::draw(sf::RenderWindow& window, float deltaTime){
 
         for(auto& wall : walls){
             wall->draw(window);
+        }
+
+        for(auto& bombshell : bombshells){
+            bombshell->draw(window);
         }
 
         player.drawHealth(window);
@@ -306,7 +310,7 @@ void Game::setStatsScaleWithFPS(int FPS) {
     EnemyTurret::stats.speedBulletFactor = ratioFPS;
 }
 
-void Game::fakeTerminalDraw(sf::RenderWindow& window, float deltaTime){ 
+void Game::drawFakeTerminal(sf::RenderWindow& window, float deltaTime){ 
     if(messageTerminal.empty()) return;
 
     displayedMessageTimer += deltaTime;
@@ -325,7 +329,7 @@ void Game::fakeTerminalDraw(sf::RenderWindow& window, float deltaTime){
     window.draw(text);
 }
 
-void Game::drawCursor(sf::RenderWindow& window, float deltaTime) {
+void Game::drawCursorTerminal(sf::RenderWindow& window, float deltaTime) {
     cursorTimer += deltaTime;
     if (cursorVisible) {
         sf::RectangleShape cursor(sf::Vector2f(2, text.getCharacterSize()));

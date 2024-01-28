@@ -33,21 +33,26 @@ void EnemyCharger::drawWarningZone(sf::RenderWindow &window) {
         float length = 500 * (shootTimer - 7);
         sf::VertexArray warningZone(sf::Quads, 4);
 
-        for(unsigned int i = 0; i < 4; i++) warningZone[i].color = sf::Color::Red;
+        for(unsigned int i = 0; i < 4; i++) warningZone[i].color = sf::Color(255, 0, 0, 100);
 
         sf::Vector2f lengthWarningZone = sf::Vector2f(cos(angle), -sin(angle))*length;
+        sf::Vector2f totalLengthWarningZone = sf::Vector2f(cos(angle), -sin(angle))*(float)1500;
 
         warningZone[0].position = sf::Vector2f(position.x + cos(angle + 2 * M_PI / 5)*size,
                                                position.y - sin(angle + 2 * M_PI / 5)*size);
 
-        //We extand the point that start from the charger to the length of the warning zone
-        warningZone[1].position = warningZone[0].position + lengthWarningZone;
-
-        warningZone[3].position = sf::Vector2f(position.x + cos(angle + 8 * M_PI / 5)*size,
+        warningZone[1].position = sf::Vector2f(position.x + cos(angle + 8 * M_PI / 5)*size,
                                                position.y - sin(angle + 8 * M_PI / 5)*size);
         
-        //Same here
-        warningZone[2].position = warningZone[3].position + lengthWarningZone;
+        warningZone[2].position = warningZone[1].position + totalLengthWarningZone;
+        warningZone[3].position = warningZone[0].position + totalLengthWarningZone;
+
+        window.draw(warningZone);
+
+
+        //We extand the point that start from the charger to the length of the warning zone
+        warningZone[2].position = warningZone[1].position + lengthWarningZone;
+        warningZone[3].position = warningZone[0].position + lengthWarningZone;
 
         window.draw(warningZone);
 }

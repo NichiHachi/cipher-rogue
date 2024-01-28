@@ -73,10 +73,10 @@ void Player::move(std::vector<std::unique_ptr<Wall>> &walls) {
     else if (position.y > 1000-size) position.y = 1000-size;
 }
 
-void Player::shoot(std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells, Position targetPosition) {
+void Player::shoot(std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells, Position positionTarget) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         if (shootTimer > 0.2) {
-            bombshells.push_back(std::make_unique<Bombshell>(position, targetPosition, speedBullet, 10, true, true));
+            bombshells.push_back(std::make_unique<Bombshell>(position, positionTarget, speedBullet, 10, true, true));
             shootTimer = 0;
         }
     }

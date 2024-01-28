@@ -21,7 +21,7 @@ class Player{
         void update(sf::RenderWindow &window, std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells,
                     std::vector<std::unique_ptr<Wall>> &walls, float deltaTime);
         void spawn();
-        void shoot(std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells, Position targetPosition);
+        void shoot(std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells, Position positionTarget);
         void receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells);
         void receiveDamageIfHit(std::vector<std::unique_ptr<Enemy>> &enemies);
         void receiveDamage(unsigned int damage);
@@ -30,6 +30,7 @@ class Player{
 
         Position getPosition() const {return position;};
         float getSpeed() const {return speed;};
+        
     private:
         Position position;
         float speed, shootTimer, hitTimer, speedBullet;

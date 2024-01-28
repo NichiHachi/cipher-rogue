@@ -10,10 +10,11 @@ class Enemy;
 
 class Bombshell{
     public:
-        Bombshell(Position position, Position targetPosition, float speed, float size, bool ally, bool destructible);
+        Bombshell(Position position, Position positionTarget, float speed, float size, bool ally, bool destructible);
         ~Bombshell() = default;
         void update(const float deltaTime);
         void draw(sf::RenderWindow &window);
+        void drawExplosion(sf::RenderWindow &window);
         bool isDeletable() const;
 
         Position getPosition() const { return position; };
@@ -27,10 +28,10 @@ class Bombshell{
         std::vector<Enemy*> hitEnemies;
 
     private:
-        float maxSize;
+        float sizeMax;
         float fallTime = 0;
         float timeToFall = 3;
-        Position position, targetPosition;
+        Position position, positionTarget;
         float angle, speed, size;
         bool ally;
 };

@@ -33,8 +33,8 @@ class Game{
         sf::Font font;
         void destroyInWallOrOutOfBounds(std::vector<std::unique_ptr<Bullet>>& bullets);
         void setStatsScaleWithFPS(int FPS);
-        void fakeTerminalDraw(sf::RenderWindow& window, float deltaTime);
-        void drawCursor(sf::RenderWindow& window, float deltaTime);
+        void drawFakeTerminal(sf::RenderWindow& window, float deltaTime);
+        void drawCursorTerminal(sf::RenderWindow& window, float deltaTime);
         void destroyWalls(std::vector<std::unique_ptr<Wall>> &walls);
         void bulletCollisions();
 };
