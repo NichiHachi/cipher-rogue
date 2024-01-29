@@ -15,8 +15,8 @@ PlayerStats Player::stats;
 
 Player::Player() : position(Position(0,0)), speed(5*stats.speedFactor), hp(49), hpMax(10), shootTimer(0), hitTimer(2), size(19), speedBullet(10*stats.speedBulletFactor) {}
 
-void Player::update(sf::RenderWindow& window, std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells,
-                    std::vector<std::unique_ptr<Wall>> &walls, float deltaTime) {
+void Player::update(sf::RenderWindow& window, std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells,
+                    std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime) {
     move(walls);
 
     shootTimer += deltaTime;
@@ -31,7 +31,7 @@ void Player::spawn(){
     position = Position(500,900);
 }
 
-void Player::move(std::vector<std::unique_ptr<Wall>> &walls) {
+void Player::move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls) {
     int xAxisMove = 0;
     int yAxisMove = 0;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) yAxisMove++;
@@ -46,22 +46,24 @@ void Player::move(std::vector<std::unique_ptr<Wall>> &walls) {
         position += Position(xAxisMove,-yAxisMove)*speed;
     }
  
-    for (const auto& wall : walls) {
-        Position wallPos = wall->getPosition();
+    float wallSize;
+    for (unsigned int i = 0; i < walls->size(); i++) {
+        Position wallPos = walls->at(i)->getPosition();
         float angleWallPlayer = atan2(wallPos.y - position.y, position.x - wallPos.x);
-        if (wall->isInWall(position + Position(-cos(angleWallPlayer),sin(angleWallPlayer))*size)){
+        if (walls->at(i)->isInWall(position + Position(-cos(angleWallPlayer),sin(angleWallPlayer))*size)){
+            float wallSize = walls->at(i)->getSize();
             if(-M_PI/4 <= angleWallPlayer && angleWallPlayer <= M_PI/4){
-                position.x += size - (position.x - (wallPos.x + wall->getSize()));
+                position.x += size - (position.x - (wallPos.x + wallSize));
             }
             else if(angleWallPlayer >= M_PI*3/4 || angleWallPlayer <= -M_PI*3/4){
-                position.x -= size - ((wallPos.x - wall->getSize()) - position.x);
+                position.x -= size - ((wallPos.x - wallSize) - position.x);
             } 
             else if(M_PI/4 <= angleWallPlayer && angleWallPlayer <= M_PI*3/4){
-                position.y -= size - ((wallPos.y - wall->getSize()) - position.y);
+                position.y -= size - ((wallPos.y - wallSize) - position.y);
             } 
             //angleWallPlayer< -M_PI/4 && angleWallPlayer > -M_PI*3/4
             else{
-                position.y += size - (position.y - (wallPos.y + wall->getSize()));
+                position.y += size - (position.y - (wallPos.y + wallSize));
             }
         }
     }
@@ -73,10 +75,10 @@ void Player::move(std::vector<std::unique_ptr<Wall>> &walls) {
     else if (position.y > 1000-size) position.y = 1000-size;
 }
 
-void Player::shoot(std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells, Position positionTarget) {
+void Player::shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells, Position positionTarget) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         if (shootTimer > 0.2) {
-            bombshells.push_back(std::make_unique<Bombshell>(position, positionTarget, speedBullet, 10, true, true));
+            bombshells->push_back(std::make_unique<Bombshell>(position, positionTarget, speedBullet, 10, true, true));
             shootTimer = 0;
         }
     }
@@ -150,41 +152,41 @@ void Player::drawHealth(sf::RenderWindow &window) {
     }
 }
 
-void Player::receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells) {
+void Player::receiveDamageIfShot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells) {
     Position diffPos;
     float hitBoxBoth;
-    for(auto bullet = bullets.begin(); bullet != bullets.end();){
+    auto bullet = bullets->begin();
+    while (bullet != bullets->end()) {
         diffPos = position - (*bullet)->getPosition();
         hitBoxBoth = size+(*bullet)->getSize();
         if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth*hitBoxBoth) {
             receiveDamage(1);
-            bullet -> reset();
-            bullet = bullets.erase(bullet);
+            bullet = bullets->erase(bullet);
         }
         else {
             bullet++;
         }
     }
     
-    for(auto& bombshell : bombshells){
-        if(!bombshell->hasExploded()) continue;
-        if( bombshell->isAlly() || bombshell->hitPlayer) continue;
+    for(unsigned int i = 0; i < bombshells->size(); i++){
+        if(!bombshells->at(i)->hasExploded()) continue;
+        if( bombshells->at(i)->isAlly() || bombshells->at(i)->hitPlayer) continue;
 
-        diffPos = position - bombshell->getPosition();
-        hitBoxBoth = size + bombshell->getSize();
+        diffPos = position - bombshells->at(i)->getPosition();
+        hitBoxBoth = size + bombshells->at(i)->getSize();
         if(diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth){
             receiveDamage(2);
-            bombshell->hitPlayer = true;
+            bombshells->at(i)->hitPlayer = true;
         }
     }
 }
 
-void Player::receiveDamageIfHit(std::vector<std::unique_ptr<Enemy>> &enemies) {
+void Player::receiveDamageIfHit(std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies) {
     Position diffPos;
     int hitBoxBoth;
-    for(const auto& enemy : enemies){
-        diffPos = position - enemy->getPosition();
-        hitBoxBoth = size + enemy->getSize();
+    for(unsigned int i = 0; i < enemies->size(); i++){
+        diffPos = position - enemies->at(i)->getPosition();
+        hitBoxBoth = size + enemies->at(i)->getSize();
         if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth) 
             receiveDamage(1);
     }

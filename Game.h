@@ -11,11 +11,11 @@
 class Game{
     public:
         Player player;
-        std::vector<std::unique_ptr<Bullet>> bulletsEnemy;
-        std::vector<std::unique_ptr<Bullet>> bulletsAlly;
-        std::vector<std::unique_ptr<Bombshell>> bombshells;
-        std::vector<std::unique_ptr<Wall>> walls;
-        std::vector<std::unique_ptr<Enemy>> enemies;
+        std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bulletsEnemy;
+        std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bulletsAlly;
+        std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells;
+        std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls;
+        std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies;
         std::vector<std::string> messageTerminal;
 
         Game(int FPS);
@@ -31,10 +31,10 @@ class Game{
         bool cursorVisible = true;
         sf::Text text;
         sf::Font font;
-        void destroyInWallOrOutOfBounds(std::vector<std::unique_ptr<Bullet>>& bullets);
+        
         void setStatsScaleWithFPS(int FPS);
         void drawFakeTerminal(sf::RenderWindow& window, float deltaTime);
         void drawCursorTerminal(sf::RenderWindow& window, float deltaTime);
-        void destroyWalls(std::vector<std::unique_ptr<Wall>> &walls);
+        void destroyWalls();
         void bulletCollisions();
 };

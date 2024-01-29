@@ -16,7 +16,7 @@ EnemyStats EnemyShooter::stats;
 
 EnemyShooter::EnemyShooter(Position position) : Enemy(position, 1*stats.speedFactor, M_PI*3/2, 0, 3*stats.speedBulletFactor, 6, 19*stats.sizeFactor, true) {}
 
-void EnemyShooter::update(std::vector<std::unique_ptr<Bullet>>& bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>>& enemies, float deltaTime) {
+void EnemyShooter::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
     float targetAngle = getAngleToObject(player.getPosition());
     move(targetAngle, walls, enemies);
 
@@ -28,11 +28,11 @@ void EnemyShooter::update(std::vector<std::unique_ptr<Bullet>>& bullets, Player 
     }
 }
 
-void EnemyShooter::shoot(std::vector<std::unique_ptr<Bullet>> &bullets){
-    bullets.push_back(std::make_unique<Bullet>(position, angle, speedBullet, 15, false, true));
+void EnemyShooter::shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets){
+    bullets->push_back(std::make_unique<Bullet>(position, angle, speedBullet, 15, false, true));
 }
 
-void EnemyShooter::move(float targetAngle, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>> &enemies) {
+void EnemyShooter::move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies) {
     float angleDiff = targetAngle - angle;
     if (angleDiff > M_PI) {
         angleDiff -= 2 * M_PI;

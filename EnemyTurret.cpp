@@ -14,7 +14,7 @@ EnemyStats EnemyTurret::stats;
 
 EnemyTurret::EnemyTurret(Position position) : Enemy(position, 5*stats.speedFactor, 0, 0, 3, 10, 30*stats.sizeFactor, false) {}
 
-void EnemyTurret::update(std::vector<std::unique_ptr<Bullet>>& bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>>& enemies, float deltaTime) {
+void EnemyTurret::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
     shootTimer += deltaTime;
     if(shootTimer >= 0.5){
         shoot(bullets);
@@ -22,14 +22,14 @@ void EnemyTurret::update(std::vector<std::unique_ptr<Bullet>>& bullets, Player p
     }
 }
 
-void EnemyTurret::shoot(std::vector<std::unique_ptr<Bullet>> &bullets){
+void EnemyTurret::shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets){
     for(int i=0;i<4;i++){
-        bullets.push_back(std::make_unique<Bullet>(position, angle+M_PI*i/2, speedBullet, 15, false, true));
+        bullets->push_back(std::make_unique<Bullet>(position, angle+M_PI*i/2, speedBullet, 15, false, true));
     }
     angle += M_PI/6;
 }
 
-void EnemyTurret::move(std::vector<std::unique_ptr<Wall>> &walls){
+void EnemyTurret::move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls){
     //Nothing
 }
 

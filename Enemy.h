@@ -15,13 +15,13 @@ class Bombshell;
 
 class Enemy{
     public:
-        virtual void update(std::vector<std::unique_ptr<Bullet>>& bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>>& enemies, float deltaTime)=0;
+        virtual void update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime)=0;
         virtual void draw(sf::RenderWindow& window)=0;
         virtual void drawEffects(sf::RenderWindow& window)=0;
         virtual std::string getType()=0;
         virtual ~Enemy(){};
 
-        void receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>>& bullets, std::vector<std::unique_ptr<Bombshell>>& bombshells);
+        void receiveDamageIfShot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells);
         void setPosition(Position newPosition) {this->position = newPosition;};
         void receiveDamage(int damage) {hp -= damage;};
 
@@ -38,8 +38,8 @@ class Enemy{
         const bool movable;
 
         Enemy(Position position, float speed, float angle, float shootTimer, float speedBullet, int hp, int size, bool movable);
-        bool adjustPositionBasedOnEnemies(std::vector<std::unique_ptr<Enemy>>& enemies);
-        bool adjustPositionBasedOnWalls(std::vector<std::unique_ptr<Wall>> &walls);
+        bool adjustPositionBasedOnEnemies(std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies);
+        bool adjustPositionBasedOnWalls(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls);
         bool adjustPositionBasedOnOOB();
         float getAngleToObject(Position objectPosition);
         float getAngleToFuturPlayerPosition(Player player);

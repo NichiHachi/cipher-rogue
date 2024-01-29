@@ -22,6 +22,12 @@ Game::Game(int FPS) {
 
     player = Player();
 
+    bulletsEnemy = std::make_shared<std::vector<std::unique_ptr<Bullet>>>();
+    bulletsAlly = std::make_shared<std::vector<std::unique_ptr<Bullet>>>();
+    bombshells = std::make_shared<std::vector<std::unique_ptr<Bombshell>>>();
+    walls = std::make_shared<std::vector<std::unique_ptr<Wall>>>();
+    enemies = std::make_shared<std::vector<std::unique_ptr<Enemy>>>();
+
     if (!font.loadFromFile("./fonts/FiraCode.ttf")) {
         std::cout << "Error loading font" << std::endl;
     }
@@ -31,212 +37,203 @@ Game::Game(int FPS) {
     text.setPosition(10, 975);
     text.setCharacterSize(15);
 
-    walls.push_back(std::make_unique<Wall>(Position(500, 500)));
-    enemies.push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
-    enemies.push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
-    enemies.push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
-    enemies.push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
-    enemies.push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
-    //enemies.push_back(std::make_unique<EnemyShooter>(Position(200, 100)));
-    //enemies.push_back(std::make_unique<EnemyTurret>(Position(200, 200)));
-    //enemies.push_back(std::make_unique<EnemySpawner>(Position(300, 300)));
-    //enemies.push_back(std::make_unique<EnemySniper>(Position(400, 400)));
-    enemies.push_back(std::make_unique<EnemyCharger>(Position(500, 600)));
+    walls->push_back(std::make_unique<Wall>(Position(500, 500)));
+    enemies->push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
+    enemies->push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
+    enemies->push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
+    enemies->push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
+    enemies->push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
+    enemies->push_back(std::make_unique<EnemyShooter>(Position(200, 100)));
+    enemies->push_back(std::make_unique<EnemyTurret>(Position(200, 200)));
+    enemies->push_back(std::make_unique<EnemySpawner>(Position(300, 300)));
+    enemies->push_back(std::make_unique<EnemySniper>(Position(400, 400)));
+    enemies->push_back(std::make_unique<EnemyCharger>(Position(500, 600)));
 }
 
 Game::~Game(){}
 
-void Game::destroyInWallOrOutOfBounds(std::vector<std::unique_ptr<Bullet>> &bullets) {
-    Position bulletPos, wallPos;
+void removeBulletsOOBinWall(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls){
+  Position bulletPos, wallPos;
     float bulletSize, angleWallBullet;
     bool destroyed;
 
-    for (auto bullet = bullets.begin(); bullet != bullets.end();) {
+    auto bullet = bullets->begin();
+    while (bullet != bullets->end()) {
         destroyed = false;
-        bulletPos = (*bullet)->getPosition();
-        bulletSize = (*bullet)->getSize();
-
+        bulletPos = bullet->get()->getPosition();
+        bulletSize = bullet->get()->getSize();
 
         if(bulletPos.x < - bulletSize * 2 || bulletPos.y < - bulletSize * 2 ||
         bulletPos.x > 1000 + bulletSize * 2 || bulletPos.y > 1000 + bulletSize * 2){
-            bullet -> reset();
-            bullet = bullets.erase(bullet);
+            bullet = bullets->erase(bullet);
             continue;
         }
 
-        // If the bullet touches a wall
-        for (const auto& wall : walls) {
-            wallPos = wall->getPosition();
+        for (unsigned int indexWall = 0; indexWall<walls->size(); indexWall++) {
+            wallPos = walls->at(indexWall)->getPosition();
             angleWallBullet = atan2(wallPos.y - bulletPos.y, bulletPos.x - wallPos.x);
             Position bulletWallPos = bulletPos + Position(-cos(angleWallBullet), sin(angleWallBullet)) * bulletSize;
-            if (wall->isInWall(bulletWallPos)) {
-                bullet->reset();
-                bullet = bullets.erase(bullet);
+
+            if (walls->at(indexWall)->isInWall(bulletWallPos)) {
+                bullet = bullets->erase(bullet);
                 destroyed = true;
                 break;
             }
         }
 
-        if(!destroyed) bullet++;
+        if(!destroyed){
+            bullet = std::next(bullet);
+        }
     }
 }
 
-void Game::destroyWalls(std::vector<std::unique_ptr<Wall>> &walls){
+void Game::destroyWalls(){
     Position wallPos, bombshellPos;
     float angleWallBombshell;
-    for(const auto&bombshell : bombshells){
-        bombshellPos = bombshell->getPosition();
-        for(auto wall = walls.begin(); wall != walls.end();){
-            wallPos = (*wall)->getPosition();
+
+    for(unsigned int indexBomb = 0; indexBomb < bombshells->size(); indexBomb++){
+        bombshellPos = bombshells->at(indexBomb)->getPosition();
+        auto wall = walls->begin(); 
+
+        while (wall != walls->end()) {
+            wallPos = wall->get()->getPosition();
             angleWallBombshell = atan2(wallPos.y - bombshellPos.y, bombshellPos.x - wallPos.x);
-            Position bulletWallPos = bombshellPos + Position(-cos(angleWallBombshell), sin(angleWallBombshell)) * bombshell->getSize();
-            if ((*wall)->isInWall(bulletWallPos)) {
-                wall->reset();
-                wall = walls.erase(wall);
-            }
-            else{
-                wall++;
+            Position bulletWallPos = bombshellPos + Position(-cos(angleWallBombshell), sin(angleWallBombshell)) * bombshells->at(indexBomb)->getSize();
+            
+            if (wall->get()->isInWall(bulletWallPos)) {
+                wall = walls->erase(wall);
+            } else {
+                wall = std::next(wall);
             }
         }
     }
 }
 
-void Game::bulletCollisions(){
+void checkBulletCollisionWithBombshell(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Position bombshellPos, float bombshellSize){
     Position diffPos;
     float hitBoxBoth;
-    bool allyBulletDestroyed;
-    for(auto bulletAlly = bulletsAlly.begin(); bulletAlly != bulletsAlly.end();){
-        if((*bulletAlly)->getSize() <= 0){
-            bulletAlly++;
+
+    auto bullet = bullets->begin();
+    while (bullet != bullets->end()) {
+        if(!bullet->get()->isDestructible()){
+            bullet = std::next(bullet);
             continue;
         }
 
-        //If the ally bullet touch a enemy bullet that is destructible -> destroy both bullets
+        diffPos = bombshellPos - bullet->get()->getPosition();
+        hitBoxBoth = bombshellSize + bullet->get()->getSize();
+        
+        if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth*hitBoxBoth) {
+            bullet = bullets->erase(bullet);
+            continue;
+        }
+
+        bullet = std::next(bullet);
+    }
+}
+
+void Game::bulletCollisions() {
+    removeBulletsOOBinWall(bulletsAlly, walls);
+    removeBulletsOOBinWall(bulletsEnemy, walls);
+
+    Position diffPos;
+    float hitBoxBoth;
+    bool allyBulletDestroyed = false;
+    auto bulletAlly = bulletsAlly->begin();
+
+    while (bulletAlly != bulletsAlly->end()) {
         allyBulletDestroyed = false;
-        for(auto bulletEnemy = bulletsEnemy.begin(); bulletEnemy != bulletsEnemy.end();){
-            if (!(*bulletEnemy)->isDestructible() || (*bulletEnemy)->getSize() <= 0){
-                bulletEnemy++;
+        auto bulletEnemy = bulletsEnemy->begin();
+
+        while (bulletEnemy != bulletsEnemy->end()) {
+            if (!bulletEnemy->get()->isDestructible()) {
+                bulletEnemy = std::next(bulletEnemy);
                 continue;
             }
 
             diffPos = (*bulletAlly)->getPosition() - (*bulletEnemy)->getPosition();
             hitBoxBoth = (*bulletAlly)->getSize() + (*bulletEnemy)->getSize();
-            if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth*hitBoxBoth) {
-                if((*bulletAlly)->isDestructible()){
-                    bulletAlly -> reset();
-                    bulletAlly = bulletsAlly.erase(bulletAlly);
+
+            if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth) {
+                if ((*bulletAlly)->isDestructible()) {
+                    bulletAlly = bulletsAlly->erase(bulletAlly);
                     allyBulletDestroyed = true;
                 }
-                bulletEnemy -> reset();
-                bulletEnemy = bulletsEnemy.erase(bulletEnemy);
+                bulletEnemy = bulletsEnemy->erase(bulletEnemy);
                 break;
             }
-        
-            bulletEnemy++;
+
+           bulletEnemy = std::next(bulletEnemy);
         }
 
-        if(!allyBulletDestroyed) bulletAlly++;
+        if (!allyBulletDestroyed) {
+            bulletAlly = std::next(bulletAlly);
+        }
     }
 
     Position bombshellPos;
     float bombshellSize;
-    for(const auto&bombshell : bombshells){
-        bombshellPos = bombshell->getPosition();
-        bombshellSize = bombshell->getSize();
-        
-        if(bombshellSize <= 0)   
+    for(unsigned int indexBomb = 0; indexBomb < bombshells->size(); indexBomb++){
+        if(bombshells->at(indexBomb)->hasExploded()){  
             continue;
-
-        for(auto bulletEnemy = bulletsEnemy.begin(); bulletEnemy != bulletsEnemy.end();){
-            if(!(*bulletEnemy)->isDestructible()){
-                bulletEnemy++;
-                continue;
-            }
-            diffPos = bombshellPos - (*bulletEnemy)->getPosition();
-            hitBoxBoth = bombshellSize + (*bulletEnemy)->getSize();
-            if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth*hitBoxBoth) {
-                bulletEnemy -> reset();
-                bulletEnemy = bulletsEnemy.erase(bulletEnemy);
-                continue;
-            }
-            bulletEnemy++;
         }
 
-        for(auto bulletAlly = bulletsAlly.begin(); bulletAlly != bulletsAlly.end();){
-            if(!(*bulletAlly)->isDestructible()){
-                bulletAlly++;
-                continue;
-            }
-            diffPos = bombshellPos - (*bulletAlly)->getPosition();
-            hitBoxBoth = bombshellSize + (*bulletAlly)->getSize();
-            if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth*hitBoxBoth) {
-                bulletAlly -> reset();
-                bulletAlly = bulletsAlly.erase(bulletAlly);
-                continue;
-            }
-            bulletAlly++;
-        }
+        bombshellPos = bombshells->at(indexBomb)->getPosition();
+        bombshellSize = bombshells->at(indexBomb)->getSize();
+
+        checkBulletCollisionWithBombshell(bulletsAlly, bombshellPos, bombshellSize);
+        
+        checkBulletCollisionWithBombshell(bulletsEnemy, bombshellPos, bombshellSize);
     }
 }
 
 void Game::update(sf::RenderWindow& window, float deltaTime){
         //-----PLAYER UPDATE-----
         player.update(window,bulletsAlly,bombshells,walls,deltaTime);
-
+        player.receiveDamageIfShot(bulletsEnemy, bombshells);
+        player.receiveDamageIfHit(enemies);
 
         //-----ENEMIES UPDATE-----
-        for(auto& enemy : enemies){
-            enemy->update(bulletsEnemy, player, walls, enemies, deltaTime);
+        for(unsigned int indexEnemy=0; indexEnemy<enemies->size(); indexEnemy++){
+            enemies->at(indexEnemy)->update(bulletsEnemy, player, walls, enemies, deltaTime);
+            enemies->at(indexEnemy)->receiveDamageIfShot(bulletsAlly, bombshells);
         }
 
         //-----BULLETS UPDATE-----
         //ENEMY'S BULLETS
-        for(auto& bullet : bulletsEnemy){
-            bullet->update();
+        for(unsigned int indexBullet=0; indexBullet<bulletsEnemy->size(); indexBullet++){
+            bulletsEnemy->at(indexBullet)->update();
         }
-
-        destroyInWallOrOutOfBounds(bulletsEnemy);
 
         //ALLY'S BULLET
-        for(auto& bullet : bulletsAlly){
-            bullet->update();
+        for(unsigned int indexBullet=0; indexBullet<bulletsAlly->size(); indexBullet++){
+            bulletsAlly->at(indexBullet)->update();
         }
-
-        destroyInWallOrOutOfBounds(bulletsAlly);
-
-        //BOMBSHELLS
-        for(auto bombshell = bombshells.begin(); bombshell != bombshells.end();) {
-            (*bombshell)->update(deltaTime);
-            if((*bombshell)->isDeletable()){
-                bombshell -> reset();
-                bombshell = bombshells.erase(bombshell);
-            }
-            else bombshell++;
-        }
-
-        destroyWalls(walls);
 
         bulletCollisions();
-        
-        //-----PLAYER AND ENEMY BULLETS-----
-        player.receiveDamageIfShot(bulletsEnemy, bombshells);
 
-        //-----ENEMIES AND ALLY BULLETS-----
-        for(auto& enemy : enemies) {
-            enemy->receiveDamageIfShot(bulletsAlly, bombshells);
+        //BOMBSHELLS
+        auto bombshell = bombshells->begin();
+        while(bombshell != bombshells->end()) {
+            bombshell->get()->update(deltaTime);
+            if(bombshell->get()->isDeletable()){
+                bombshell = bombshells->erase(bombshell);
+            } else {
+                bombshell++;
+            }
         }
 
-        //-----PLAYER AND ENEMIES-----
-        player.receiveDamageIfHit(enemies);
+        destroyWalls();
 
         //-----ENEMIES DEAD-----
-        for(auto enemy = enemies.begin(); enemy != enemies.end();) {
-            if((*enemy)->isDead()){
+        auto enemy = enemies->begin();
+        while (enemy != enemies->end()) {
+            if(enemy->get()->isDead()){
                 messageTerminal.push_back("delete [] " + (*enemy)->getType());
-                enemy->reset();
-                enemy = enemies.erase(enemy);
+                enemy = enemies->erase(enemy);
+            } else {
+                enemy = std::next(enemy);
             }
-            else enemy++;
         }
 }
 
@@ -244,35 +241,35 @@ void Game::draw(sf::RenderWindow& window, float deltaTime){
         drawFakeTerminal(window, deltaTime);
         drawCursorTerminal(window, deltaTime);
 
-        for(auto& enemy : enemies){
-            enemy->drawEffects(window);
+        for(int i = 0; i < enemies->size(); i++){
+            enemies->at(i)->drawEffects(window);
         }
 
-        for(auto& bombshell : bombshells){
-            bombshell->drawExplosion(window);
+        for(int i = 0; i < bombshells->size(); i++){
+            bombshells->at(i)->drawExplosion(window);
         }
 
-        for(auto& bullet : bulletsAlly){
-            bullet->draw(window);
+        for(int i = 0; i < bulletsAlly->size(); i++){
+            bulletsAlly->at(i)->draw(window);
         }
 
-        for(auto& bullet : bulletsEnemy){
-            bullet->draw(window);
+        for(int i = 0; i < bulletsEnemy->size(); i++){
+            bulletsEnemy->at(i)->draw(window);
         }
 
         //ENEMIES
-        for(auto& enemy : enemies){
-            enemy->draw(window);
+        for(int i = 0; i < enemies->size(); i++){
+            enemies->at(i)->draw(window);
         }
 
         player.draw(window);
 
-        for(auto& wall : walls){
-            wall->draw(window);
+        for(int i = 0; i < walls->size(); i++){
+            walls->at(i)->draw(window);
         }
 
-        for(auto& bombshell : bombshells){
-            bombshell->draw(window);
+        for(int i = 0; i < bombshells->size(); i++){
+            bombshells->at(i)->draw(window);
         }
 
         player.drawHealth(window);

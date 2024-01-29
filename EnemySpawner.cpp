@@ -16,10 +16,10 @@ EnemyStats EnemySpawner::stats;
 
 EnemySpawner::EnemySpawner(Position position) : Enemy(position, 5*stats.speedFactor, 0, 0, 0, 10, 20*stats.sizeFactor, false){}
 
-void EnemySpawner::update(std::vector<std::unique_ptr<Bullet>>& bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>> &enemies, float deltaTime) {
+void EnemySpawner::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
     shootTimer += deltaTime;
     if (shootTimer >= 5) {
-        enemies.push_back(std::make_unique<EnemySeeker>(position, M_PI*2/3));
+        enemies->push_back(std::make_unique<EnemySeeker>(position, M_PI*2/3));
         shootTimer = 0;
     }
 }

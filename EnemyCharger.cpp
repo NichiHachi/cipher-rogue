@@ -13,7 +13,8 @@ EnemyStats EnemyCharger::stats;
 
 EnemyCharger::EnemyCharger(Position position) : Enemy(position, 13*stats.speedFactor, M_PI*3/2, 0, 5*stats.speedBulletFactor, 20, 30*stats.sizeFactor, false) {}
 
-void EnemyCharger::update(std::vector<std::unique_ptr<Bullet>>& bullets, Player player, std::vector<std::unique_ptr<Wall>> &walls, std::vector<std::unique_ptr<Enemy>>& enemies, float deltaTime) {
+void EnemyCharger::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, 
+                          std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
     shootTimer += deltaTime;
     if (shootTimer > 10) 
         move(walls);
@@ -21,7 +22,7 @@ void EnemyCharger::update(std::vector<std::unique_ptr<Bullet>>& bullets, Player 
         angle = getAngleToObject(player.getPosition());
 }
 
-void EnemyCharger::move(std::vector<std::unique_ptr<Wall>> &walls) {
+void EnemyCharger::move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls) {
     position += Position(cos(angle), -sin(angle))*speed;
 
     //If the enemy touch a wall or the screen border, it stops

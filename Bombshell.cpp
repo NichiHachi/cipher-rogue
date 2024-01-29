@@ -27,13 +27,12 @@ void Bombshell::draw(sf::RenderWindow &window){
             //Off set it because it feels weird if it launch in the center of the player 
             percent = fallTime*2/timeToFall + 0.01;
             bombshellShotDrawPos = sf::Vector2f(position.x + (positionTarget.x - position.x)*percent/3, position.y - percent * 1000);
-            angle = std::atan2(-bombshellShotDrawPos.y + position.y, bombshellShotDrawPos.x - position.x);
-        }
-        else{
+            angle = std::atan2(position.y - bombshellShotDrawPos.y, bombshellShotDrawPos.x - position.x);
+        } else {
             //Same off set here, we want the tip to be the center of the exposion
             percent = (fallTime*2 - timeToFall)/timeToFall - 0.01;
             bombshellShotDrawPos = sf::Vector2f(positionTarget.x - (positionTarget.x - position.x) * (1 - percent)/3 , positionTarget.y - (1 - percent) * 1000);
-            angle = std::atan2(bombshellShotDrawPos.y - positionTarget.y, -bombshellShotDrawPos.x + positionTarget.x);
+            angle = std::atan2(bombshellShotDrawPos.y - positionTarget.y, positionTarget.x - bombshellShotDrawPos.x);
         }
 
         sf::VertexArray bombshellBody(sf::Quads, 4);
@@ -57,13 +56,14 @@ void Bombshell::draw(sf::RenderWindow &window){
         bombshellTip.setRadius(width);
         bombshellTip.setFillColor(colorBombshell);
 
-        if(fallTime < timeToFall/2)
+        if(fallTime < timeToFall/2){
             bombshellTip.setPosition(height * std::cos(angle) + bombshellShotDrawPos.x - width, 
                                -height * std::sin(angle) + bombshellShotDrawPos.y - width);
-        else
+        } else {
             bombshellTip.setPosition(height * std::cos(angle) + bombshellShotDrawPos.x - width, 
                                -height * std::cos(angle) + bombshellShotDrawPos.y + width);
-
+        }
+        
         window.draw(bombshellTip);
     
 

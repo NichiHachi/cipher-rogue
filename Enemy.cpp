@@ -10,62 +10,62 @@
 
 Enemy::Enemy(Position position, float speed, float angle, float shootTimer, float speedBullet, int hp, int size, bool movable) : position(position), speed(speed), angle(angle), shootTimer(shootTimer), speedBullet(speedBullet), hp(hp), size(size), movable(movable){}
 
-void Enemy::receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>>& bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells){
+void Enemy::receiveDamageIfShot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells){
     Position diffPos;
     float hitBoxBoth;
-    for(auto bullet = bullets.begin(); bullet != bullets.end();){
-        if((*bullet)->getSize() <= 0){
-            bullet++;
-            continue;
-        }
+    auto bullet = bullets->begin();
 
-        diffPos = position - (*bullet)->getPosition();
-        hitBoxBoth = (*bullet)->getSize() + size;
+    while (bullet != bullets->end()) {
+        diffPos = position - bullet->get()->getPosition();
+        hitBoxBoth = bullet->get()->getSize() + size;
         // sqrt(x² + y²) < n <=> x² + y² < n² :
         if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth) {
             receiveDamage(1);
-            bullet -> reset();
-            bullet = bullets.erase(bullet);
+            bullet = bullets->erase(bullet);
         }
         else {
             bullet++;
         }
     }
 
-    for(auto& bombshell : bombshells){
-        if(!bombshell->hasExploded()) continue;
-        if(!bombshell->isAlly() || std::find(bombshell->hitEnemies.begin(), bombshell->hitEnemies.end(), this) != bombshell->hitEnemies.end()) continue;
+    for(unsigned int i = 0; i < bombshells->size(); i++){
+        if(!bombshells->at(i)->hasExploded() || !bombshells->at(i)->isAlly()) continue;
+        
+        if (std::find(bombshells->at(i)->hitEnemies.begin(), bombshells->at(i)->hitEnemies.end(), this) != bombshells->at(i)->hitEnemies.end()) {
+            continue;
+        }
 
-        diffPos = position - bombshell->getPosition();
-        hitBoxBoth = size + bombshell->getSize();
+        diffPos = position - bombshells->at(i)->getPosition();
+        hitBoxBoth = size + bombshells->at(i)->getSize();
         if(diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth){
             receiveDamage(2);
-            bombshell->hitEnemies.push_back(this);
+            bombshells->at(i)->hitEnemies.push_back(this);
         }
     }
 }
 
-bool Enemy::adjustPositionBasedOnWalls(std::vector<std::unique_ptr<Wall>> &walls){
+bool Enemy::adjustPositionBasedOnWalls(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls){
     bool positionAdjusted = false;
     Position wallPos;
-    float angleEnemyWall;
-    for (auto& wall : walls) {
-        wallPos = wall->getPosition();
+    float angleEnemyWall, wallSize;
+    for (unsigned int i = 0; i < walls->size(); i++) {
+        wallPos = walls->at(i)->getPosition();
         angleEnemyWall = atan2(wallPos.y - position.y, position.x - wallPos.x);
         //If the enemy nearest point from the middle of the wall is in the wall
-        if (wall->isInWall(position + Position(-cos(angleEnemyWall),sin(angleEnemyWall))*size)){
+        if (walls->at(i)->isInWall(position + Position(-cos(angleEnemyWall),sin(angleEnemyWall))*size)){
+            wallSize = walls->at(i)->getSize();
             if(-M_PI/4 <= angleEnemyWall && angleEnemyWall <= M_PI/4){
-                position.x += size - (position.x - (wallPos.x + wall->getSize()));
+                position.x += size - (position.x - (wallPos.x + wallSize));
             }
             else if(angleEnemyWall >= M_PI*3/4 || angleEnemyWall <= -M_PI*3/4){
-                position.x -= size - ((wallPos.x - wall->getSize()) - position.x);
+                position.x -= size - ((wallPos.x - wallSize) - position.x);
             } 
             else if(M_PI/4 <= angleEnemyWall && angleEnemyWall <= M_PI*3/4){
-                position.y -= size - ((wallPos.y - wall->getSize()) - position.y);
+                position.y -= size - ((wallPos.y - wallSize) - position.y);
             } 
             //angleEnemyWall< -M_PI/4 && angleEnemyWall > -M_PI*3/4
             else{
-                position.y += size - (position.y - (wallPos.y + wall->getSize()));
+                position.y += size - (position.y - (wallPos.y + wallSize));
             }
             positionAdjusted = true;
         }
@@ -73,23 +73,28 @@ bool Enemy::adjustPositionBasedOnWalls(std::vector<std::unique_ptr<Wall>> &walls
     return positionAdjusted;
 }
 
-bool Enemy::adjustPositionBasedOnEnemies(std::vector<std::unique_ptr<Enemy>> &enemies){
+bool Enemy::adjustPositionBasedOnEnemies(std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies){
     bool positionAdjusted = false;
     float angleEnemyEnemy, distance, moveDistance;
     Position enemyPos, diffPos;
     int enemySize;
-    for(auto& enemy : enemies){
-        if(enemy.get() == this) continue; //Don't check collision with itself
-        enemyPos = enemy->getPosition();
-        enemySize = enemy->getSize();
+    for (unsigned int i = 0; i < enemies->size(); i++) {
+        if (enemies->at(i).get() == this) {
+            //Don't check collision with itself
+            continue;
+        }
+
+        enemyPos = enemies->at(i)->getPosition();
+        enemySize = enemies->at(i)->getSize();
         diffPos = position - enemyPos;
+        
         //If the object is inside of the enemy
         if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < (enemySize+size) * (enemySize+size)){
             angleEnemyEnemy = atan2(enemyPos.y - position.y, position.x - enemyPos.x);
             moveDistance = enemySize + size - sqrt(diffPos.x * diffPos.x + diffPos.y * diffPos.y);
             // Move the enemy gradually towards the outside
-            if(enemy->isMovable()){
-                enemy->setPosition(enemyPos + Position(cos(M_PI + angleEnemyEnemy) * moveDistance / 4,
+            if(enemies->at(i)->isMovable()){
+                enemies->at(i)->setPosition(enemyPos + Position(cos(M_PI + angleEnemyEnemy) * moveDistance / 4,
                                                       - sin(M_PI + angleEnemyEnemy) * moveDistance / 4));
                                                       
                 position += Position(cos(angleEnemyEnemy) * moveDistance / 4,

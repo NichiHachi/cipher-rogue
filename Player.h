@@ -18,12 +18,12 @@ class Player{
         static PlayerStats stats;
 
         Player();
-        void update(sf::RenderWindow &window, std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells,
-                    std::vector<std::unique_ptr<Wall>> &walls, float deltaTime);
+        void update(sf::RenderWindow &window, std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells,
+                    std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime);
         void spawn();
-        void shoot(std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells, Position positionTarget);
-        void receiveDamageIfShot(std::vector<std::unique_ptr<Bullet>> &bullets, std::vector<std::unique_ptr<Bombshell>> &bombshells);
-        void receiveDamageIfHit(std::vector<std::unique_ptr<Enemy>> &enemies);
+        void shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells, Position positionTarget);
+        void receiveDamageIfShot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells);
+        void receiveDamageIfHit(std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies);
         void receiveDamage(unsigned int damage);
         void draw(sf::RenderWindow& window);
         void drawHealth(sf::RenderWindow& window);
@@ -37,5 +37,5 @@ class Player{
         int size, hp, hpMax;
         double angle;
 
-        void move(std::vector<std::unique_ptr<Wall>> &walls);
+        void move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls);
 };
