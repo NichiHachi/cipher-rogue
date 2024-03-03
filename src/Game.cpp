@@ -229,7 +229,7 @@ void Game::update(sf::RenderWindow& window, float deltaTime){
         auto enemy = enemies->begin();
         while (enemy != enemies->end()) {
             if(enemy->get()->isDead()){
-                messageTerminal.push_back("delete [] " + (*enemy)->getType());
+                messageTerminal.push_back("delete " + (*enemy)->getType());
                 enemy = enemies->erase(enemy);
             } else {
                 enemy = std::next(enemy);

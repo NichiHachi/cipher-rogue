@@ -11,6 +11,7 @@
 class Game{
     public:
         Player player;
+        
         std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bulletsEnemy;
         std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bulletsAlly;
         std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells;
