@@ -2,11 +2,11 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 
-#include "Position.h"
-#include "Bullet.h"
-#include "Bombshell.h"
+#include "../Position.h"
+#include "../Projectile/Bullet.h"
+#include "../Projectile/Bombshell.h"
 #include "Enemy.h"
-#include "Player.h"
+#include "../Player/Player.h"
 
 Enemy::Enemy(Position position, float speed, float angle, float shootTimer, float speedBullet, int hp, int size, bool movable) : position(position), speed(speed), angle(angle), shootTimer(shootTimer), speedBullet(speedBullet), hp(hp), size(size), movable(movable){}
 

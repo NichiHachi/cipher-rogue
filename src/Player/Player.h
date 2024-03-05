@@ -4,10 +4,10 @@
 #include <cmath>
 #include <memory>
 
-#include "Position.h"
-#include "Bullet.h"
-#include "Bombshell.h"
-#include "Wall.h"
+#include "../Position.h"
+#include "../Projectile/Bullet.h"
+#include "../Projectile/Bombshell.h"
+#include "../Wall.h"
 #include "PlayerStats.h"
 
 class Enemy;

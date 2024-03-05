@@ -4,13 +4,13 @@
 #include <iostream>
 
 #include "EnemyShooter.h"
-#include "Position.h"
+#include "../Position.h"
 #include "Enemy.h"
-#include "Bullet.h"
-#include "Bullet.h"
-#include "Wall.h"
+#include "../Projectile/Bullet.h"
+#include "../Projectile/Bullet.h"
+#include "../Wall.h"
 #include "EnemyStats.h"
-#include "Player.h"
+#include "../Player/Player.h"
 
 EnemyStats EnemyShooter::stats;
 

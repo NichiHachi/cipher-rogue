@@ -2,14 +2,14 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 
-#include "Position.h"
+#include "../Position.h"
 #include "EnemySniper.h"
 #include "Enemy.h"
-#include "Bullet.h"
-#include "Bullet.h"
-#include "Wall.h"
+#include "../Projectile/Bullet.h"
+#include "../Projectile/Bullet.h"
+#include "../Wall.h"
 #include "EnemyStats.h"
-#include "Player.h"
+#include "../Player/Player.h"
 
 EnemyStats EnemySniper::stats;
 

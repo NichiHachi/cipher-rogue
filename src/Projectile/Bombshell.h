@@ -3,8 +3,8 @@
 #include <SFML/Window.hpp>
 #include <string>
 
-#include "Enemy.h"
-#include "Position.h"
+#include "../Enemy/Enemy.h"
+#include "../Position.h"
 
 class Enemy;
 

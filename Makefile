@@ -12,38 +12,39 @@ main: $(SRCDIR)/main.cpp $(OBJC)
 
 $(OBJDIR)/Game.o: $(SRCDIR)/Game.cpp $(SRCDIR)/Game.h
 	$(cc) -g -c $(SRCDIR)/Game.cpp -o $@
-$(OBJDIR)/Bullet.o: $(SRCDIR)/Bullet.cpp $(SRCDIR)/Bullet.h
-	$(cc) -g -c $(SRCDIR)/Bullet.cpp -o $@
 
-$(OBJDIR)/Bombshell.o: $(SRCDIR)/Bombshell.cpp $(SRCDIR)/Bombshell.h
-	$(cc) -g -c $(SRCDIR)/Bombshell.cpp -o $@
+$(OBJDIR)/Bullet.o: $(SRCDIR)/Projectile/Bullet.cpp $(SRCDIR)/Projectile/Bullet.h
+	$(cc) -g -c $(SRCDIR)/Projectile/Bullet.cpp -o $@
+
+$(OBJDIR)/Bombshell.o: $(SRCDIR)/Projectile/Bombshell.cpp $(SRCDIR)/Projectile/Bombshell.h
+	$(cc) -g -c $(SRCDIR)/Projectile/Bombshell.cpp -o $@
 
 $(OBJDIR)/Wall.o: $(SRCDIR)/Wall.cpp $(SRCDIR)/Wall.h
 	$(cc) -g -c $(SRCDIR)/Wall.cpp -o $@
 
-$(OBJDIR)/Player.o: $(SRCDIR)/Player.cpp $(SRCDIR)/Player.h
-	$(cc) -g -c $(SRCDIR)/Player.cpp -o $@
+$(OBJDIR)/Player.o: $(SRCDIR)/Player/Player.cpp $(SRCDIR)/Player/Player.h
+	$(cc) -g -c $(SRCDIR)/Player/Player.cpp -o $@
 
-$(OBJDIR)/EnemyCharger.o: $(SRCDIR)/EnemyCharger.cpp $(SRCDIR)/EnemyCharger.h
-	$(cc) -g -c $(SRCDIR)/EnemyCharger.cpp -o $@
+$(OBJDIR)/EnemyCharger.o: $(SRCDIR)/Enemy/EnemyCharger.cpp $(SRCDIR)/Enemy/EnemyCharger.h
+	$(cc) -g -c $(SRCDIR)/Enemy/EnemyCharger.cpp -o $@
 
-$(OBJDIR)/EnemyShooter.o: $(SRCDIR)/EnemyShooter.cpp $(SRCDIR)/EnemyShooter.h
-	$(cc) -g -c $(SRCDIR)/EnemyShooter.cpp -o $@
+$(OBJDIR)/EnemyShooter.o: $(SRCDIR)/Enemy/EnemyShooter.cpp $(SRCDIR)/Enemy/EnemyShooter.h
+	$(cc) -g -c $(SRCDIR)/Enemy/EnemyShooter.cpp -o $@
 
-$(OBJDIR)/EnemySniper.o: $(SRCDIR)/EnemySniper.cpp $(SRCDIR)/EnemySniper.h
-	$(cc) -g -c $(SRCDIR)/EnemySniper.cpp -o $@
+$(OBJDIR)/EnemySniper.o: $(SRCDIR)/Enemy/EnemySniper.cpp $(SRCDIR)/Enemy/EnemySniper.h
+	$(cc) -g -c $(SRCDIR)/Enemy/EnemySniper.cpp -o $@
 
-$(OBJDIR)/EnemySpawner.o: $(SRCDIR)/EnemySpawner.cpp $(SRCDIR)/EnemySpawner.h
-	$(cc) -g -c $(SRCDIR)/EnemySpawner.cpp -o $@
+$(OBJDIR)/EnemySpawner.o: $(SRCDIR)/Enemy/EnemySpawner.cpp $(SRCDIR)/Enemy/EnemySpawner.h
+	$(cc) -g -c $(SRCDIR)/Enemy/EnemySpawner.cpp -o $@
 
-$(OBJDIR)/EnemyTurret.o: $(SRCDIR)/EnemyTurret.cpp $(SRCDIR)/EnemyTurret.h
-	$(cc) -g -c $(SRCDIR)/EnemyTurret.cpp -o $@
+$(OBJDIR)/EnemyTurret.o: $(SRCDIR)/Enemy/EnemyTurret.cpp $(SRCDIR)/Enemy/EnemyTurret.h
+	$(cc) -g -c $(SRCDIR)/Enemy/EnemyTurret.cpp -o $@
 
-$(OBJDIR)/EnemySeeker.o: $(SRCDIR)/EnemySeeker.cpp $(SRCDIR)/EnemySeeker.h
-	$(cc) -g -c $(SRCDIR)/EnemySeeker.cpp -o $@
+$(OBJDIR)/EnemySeeker.o: $(SRCDIR)/Enemy/EnemySeeker.cpp $(SRCDIR)/Enemy/EnemySeeker.h
+	$(cc) -g -c $(SRCDIR)/Enemy/EnemySeeker.cpp -o $@
 
-$(OBJDIR)/Enemy.o: $(SRCDIR)/Enemy.cpp $(SRCDIR)/Enemy.h
-	$(cc) -g -c $(SRCDIR)/Enemy.cpp -o $@
+$(OBJDIR)/Enemy.o: $(SRCDIR)/Enemy/Enemy.cpp $(SRCDIR)/Enemy/Enemy.h
+	$(cc) -g -c $(SRCDIR)/Enemy/Enemy.cpp -o $@
 
 clean:
 	rm $(OBJDIR)/*.o

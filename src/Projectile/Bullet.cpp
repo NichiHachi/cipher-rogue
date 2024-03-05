@@ -3,7 +3,7 @@
 #include <cmath>
 
 #include "Bullet.h"
-#include "Position.h"
+#include "../Position.h"
 
 Bullet::Bullet(Position position, float angle, float speed, float size, bool ally, bool destructible) : position(position), angle(angle), speed(speed), size(size), ally(ally), destructible(destructible){}
 

@@ -2,11 +2,11 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 
-#include "Position.h"
+#include "../Position.h"
 #include "Enemy.h"
-#include "Bullet.h"
-#include "Bullet.h"
-#include "Wall.h"
+#include "../Projectile/Bullet.h"
+#include "../Projectile/Bullet.h"
+#include "../Wall.h"
 #include "EnemyTurret.h"
 #include "EnemyStats.h"
 

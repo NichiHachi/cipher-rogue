@@ -2,12 +2,12 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 
-#include "Position.h"
-#include "Bullet.h"
+#include "../Position.h"
+#include "../Projectile/Bullet.h"
 #include "EnemyCharger.h"
-#include "Wall.h"
+#include "../Wall.h"
 #include "EnemyStats.h"
-#include "Player.h"
+#include "../Player/Player.h"
 
 EnemyStats EnemyCharger::stats;
 

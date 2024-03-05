@@ -4,11 +4,11 @@
 #include <memory>
 
 #include "Player.h"
-#include "Enemy.h"
-#include "Position.h"
-#include "Bullet.h"
-#include "Bombshell.h"
-#include "Wall.h"
+#include "../Enemy/Enemy.h"
+#include "../Position.h"
+#include "../Projectile/Bullet.h"
+#include "../Projectile/Bombshell.h"
+#include "../Wall.h"
 #include "PlayerStats.h"
 
 PlayerStats Player::stats;

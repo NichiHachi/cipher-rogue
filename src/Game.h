@@ -2,11 +2,11 @@
 #include <memory>
 #include <string>
 
-#include "Bullet.h"
-#include "Bombshell.h"
-#include "Player.h"
+#include "Projectile/Bullet.h"
+#include "Projectile/Bombshell.h"
+#include "Player/Player.h"
 #include "Wall.h"
-#include "Enemy.h"
+#include "Enemy/Enemy.h"
 
 class Game{
     public:

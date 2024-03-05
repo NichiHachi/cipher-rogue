@@ -3,13 +3,13 @@
 #include <cmath>
 #include <iostream>
 
-#include "Position.h"
+#include "../Position.h"
 #include "Enemy.h"
-#include "Bullet.h"
+#include "../Projectile/Bullet.h"
 #include "EnemySeeker.h"
-#include "Wall.h"
+#include "../Wall.h"
 #include "EnemyStats.h"
-#include "Player.h"
+#include "../Player/Player.h"
 
 EnemyStats EnemySeeker::stats;
 

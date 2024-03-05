@@ -4,11 +4,11 @@
 #include <memory>
 #include <string>
 
-#include "Position.h"
-#include "Bullet.h"
-#include "Bombshell.h"
-#include "Wall.h"
-#include "Player.h"
+#include "../Position.h"
+#include "../Projectile/Bullet.h"
+#include "../Projectile/Bombshell.h"
+#include "../Wall.h"
+#include "../Player/Player.h"
 
 class Player;
 class Bombshell;

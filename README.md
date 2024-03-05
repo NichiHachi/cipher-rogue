@@ -44,25 +44,13 @@
 
 ## Building
 
-1. Clone the repository:
-
-    ```bash
-    git clone https://github.com/NichiHachi/cipher-rogue.git
-    ```
-
-2. Navigate to the project directory:
-    
-    ```bash
-    cd cipher-rogue
-    ```
-
-3. Build the project using the makefile:
+1. Build the project using the makefile:
     
     ```bash
     make
     ```
 
-4. Run the main file:
+2. Run the main file:
 
     ```bash
     ./bin/main

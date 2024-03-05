@@ -3,7 +3,7 @@
 #include <SFML/Window.hpp>
 #include <string>
 
-#include "Position.h"
+#include "../Position.h"
 
 class Bullet{
     public:

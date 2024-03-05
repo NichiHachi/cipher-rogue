@@ -3,7 +3,7 @@
 #include <cmath>
 
 #include "Bombshell.h"
-#include "Position.h"
+#include "../Position.h"
 
 Bombshell::Bombshell(Position position, Position positionTarget, float speed, float size, bool ally, bool destructible) : position(position), positionTarget(positionTarget), speed(speed), size(0), ally(ally), sizeMax(size*10){}
 

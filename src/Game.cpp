@@ -2,20 +2,20 @@
 #include <memory>
 
 #include "Game.h"
-#include "Enemy.h"
+#include "Enemy/Enemy.h"
 #include "Position.h"
-#include "Bullet.h"
-#include "Player.h"
+#include "Projectile/Bullet.h"
+#include "Player/Player.h"
 #include "Wall.h"
 
-#include "EnemyShooter.h"
-#include "EnemyTurret.h"
-#include "EnemySpawner.h"
-#include "EnemySniper.h"
-#include "EnemyCharger.h"
-#include "EnemySeeker.h"
-#include "EnemyStats.h"
-#include "PlayerStats.h"
+#include "Enemy/EnemyShooter.h"
+#include "Enemy/EnemyTurret.h"
+#include "Enemy/EnemySpawner.h"
+#include "Enemy/EnemySniper.h"
+#include "Enemy/EnemyCharger.h"
+#include "Enemy/EnemySeeker.h"
+#include "Enemy/EnemyStats.h"
+#include "Player/PlayerStats.h"
 
 Game::Game(int FPS) {
     setStatsScaleWithFPS(FPS);
