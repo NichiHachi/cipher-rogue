@@ -23,3 +23,5 @@ bool Wall::isInWall(Position objectPos) const {
     return (objectPos.x - size < position.x && position.x < objectPos.x + size && 
             objectPos.y - size < position.y && position.y < objectPos.y + size); 
 }
+
+//Faire la fonction ici qui remet le joueur ou l'ennemi dans le jeu si il est dans un mur

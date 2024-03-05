@@ -21,7 +21,7 @@ void Player::update(sf::RenderWindow& window, std::shared_ptr<std::vector<std::u
 
     shootTimer += deltaTime;
     hitTimer += deltaTime;
-
+        
     sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
     angle = atan2(position.y - mousePosition.y, mousePosition.x - position.x);
     shoot(bullets, bombshells, Position(mousePosition.x, mousePosition.y));
@@ -52,17 +52,13 @@ void Player::move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls) {
         float angleWallPlayer = atan2(wallPos.y - position.y, position.x - wallPos.x);
         if (walls->at(i)->isInWall(position + Position(-cos(angleWallPlayer),sin(angleWallPlayer))*size)){
             float wallSize = walls->at(i)->getSize();
-            if(-M_PI/4 <= angleWallPlayer && angleWallPlayer <= M_PI/4){
+            if (-M_PI/4 <= angleWallPlayer && angleWallPlayer <= M_PI/4) {
                 position.x += size - (position.x - (wallPos.x + wallSize));
-            }
-            else if(angleWallPlayer >= M_PI*3/4 || angleWallPlayer <= -M_PI*3/4){
+            } else if (angleWallPlayer >= M_PI*3/4 || angleWallPlayer <= -M_PI*3/4) {
                 position.x -= size - ((wallPos.x - wallSize) - position.x);
-            } 
-            else if(M_PI/4 <= angleWallPlayer && angleWallPlayer <= M_PI*3/4){
+            } else if (M_PI/4 <= angleWallPlayer && angleWallPlayer <= M_PI*3/4) {
                 position.y -= size - ((wallPos.y - wallSize) - position.y);
-            } 
-            //angleWallPlayer< -M_PI/4 && angleWallPlayer > -M_PI*3/4
-            else{
+            } else {
                 position.y += size - (position.y - (wallPos.y + wallSize));
             }
         }
@@ -75,10 +71,11 @@ void Player::move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls) {
     else if (position.y > 1000-size) position.y = 1000-size;
 }
 
-void Player::shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells, Position positionTarget) {
+void Player::shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells, Position targetPosition) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         if (shootTimer > 0.2) {
-            bombshells->push_back(std::make_unique<Bombshell>(position, positionTarget, speedBullet, 10, true, true));
+            bullets->push_back(std::make_unique<Bullet>(position, angle, speedBullet, 10, true, true));
+            //bombshells->push_back(std::make_unique<Bombshell>(position, targetPosition, speedBullet, 10, true, true));
             shootTimer = 0;
         }
     }
@@ -144,10 +141,12 @@ void Player::drawHealth(sf::RenderWindow &window) {
         if(hpNumber%numberPerLine == 0) {
             for(unsigned int i = 0; i < 4; i++) quad[i].color = colorLayer[std::min(hpNumber/numberPerLine,5)];
         }
+
         quad[0].position = startPosition + sf::Vector2f(length/2,-height/2) - sf::Vector2f(length * (hpNumber%numberPerLine) + 10 , 0);
         quad[1].position = startPosition + sf::Vector2f(length/6,height/2) - sf::Vector2f(length * (hpNumber%numberPerLine) + 10 , 0);
         quad[2].position = startPosition + sf::Vector2f(-length/2,height/2) - sf::Vector2f(length * (hpNumber%numberPerLine) + 10 , 0);
         quad[3].position = startPosition + sf::Vector2f(-length/6,-height/2) - sf::Vector2f(length * (hpNumber%numberPerLine) + 10 , 0);
+        
         window.draw(quad); 
     }
 }

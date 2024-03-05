@@ -10,7 +10,7 @@
 const int displayX = 1000;
 const int displayY = 1000;
 const sf::Color backgroundColor(0,0,0);
-const int FPS = 30;
+const int FPS = 60;
 
 int main(void){
     sf::RenderWindow window(sf::VideoMode(displayX,displayY), "Nichi Hachi");

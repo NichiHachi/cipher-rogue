@@ -38,4 +38,7 @@ class Game{
         void drawCursorTerminal(sf::RenderWindow& window, float deltaTime);
         void destroyWalls();
         void bulletCollisions();
+        void checkBulletsCollisionWithBombshells();
+        void checkBulletsOOB();
+        void checkBulletAllyCollisionBulletEnemy();
 };
