@@ -17,7 +17,7 @@ Player::Player() : position(Position(0,0)), speed(5*stats.speedFactor), hp(49), 
 
 void Player::update(sf::RenderWindow& window, std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells,
                     std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime) {
-    move(walls);
+    move(walls, deltaTime);
 
     shootTimer += deltaTime;
     hitTimer += deltaTime;
@@ -31,19 +31,19 @@ void Player::spawn(){
     position = Position(500,900);
 }
 
-void Player::move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls) {
+void Player::move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime) {
     int xAxisMove = 0;
     int yAxisMove = 0;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) yAxisMove++;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) xAxisMove--;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)) yAxisMove--;
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)) xAxisMove++;
-    
+
     if (yAxisMove != 0 && xAxisMove != 0) {
-        position += Position(xAxisMove*sqrt(2)/2,-yAxisMove*sqrt(2)/2)*speed;
+        position += Position(xAxisMove*sqrt(2)/2,-yAxisMove*sqrt(2)/2) * speed * deltaTime * 60;
     }
     else{
-        position += Position(xAxisMove,-yAxisMove)*speed;
+        position += Position(xAxisMove,-yAxisMove) * speed * deltaTime * 60;
     }
  
     float wallSize;

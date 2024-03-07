@@ -20,7 +20,6 @@ class EnemySeeker : public Enemy{
         void drawEffects(sf::RenderWindow& window) override;
         std::string getType() override { return "Seeker"; };
 
-        void move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies);
-
     private:
+        void move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime);
 };

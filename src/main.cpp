@@ -10,7 +10,7 @@
 const int displayX = 1000;
 const int displayY = 1000;
 const sf::Color backgroundColor(0,0,0);
-const int FPS = 60;
+const int FPS = 120;
 
 int main(void){
     sf::RenderWindow window(sf::VideoMode(displayX,displayY), "Nichi Hachi");
@@ -25,7 +25,7 @@ int main(void){
     while(window.isOpen()){
         sf::Event event;
         while (window.pollEvent(event)){
-            if (event.type == sf::Event::Closed)window.close();
+            if (event.type == sf::Event::Closed) window.close();
         }
 
         window.clear(backgroundColor);
@@ -34,7 +34,7 @@ int main(void){
 
         game.update(window, deltaTime);
         
-        game.draw(window,deltaTime);
+        game.draw(window, deltaTime);
 
         window.display();
     }

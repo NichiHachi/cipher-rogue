@@ -5,7 +5,15 @@ BINDIR = ./bin
 SRCDIR = ./src
 LIBS = -lsfml-graphics -lsfml-window -lsfml-system
 
-all: main
+all: directories main
+
+directories: ${OBJDIR} ${BINDIR}
+
+${OBJDIR}:
+	mkdir -p ${OBJDIR}
+
+${BINDIR}:
+	mkdir -p ${BINDIR}
 
 main: $(SRCDIR)/main.cpp $(OBJC)
 	$(cc) -g $(SRCDIR)/main.cpp $(OBJC) -o $(BINDIR)/main $(LIBS)

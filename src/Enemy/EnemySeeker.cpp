@@ -17,26 +17,13 @@ EnemySeeker::EnemySeeker(Position position, float angleSpawn) : Enemy(position, 
 
 void EnemySeeker::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
     float targetAngle = getAngleToObject(player.getPosition());
-    move(targetAngle, walls, enemies);
+    move(targetAngle, walls, enemies, deltaTime);
 }
 
-void EnemySeeker::move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies) {
-    float angleDiff = targetAngle - angle;
+void EnemySeeker::move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
+    smoothTurn(targetAngle, 0.05, deltaTime);
 
-    // Make sure the angle is between -PI and PI
-    if (angleDiff > M_PI) 
-        angleDiff -= 2*M_PI;
-    else if (angleDiff < -M_PI) 
-        angleDiff += 2*M_PI;
-
-    angle += angleDiff * 0.05 * stats.turnSpeedFactor;
-
-    if (angle > M_PI) 
-        angle -= 2*M_PI;
-    else if (angle < -M_PI) 
-        angle += 2*M_PI;
-
-    position += Position(cos(angle),-sin(angle))*speed;
+    position += Position(cos(angle),-sin(angle)) * speed * deltaTime * 60;
 
     adjustPositionBasedOnEnemies(enemies);
     adjustPositionBasedOnWalls(walls);

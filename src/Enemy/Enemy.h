@@ -43,4 +43,9 @@ class Enemy{
         bool adjustPositionBasedOnOOB();
         float getAngleToObject(Position objectPosition);
         float getAngleToFuturPlayerPosition(Player player);
+        void smoothTurn(float targetAngle, float turnSpeedFactor, float deltaTime);
+        Position pathFinding(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls);
+    
+    private:
+        bool hasLineOfSight(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls);
 };

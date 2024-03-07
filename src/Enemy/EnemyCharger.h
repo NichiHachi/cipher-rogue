@@ -19,8 +19,8 @@ class EnemyCharger : public Enemy{
         void drawEffects(sf::RenderWindow& window) override;
         std::string getType() override { return "Charger"; };
 
-        void move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls);
         void drawWarningZone(sf::RenderWindow& window);
 
     private:
+        void move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime);
 };

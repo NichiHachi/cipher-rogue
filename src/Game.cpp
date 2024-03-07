@@ -18,8 +18,6 @@
 #include "Player/PlayerStats.h"
 
 Game::Game(int FPS) {
-    setStatsScaleWithFPS(FPS);
-
     player = Player();
 
     bulletsEnemy = std::make_shared<std::vector<std::unique_ptr<Bullet>>>();
@@ -206,12 +204,12 @@ void Game::update(sf::RenderWindow& window, float deltaTime){
         //-----BULLETS UPDATE-----
         //ENEMY'S BULLETS
         for(unsigned int indexBullet=0; indexBullet<bulletsEnemy->size(); indexBullet++){
-            bulletsEnemy->at(indexBullet)->update();
+            bulletsEnemy->at(indexBullet)->update(deltaTime);
         }
 
         //ALLY'S BULLET
         for(unsigned int indexBullet=0; indexBullet<bulletsAlly->size(); indexBullet++){
-            bulletsAlly->at(indexBullet)->update();
+            bulletsAlly->at(indexBullet)->update(deltaTime);
         }
 
         //BOMBSHELLS
@@ -278,37 +276,6 @@ void Game::draw(sf::RenderWindow& window, float deltaTime){
         player.drawHealth(window);
 }
 
-
-void Game::setStatsScaleWithFPS(int FPS) {
-    float ratioFPS = (float)60/FPS;
-
-    Player::stats.speedFactor = ratioFPS;
-    Player::stats.speedBulletFactor = ratioFPS;
-
-    EnemyShooter::stats.speedFactor = ratioFPS;
-    EnemyShooter::stats.turnSpeedFactor = ratioFPS;
-    EnemyShooter::stats.speedBulletFactor = ratioFPS;
-
-    EnemyCharger::stats.speedFactor = ratioFPS;
-    EnemyCharger::stats.turnSpeedFactor = ratioFPS;
-    EnemyCharger::stats.speedBulletFactor = ratioFPS;
-
-    EnemySniper::stats.speedFactor = ratioFPS;
-    EnemySniper::stats.turnSpeedFactor = ratioFPS;
-    EnemySniper::stats.speedBulletFactor = ratioFPS;
-
-    EnemySeeker::stats.speedFactor = ratioFPS;
-    EnemySeeker::stats.turnSpeedFactor = ratioFPS;
-    EnemySeeker::stats.speedBulletFactor = ratioFPS;
-
-    EnemySpawner::stats.speedFactor = ratioFPS;
-    EnemySpawner::stats.turnSpeedFactor = ratioFPS;
-    EnemySpawner::stats.speedBulletFactor = ratioFPS;
-
-    EnemyTurret::stats.speedFactor = ratioFPS;
-    EnemyTurret::stats.turnSpeedFactor = ratioFPS;
-    EnemyTurret::stats.speedBulletFactor = ratioFPS;
-}
 
 void Game::drawFakeTerminal(sf::RenderWindow& window, float deltaTime){ 
     if(messageTerminal.empty()) return;

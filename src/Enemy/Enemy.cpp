@@ -161,3 +161,49 @@ float Enemy::getAngleToFuturPlayerPosition(Player player){
     //Return the angle between the enemy and the new player position
     return getAngleToObject(playerNewPos);
 }
+
+void Enemy::smoothTurn(float targetAngle, float turnSpeedFactor, float deltaTime){
+    float angleDiff = targetAngle - angle;
+    
+    if (angleDiff > M_PI) {
+        angleDiff -= 2 * M_PI;
+    } else if (angleDiff < -M_PI) {
+        angleDiff += 2 * M_PI;
+    }
+
+    angle += angleDiff * turnSpeedFactor * deltaTime * 60;
+
+    if (angle > M_PI) {
+        angle -= 2 * M_PI;
+    } else if (angle < -M_PI) {
+        angle += 2 * M_PI;
+    }
+}
+
+Position Enemy::pathFinding(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls){
+    //Voir si il y a un mur entre enemy et joueur (target)
+    //Si oui, se diriger vers la pos
+    //Si non, A* algorithme
+
+    if(hasLineOfSight(target, walls)){
+        
+    }
+
+}
+
+bool Enemy::hasLineOfSight(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls){
+    Position vectorLine = target - position;
+    Position discretisationPos;
+    int discretisation = 100;
+    
+    for(int i; i<discretisation; i++){
+        discretisationPos = position + vectorLine*i/discretisation;
+        for(int w=0; w<walls->size(); w++){
+            if(walls->at(w)->isInWall(discretisationPos)){
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}

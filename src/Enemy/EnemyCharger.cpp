@@ -15,15 +15,16 @@ EnemyCharger::EnemyCharger(Position position) : Enemy(position, 13*stats.speedFa
 
 void EnemyCharger::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, 
                           std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
+    
     shootTimer += deltaTime;
     if (shootTimer > 10) 
-        move(walls);
+        move(walls, deltaTime);
     else 
         angle = getAngleToObject(player.getPosition());
 }
 
-void EnemyCharger::move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls) {
-    position += Position(cos(angle), -sin(angle))*speed;
+void EnemyCharger::move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime) {
+    position += Position(cos(angle), -sin(angle)) * speed * deltaTime * 60;
 
     //If the enemy touch a wall or the screen border, it stops
     if(adjustPositionBasedOnWalls(walls)) shootTimer = 0;

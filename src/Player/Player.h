@@ -37,5 +37,5 @@ class Player{
         int size, hp, hpMax;
         double angle;
 
-        void move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls);
+        void move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime);
 };

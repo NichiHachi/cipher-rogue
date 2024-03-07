@@ -9,7 +9,7 @@ class Bullet{
     public:
         Bullet(Position position, float angle, float speed, float size, bool ally, bool destructible);
         ~Bullet() = default;
-        void update();
+        void update(float deltaTime);
         void draw(sf::RenderWindow &window);
 
 

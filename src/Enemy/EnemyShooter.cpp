@@ -3,13 +3,12 @@
 #include <cmath>
 #include <iostream>
 
-#include "EnemyShooter.h"
-#include "../Position.h"
 #include "Enemy.h"
-#include "../Projectile/Bullet.h"
-#include "../Projectile/Bullet.h"
-#include "../Wall.h"
+#include "EnemyShooter.h"
 #include "EnemyStats.h"
+#include "../Position.h"
+#include "../Wall.h"
+#include "../Projectile/Bullet.h"
 #include "../Player/Player.h"
 
 EnemyStats EnemyShooter::stats;
@@ -18,7 +17,7 @@ EnemyShooter::EnemyShooter(Position position) : Enemy(position, 1*stats.speedFac
 
 void EnemyShooter::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
     float targetAngle = getAngleToObject(player.getPosition());
-    move(targetAngle, walls, enemies);
+    move(targetAngle, walls, enemies, deltaTime);
 
     // Shoot every 2 secondes
     shootTimer += deltaTime;
@@ -32,25 +31,10 @@ void EnemyShooter::shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> b
     bullets->push_back(std::make_unique<Bullet>(position, angle, speedBullet, 15, false, true));
 }
 
-void EnemyShooter::move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies) {
-    float angleDiff = targetAngle - angle;
-    if (angleDiff > M_PI) {
-        angleDiff -= 2 * M_PI;
-    } 
-    else if (angleDiff < -M_PI) {
-        angleDiff += 2 * M_PI;
-    }
+void EnemyShooter::move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
+    smoothTurn(targetAngle, 0.2, deltaTime);
 
-    angle += angleDiff * 0.2 * stats.turnSpeedFactor;
-
-    if (angle > M_PI) {
-        angle -= 2 * M_PI;
-    } 
-    else if (angle < -M_PI) {
-        angle += 2 * M_PI;
-    }
-
-    position += Position(cos(angle),-sin(angle))*speed;
+    position += Position(cos(angle),-sin(angle)) * speed * deltaTime * 60;
     
     adjustPositionBasedOnEnemies(enemies);
     adjustPositionBasedOnWalls(walls);

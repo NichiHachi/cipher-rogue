@@ -7,8 +7,8 @@
 
 Bullet::Bullet(Position position, float angle, float speed, float size, bool ally, bool destructible) : position(position), angle(angle), speed(speed), size(size), ally(ally), destructible(destructible){}
 
-void Bullet::update() {
-    position += Position(cos(angle) , -sin(angle))*speed;
+void Bullet::update(float deltaTime) {
+    position += Position(cos(angle) , -sin(angle)) * speed * deltaTime * 60;
 }
 
 void Bullet::draw(sf::RenderWindow &window) {

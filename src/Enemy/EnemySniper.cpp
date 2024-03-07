@@ -17,7 +17,7 @@ EnemySniper::EnemySniper(Position position) : Enemy(position, 0.4*stats.speedFac
 
 void EnemySniper::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
     float targetAngle = getAngleToFuturPlayerPosition(player);
-    move(targetAngle, walls, enemies);
+    move(targetAngle, walls, enemies, deltaTime);
 
     // Shoot every 3.5 secondes
     shootTimer += deltaTime;
@@ -31,25 +31,10 @@ void EnemySniper::shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bu
     bullets->push_back(std::make_unique<Bullet>(position + Position(cos(angle),sin(angle))*size, angle, speedBullet, 14, false, false));
 }
 
-void EnemySniper::move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies) {
-    float angleDiff = targetAngle - angle;
-    if (angleDiff > M_PI) {
-        angleDiff -= 2 * M_PI;
-    } 
-    else if (angleDiff < -M_PI) {
-        angleDiff += 2 * M_PI;
-    }
+void EnemySniper::move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
+    smoothTurn(targetAngle, 0.1, deltaTime);
 
-    angle += angleDiff * 0.1 * stats.turnSpeedFactor;
-
-    if (angle > M_PI) {
-        angle -= 2 * M_PI;
-    } 
-    else if (angle < -M_PI) {
-        angle += 2 * M_PI;
-    }
-
-    position += Position(-cos(angle),sin(angle))*speed;
+    position += Position(-cos(angle),sin(angle)) * speed * deltaTime * 60;
     
     adjustPositionBasedOnEnemies(enemies);
     adjustPositionBasedOnWalls(walls);

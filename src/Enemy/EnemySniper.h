@@ -19,8 +19,7 @@ class EnemySniper : public Enemy{
         void drawEffects(sf::RenderWindow& window) override;
         std::string getType() override { return "Sniper"; };
 
-        void shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets);
-        void move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies);
-
     private:
+        void shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets);
+        void move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) ;
 };

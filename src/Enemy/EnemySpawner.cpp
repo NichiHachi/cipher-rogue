@@ -19,6 +19,7 @@ EnemySpawner::EnemySpawner(Position position) : Enemy(position, 5*stats.speedFac
 void EnemySpawner::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
     shootTimer += deltaTime;
     if (shootTimer >= 5) {
+        for(int i=0; i<50; i++)
         enemies->push_back(std::make_unique<EnemySeeker>(position, M_PI*2/3));
         shootTimer = 0;
     }
