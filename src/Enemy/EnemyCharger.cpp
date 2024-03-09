@@ -20,7 +20,7 @@ void EnemyCharger::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> 
     if (shootTimer > 10) 
         move(walls, deltaTime);
     else 
-        angle = getAngleToObject(player.getPosition());
+        angle = getAngleToTarget(player.getPosition());
 }
 
 void EnemyCharger::move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime) {

@@ -26,10 +26,10 @@ class Enemy{
         void receiveDamage(int damage) {hp -= damage;};
 
         Position getPosition() const { return position; }
-        int getSize() const {return size;};
-        bool isMovable() const {return movable;};
-        bool isDead() const {return hp <= 0;};
-        float getSpeedBullet() const {return speedBullet;};     
+        int getSize() const { return size; };
+        bool isMovable() const { return movable; };
+        bool isDead() const { return hp <= 0; };
+        float getSpeedBullet() const { return speedBullet; };     
 
     protected:
         Position position;
@@ -41,11 +41,12 @@ class Enemy{
         bool adjustPositionBasedOnEnemies(std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies);
         bool adjustPositionBasedOnWalls(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls);
         bool adjustPositionBasedOnOOB();
-        float getAngleToObject(Position objectPosition);
+        float getAngleToTarget(Position target);
         float getAngleToFuturPlayerPosition(Player player);
         void smoothTurn(float targetAngle, float turnSpeedFactor, float deltaTime);
-        Position pathFinding(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls);
+        float pathFinding(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime);
     
     private:
-        bool hasLineOfSight(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls);
+        bool hasLineOfSight(Position target, int size, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls);
+        std::vector<Position> aStar(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls);
 };

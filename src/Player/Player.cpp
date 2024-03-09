@@ -123,7 +123,7 @@ void Player::draw(sf::RenderWindow &window) {
 void Player::drawHealth(sf::RenderWindow &window) {
     int height = 30;
     int length = 30;
-    int numberPerLine = 7;
+    int numberPerLine = 15;
     sf::Vector2f startPosition(950,950);
 
     sf::Color colorLayer[6] = {

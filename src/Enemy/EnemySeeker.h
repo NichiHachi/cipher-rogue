@@ -21,5 +21,5 @@ class EnemySeeker : public Enemy{
         std::string getType() override { return "Seeker"; };
 
     private:
-        void move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime);
+        void move(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime);
 };

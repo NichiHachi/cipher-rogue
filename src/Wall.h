@@ -9,6 +9,8 @@ class Wall{
         Wall(Position position);
         void draw(sf::RenderWindow& window);
         bool isInWall(Position objectPos) const;
+        bool isIndexInWall(Position index) const;
+        bool isEntityInWall(Position pos, int size) const;
         Position getPosition() const {return position;};
         int getSize() const {return size;};
 

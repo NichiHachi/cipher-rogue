@@ -16,14 +16,12 @@ EnemyStats EnemySeeker::stats;
 EnemySeeker::EnemySeeker(Position position, float angleSpawn) : Enemy(position, 3.75*stats.speedFactor, angleSpawn, 0, 5*stats.speedBulletFactor, 4, 15*stats.sizeFactor, true) {}
 
 void EnemySeeker::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
-    float targetAngle = getAngleToObject(player.getPosition());
-    move(targetAngle, walls, enemies, deltaTime);
+    move(player.getPosition(), walls, enemies, deltaTime);
 }
 
-void EnemySeeker::move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
-    smoothTurn(targetAngle, 0.05, deltaTime);
-
-    position += Position(cos(angle),-sin(angle)) * speed * deltaTime * 60;
+void EnemySeeker::move(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
+    angle = pathFinding(target, walls, deltaTime);
+    smoothTurn(angle, 0.05, deltaTime);
 
     adjustPositionBasedOnEnemies(enemies);
     adjustPositionBasedOnWalls(walls);

@@ -19,6 +19,7 @@
 
 Game::Game(int FPS) {
     player = Player();
+    player.spawn();
 
     bulletsEnemy = std::make_shared<std::vector<std::unique_ptr<Bullet>>>();
     bulletsAlly = std::make_shared<std::vector<std::unique_ptr<Bullet>>>();
@@ -36,13 +37,58 @@ Game::Game(int FPS) {
     text.setCharacterSize(15);
 
     //A CHANGER --- DEBUG ROOM ---
-    walls->push_back(std::make_unique<Wall>(Position(500, 500)));
-    enemies->push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
-    enemies->push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
-    enemies->push_back(std::make_unique<EnemyTurret>(Position(200, 200)));
+    walls->push_back(std::make_unique<Wall>(Position(9, 9)));
+    walls->push_back(std::make_unique<Wall>(Position(10, 9)));
+    walls->push_back(std::make_unique<Wall>(Position(11, 9)));
+    walls->push_back(std::make_unique<Wall>(Position(12, 9)));
+    walls->push_back(std::make_unique<Wall>(Position(13, 9)));
+    walls->push_back(std::make_unique<Wall>(Position(14, 9)));
+    walls->push_back(std::make_unique<Wall>(Position(15, 9)));
+    walls->push_back(std::make_unique<Wall>(Position(16, 9)));
+    walls->push_back(std::make_unique<Wall>(Position(10, 9)));
+
+    walls->push_back(std::make_unique<Wall>(Position(9, 10)));
+
+    walls->push_back(std::make_unique<Wall>(Position(9, 11)));
+    walls->push_back(std::make_unique<Wall>(Position(11, 11)));
+    walls->push_back(std::make_unique<Wall>(Position(12, 11)));
+    walls->push_back(std::make_unique<Wall>(Position(13, 11)));
+    walls->push_back(std::make_unique<Wall>(Position(14, 11)));
+    walls->push_back(std::make_unique<Wall>(Position(15, 11)));
+    walls->push_back(std::make_unique<Wall>(Position(16, 11)));
+    walls->push_back(std::make_unique<Wall>(Position(17, 11)));
+    walls->push_back(std::make_unique<Wall>(Position(18, 11)));
+    walls->push_back(std::make_unique<Wall>(Position(19, 11)));
+    walls->push_back(std::make_unique<Wall>(Position(20, 11)));
+
+    walls->push_back(std::make_unique<Wall>(Position(9, 12)));
+
+    walls->push_back(std::make_unique<Wall>(Position(9, 13)));
+    walls->push_back(std::make_unique<Wall>(Position(10, 13)));
+    walls->push_back(std::make_unique<Wall>(Position(11, 13)));
+    walls->push_back(std::make_unique<Wall>(Position(12, 13)));
+    walls->push_back(std::make_unique<Wall>(Position(13, 13)));
+    walls->push_back(std::make_unique<Wall>(Position(14, 13)));
+    walls->push_back(std::make_unique<Wall>(Position(15, 13)));
+    walls->push_back(std::make_unique<Wall>(Position(16, 13)));
+    walls->push_back(std::make_unique<Wall>(Position(10, 13)));
+
+
+    walls->push_back(std::make_unique<Wall>(Position(9, 14)));
+    walls->push_back(std::make_unique<Wall>(Position(9, 15)));
+    walls->push_back(std::make_unique<Wall>(Position(9, 16)));
+    walls->push_back(std::make_unique<Wall>(Position(9, 17)));
+    walls->push_back(std::make_unique<Wall>(Position(9, 18)));
+    walls->push_back(std::make_unique<Wall>(Position(9, 19)));
+    walls->push_back(std::make_unique<Wall>(Position(9, 20)));
+    
+    //enemies->push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
+    //enemies->push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
+    //enemies->push_back(std::make_unique<EnemyTurret>(Position(200, 200)));
+    enemies->push_back(std::make_unique<EnemySeeker>(Position(200, 200), 0));
     enemies->push_back(std::make_unique<EnemySpawner>(Position(300, 300)));
-    enemies->push_back(std::make_unique<EnemySniper>(Position(400, 400)));
-    enemies->push_back(std::make_unique<EnemyCharger>(Position(500, 600)));
+    //enemies->push_back(std::make_unique<EnemySniper>(Position(400, 400)));
+    //enemies->push_back(std::make_unique<EnemyCharger>(Position(500, 600)));
 }
 
 Game::~Game(){}

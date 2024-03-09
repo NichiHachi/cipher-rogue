@@ -16,7 +16,7 @@ EnemyStats EnemyShooter::stats;
 EnemyShooter::EnemyShooter(Position position) : Enemy(position, 1*stats.speedFactor, M_PI*3/2, 0, 3*stats.speedBulletFactor, 6, 19*stats.sizeFactor, true) {}
 
 void EnemyShooter::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
-    float targetAngle = getAngleToObject(player.getPosition());
+    float targetAngle = getAngleToTarget(player.getPosition());
     move(targetAngle, walls, enemies, deltaTime);
 
     // Shoot every 2 secondes

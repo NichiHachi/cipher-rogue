@@ -2,7 +2,7 @@
 
 ## Requirement
 ### Arch Linux
-1. c++ compiler:
+1. C++ compiler:
 
     ```bash
     sudo pacman -S gcc
@@ -15,7 +15,7 @@
     ```
 
 ### Ubuntu
-1. c++ compiler:
+1. C++ compiler:
 
     ```bash
     sudo apt update
@@ -30,7 +30,7 @@
     ```
 
 ### Fedora
-1. c++ compiler:
+1. C++ compiler:
 
     ```bash
     sudo dnf install gcc-c++
