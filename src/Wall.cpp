@@ -7,7 +7,7 @@
 
 Wall::Wall(Position index) : position(index*50+Position(25,25)), size(25) {}
 
-void Wall::draw(sf::RenderWindow &window) {
+void Wall::draw(sf::RenderWindow &window) const {
     sf::VertexArray quad(sf::Quads, 4);
     for(unsigned int i = 0; i < 4; i++) quad[i].color = sf::Color::White;
 
@@ -30,7 +30,17 @@ bool Wall::isIndexInWall(Position index) const {
             newIndex.y - size < position.y && position.y < newIndex.y + size); 
 }
 
-bool Wall::isEntityInWall(Position pos, int size) const {
-    float angleEntityWall = atan2(position.y - pos.y, pos.x - position.x);
-    return isInWall(pos + Position(-cos(angleEntityWall),sin(angleEntityWall))*size);
+Position Wall::getPoint(unsigned int index) const {
+    switch(index){
+        case 0:
+            return {position.x + size, position.y + size};
+        case 1:
+            return {position.x - size, position.y + size};
+        case 2:
+            return {position.x - size, position.y - size};
+        case 3:
+            return {position.x + size, position.y - size};
+        default:
+            return {0,0};
+    }
 }

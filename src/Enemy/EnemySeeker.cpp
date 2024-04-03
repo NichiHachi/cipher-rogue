@@ -1,25 +1,21 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <cmath>
-#include <iostream>
 
 #include "../Position.h"
 #include "Enemy.h"
-#include "../Projectile/Bullet.h"
 #include "EnemySeeker.h"
-#include "../Wall.h"
 #include "EnemyStats.h"
-#include "../Player/Player.h"
 
 EnemyStats EnemySeeker::stats;
 
-EnemySeeker::EnemySeeker(Position position, float angleSpawn) : Enemy(position, 3.75*stats.speedFactor, angleSpawn, 0, 5*stats.speedBulletFactor, 4, 15*stats.sizeFactor, true) {}
+EnemySeeker::EnemySeeker(Position position, float angleSpawn) : Enemy(position, 3.75, angleSpawn, 0, 5, 4, 15, true) {}
 
-void EnemySeeker::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
+void EnemySeeker::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {
     move(player.getPosition(), walls, enemies, deltaTime);
 }
 
-void EnemySeeker::move(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
+void EnemySeeker::move(Position target, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {
     angle = pathFinding(target, walls, deltaTime);
     smoothTurn(angle, 0.05, deltaTime);
 
@@ -33,12 +29,12 @@ void EnemySeeker::draw(sf::RenderWindow &window) {
     sf::VertexArray enemy(sf::Triangles, 3);
     for(unsigned int i = 0; i < 3; i++) enemy[i].color = enemiesColor;
 
-    enemy[0].position = sf::Vector2f(position.x + cos(angle) * size, 
-                                     position.y - sin(angle) * size);
-    enemy[1].position = sf::Vector2f(position.x + cos(angle + M_PI * 2 / 3) * size,
-                                     position.y - sin(angle + M_PI * 2 / 3) * size);
-    enemy[2].position = sf::Vector2f(position.x + cos(angle - M_PI * 2 / 3) * size,
-                                     position.y - sin(angle - M_PI * 2 / 3) * size);
+    enemy[0].position = sf::Vector2f(static_cast<float>(position.x + std::cos(angle) * static_cast<float>(size)),
+                                     static_cast<float>(position.y - std::sin(angle) * static_cast<float>(size)));
+    enemy[1].position = sf::Vector2f(static_cast<float>(position.x + std::cos(angle + M_PI * 2 / 3) * size),
+                                     static_cast<float>(position.y - std::sin(angle + M_PI * 2 / 3) * size));
+    enemy[2].position = sf::Vector2f(static_cast<float>(position.x + std::cos(angle - M_PI * 2 / 3) * size),
+                                     static_cast<float>(position.y - std::sin(angle - M_PI * 2 / 3) * size));
 
     window.draw(enemy);
 }

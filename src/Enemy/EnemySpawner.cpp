@@ -1,33 +1,31 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <cmath>
-#include <iostream>
 
 #include "../Position.h"
 #include "Enemy.h"
-#include "../Projectile/Bullet.h"
 #include "EnemySpawner.h"
 #include "EnemySeeker.h"
-#include "../Wall.h"
 #include "EnemyStats.h"
-#include "../Player/Player.h"
 
 EnemyStats EnemySpawner::stats;
 
-EnemySpawner::EnemySpawner(Position position) : Enemy(position, 5*stats.speedFactor, 0, 0, 0, 10, 20*stats.sizeFactor, false){}
+EnemySpawner::EnemySpawner(Position position) : Enemy(position, 5, 0, 0, 0, 10, 20, false){}
 
-void EnemySpawner::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
+void EnemySpawner::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {
     shootTimer += deltaTime;
     if (shootTimer >= 5) {
-        for(int i=0; i<10; i++)
-        enemies->push_back(std::make_unique<EnemySeeker>(position, M_PI*2/3));
+        std::unique_ptr<EnemySeeker> newEnemySeeker = std::make_unique<EnemySeeker>(position, M_PI*2/3);
+
+        enemies->push_back(std::unique_ptr<Enemy>(std::move(newEnemySeeker)));
+
         shootTimer = 0;
     }
 }
 
 void EnemySpawner::draw(sf::RenderWindow &window) {
-    float height = size;
-    float width = size*7/20;
+    int height = size;
+    int width = size*7/20;
     sf::Color enemiesColor(100, 100, 100);
     sf::VertexArray quad(sf::Quads, 4);
 

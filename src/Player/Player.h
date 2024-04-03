@@ -18,18 +18,18 @@ class Player{
         static PlayerStats stats;
 
         Player();
-        void update(sf::RenderWindow &window, std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells,
-                    std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime);
+        void update(sf::RenderWindow &window, const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, const std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>>& bombshells,
+                    const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, float deltaTime);
         void spawn();
-        void shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells, Position positionTarget);
-        void receiveDamageIfShot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells);
-        void receiveDamageIfHit(std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies);
-        void receiveDamage(unsigned int damage);
+        void shoot(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, const std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>>& bombshells, Position positionTarget);
+        void receiveDamageIfShot(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, const std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>>& bombshells);
+        void receiveDamageIfHit(const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies);
+        void receiveDamage(int damage);
         void draw(sf::RenderWindow& window);
-        void drawHealth(sf::RenderWindow& window);
+        void drawHealth(sf::RenderWindow& window) const;
 
-        Position getPosition() const {return position;};
-        float getSpeed() const {return speed;};
+        Position getPosition() const;
+        float getSpeed() const;
         
     private:
         Position position;
@@ -37,5 +37,5 @@ class Player{
         int size, hp, hpMax;
         double angle;
 
-        void move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime);
+        void move(const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, float deltaTime);
 };

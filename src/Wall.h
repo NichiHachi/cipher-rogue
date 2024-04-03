@@ -6,13 +6,13 @@
 
 class Wall{
     public:
-        Wall(Position position);
-        void draw(sf::RenderWindow& window);
+        explicit Wall(Position position);
+        void draw(sf::RenderWindow& window) const;
         bool isInWall(Position objectPos) const;
         bool isIndexInWall(Position index) const;
-        bool isEntityInWall(Position pos, int size) const;
         Position getPosition() const {return position;};
         int getSize() const {return size;};
+        Position getPoint(unsigned int index) const;
 
     private:
         int size;

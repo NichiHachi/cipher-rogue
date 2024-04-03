@@ -3,9 +3,8 @@
 #include <cmath>
 
 #include "Bombshell.h"
-#include "../Position.h"
 
-Bombshell::Bombshell(Position position, Position positionTarget, float speed, float size, bool ally, bool destructible) : position(position), positionTarget(positionTarget), speed(speed), size(0), ally(ally), sizeMax(size*10){}
+Bombshell::Bombshell(Position position, Position positionTarget, float speed, float size, bool ally) : position(position), positionTarget(positionTarget), speed(speed), size(0), ally(ally), sizeMax(size*10){}
 
 void Bombshell::update(const float deltaTime){
     fallTime += deltaTime;
@@ -20,7 +19,6 @@ void Bombshell::draw(sf::RenderWindow &window){
     if(fallTime < timeToFall){
         float percent;
         sf::Vector2f bombshellShotDrawPos;
-        float angleBombshellDraw;
         sf::Color colorBombshell = ally ? sf::Color::White : sf::Color(255, 102, 51);
 
         if(fallTime < timeToFall/2){
@@ -37,8 +35,8 @@ void Bombshell::draw(sf::RenderWindow &window){
 
         sf::VertexArray bombshellBody(sf::Quads, 4);
         for (int i = 0; i < 4; i++) bombshellBody[i].color = colorBombshell;
-        int height = sizeMax/7;
-        int width = sizeMax/10;
+        int height = static_cast<int>(sizeMax/7);
+        int width = static_cast<int>(sizeMax/10);
         
         bombshellBody[0].position = sf::Vector2f(height * std::cos(angle) + width * std::sin(angle) + bombshellShotDrawPos.x,
                                         -height * std::sin(angle) + width * std::cos(angle) + bombshellShotDrawPos.y);
@@ -95,7 +93,7 @@ void Bombshell::draw(sf::RenderWindow &window){
     }
 }
 
-void Bombshell::drawExplosion(sf::RenderWindow &window){  
+void Bombshell::drawExplosion(sf::RenderWindow &window) const{
     sf::Color colorExplosion = ally ? sf::Color(0, 255, 255) : sf::Color(255, 0, 0);
     
     if(fallTime < timeToFall){ 
@@ -130,3 +128,9 @@ void Bombshell::drawExplosion(sf::RenderWindow &window){
 bool Bombshell::isDeletable() const{
     return fallTime > timeToFall + 1;
 }
+
+Position Bombshell::getPosition() const { return position; }
+float Bombshell::getSize() const { return size; }
+float Bombshell::getAngle() const { return angle; }
+bool Bombshell::isAlly() const { return ally; }
+bool Bombshell::hasExploded() const { return size!=0; }

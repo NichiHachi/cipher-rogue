@@ -13,8 +13,8 @@ class EnemyCharger : public Enemy{
     public:
         static EnemyStats stats;
 
-        EnemyCharger(Position position);
-        void update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) override;
+        explicit EnemyCharger(Position position);
+        void update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) override;
         void draw(sf::RenderWindow& window) override;
         void drawEffects(sf::RenderWindow& window) override;
         std::string getType() override { return "Charger"; };
@@ -22,5 +22,5 @@ class EnemyCharger : public Enemy{
         void drawWarningZone(sf::RenderWindow& window);
 
     private:
-        void move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime);
+        void move(const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, float deltaTime);
 };

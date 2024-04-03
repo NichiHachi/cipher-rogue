@@ -1,28 +1,26 @@
-#include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <cmath>
 #include <queue>
 #include <functional>
 #include <vector>
-#include <iostream>
 #include <set>
+#include <algorithm>
 
 #include "../Position.h"
 #include "../Projectile/Bullet.h"
 #include "../Projectile/Bombshell.h"
 #include "Enemy.h"
-#include "../Player/Player.h"
 
 Enemy::Enemy(Position position, float speed, float angle, float shootTimer, float speedBullet, int hp, int size, bool movable) : position(position), speed(speed), angle(angle), shootTimer(shootTimer), speedBullet(speedBullet), hp(hp), size(size), movable(movable){}
 
-void Enemy::receiveDamageIfShot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>> bombshells){
+void Enemy::receiveDamageIfShot(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, const std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>>& bombshells){
     Position diffPos;
     float hitBoxBoth;
     auto bullet = bullets->begin();
 
     while (bullet != bullets->end()) {
         diffPos = position - bullet->get()->getPosition();
-        hitBoxBoth = bullet->get()->getSize() + size;
+        hitBoxBoth = bullet->get()->getSize() + static_cast<float>(size);
         // sqrt(x² + y²) < n <=> x² + y² < n² :
         if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth) {
             receiveDamage(1);
@@ -33,32 +31,33 @@ void Enemy::receiveDamageIfShot(std::shared_ptr<std::vector<std::unique_ptr<Bull
         }
     }
 
-    for(unsigned int i = 0; i < bombshells->size(); i++){
-        if(!bombshells->at(i)->hasExploded() || !bombshells->at(i)->isAlly()) continue;
+    for(const auto & bombshell : *bombshells){
+        if(!bombshell->hasExploded() || !bombshell->isAlly()) continue;
         
-        if (std::find(bombshells->at(i)->hitEnemies.begin(), bombshells->at(i)->hitEnemies.end(), this) != bombshells->at(i)->hitEnemies.end()) {
+        if (std::find(bombshell->hitEnemies.begin(), bombshell->hitEnemies.end(), this) != bombshell->hitEnemies.end()) {
             continue;
         }
 
-        diffPos = position - bombshells->at(i)->getPosition();
-        hitBoxBoth = size + bombshells->at(i)->getSize();
+        diffPos = position - bombshell->getPosition();
+        hitBoxBoth = static_cast<float>(size) + bombshell->getSize();
         if(diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth){
             receiveDamage(2);
-            bombshells->at(i)->hitEnemies.push_back(this);
+            bombshell->hitEnemies.push_back(this);
         }
     }
 }
 
-bool Enemy::adjustPositionBasedOnWalls(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls){
+bool Enemy::adjustPositionBasedOnWalls(const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls){
     bool positionAdjusted = false;
     Position wallPos;
-    float angleEnemyWall, wallSize;
-    for (unsigned int i = 0; i < walls->size(); i++) {
-        wallPos = walls->at(i)->getPosition();
-        angleEnemyWall = atan2(wallPos.y - position.y, position.x - wallPos.x);
+    float angleEnemyWall;
+    int wallSize;
+    for (const auto & wall : *walls) {
+        wallPos = wall->getPosition();
+        angleEnemyWall = std::atan2(wallPos.y - position.y, position.x - wallPos.x);
         //If the enemy nearest point from the middle of the wall is in the wall
-        if (walls->at(i)->isInWall(position + Position(-cos(angleEnemyWall),sin(angleEnemyWall))*size)){
-            wallSize = walls->at(i)->getSize();
+        if (wall->isInWall(position + Position(-std::cos(angleEnemyWall),std::sin(angleEnemyWall))*size)){
+            wallSize = wall->getSize();
             if(-M_PI/4 <= angleEnemyWall && angleEnemyWall <= M_PI/4){
                 position.x += size - (position.x - (wallPos.x + wallSize));
             }
@@ -78,38 +77,37 @@ bool Enemy::adjustPositionBasedOnWalls(std::shared_ptr<std::vector<std::unique_p
     return positionAdjusted;
 }
 
-bool Enemy::adjustPositionBasedOnEnemies(std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies){
+bool Enemy::adjustPositionBasedOnEnemies(const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies){
     bool positionAdjusted = false;
-    float angleEnemyEnemy, distance, moveDistance;
+    float angleEnemyEnemy, hitBoxBoth, moveDistance;
     Position enemyPos, diffPos;
-    int enemySize;
-    for (unsigned int i = 0; i < enemies->size(); i++) {
-        if (enemies->at(i).get() == this) {
+    for (const auto & enemy : *enemies) {
+        if (enemy.get() == this) {
             //Don't check collision with itself
             continue;
         }
 
-        enemyPos = enemies->at(i)->getPosition();
-        enemySize = enemies->at(i)->getSize();
+        enemyPos = enemy->getPosition();
+        hitBoxBoth = static_cast<float>(enemy->getSize() + size);
         diffPos = position - enemyPos;
         
         //If the object is inside of the enemy
-        if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < (enemySize+size) * (enemySize+size)){
-            angleEnemyEnemy = atan2(enemyPos.y - position.y, position.x - enemyPos.x);
-            moveDistance = enemySize + size - sqrt(diffPos.x * diffPos.x + diffPos.y * diffPos.y);
+        if (diffPos.x * diffPos.x + diffPos.y * diffPos.y < hitBoxBoth * hitBoxBoth){
+            angleEnemyEnemy = std::atan2(enemyPos.y - position.y, position.x - enemyPos.x);
+            moveDistance = hitBoxBoth - std::sqrt(diffPos.x * diffPos.x + diffPos.y * diffPos.y);
             // Move the enemy gradually towards the outside
 
             //TO DO : Scale the movement with the deltaTime
-            if(enemies->at(i)->isMovable()){
-                enemies->at(i)->setPosition(enemyPos + Position(cos(M_PI + angleEnemyEnemy) * moveDistance / 4,
-                                                                - sin(M_PI + angleEnemyEnemy) * moveDistance / 4));
+            if(enemy->isMovable()){
+                enemy->setPosition(enemyPos + Position(std::cos(M_PI + angleEnemyEnemy) * moveDistance / 4,
+                                                                - std::sin(M_PI + angleEnemyEnemy) * moveDistance / 4));
                                                       
-                position += Position(cos(angleEnemyEnemy) * moveDistance / 4,
-                                     - sin(angleEnemyEnemy) * moveDistance / 4);
+                position += Position(std::cos(angleEnemyEnemy) * moveDistance / 4,
+                                     - std::sin(angleEnemyEnemy) * moveDistance / 4);
             }
             else{
-                position += Position(cos(angleEnemyEnemy) * moveDistance / 2,
-                                     - sin(angleEnemyEnemy) * moveDistance / 2);
+                position += Position(std::cos(angleEnemyEnemy) * moveDistance / 2,
+                                     - std::sin(angleEnemyEnemy) * moveDistance / 2);
             }
             positionAdjusted = true;
         }
@@ -141,13 +139,13 @@ bool Enemy::adjustPositionBasedOnOOB(){
     return positionAdjusted;
 }
 
-float Enemy::getAngleToTarget(Position target){
-    return atan2(position.y - target.y, target.x - position.x);
+float Enemy::getAngleToTarget(Position target) const {
+    return std::atan2(position.y - target.y, target.x - position.x);
 }
 
 float Enemy::getAngleToFuturPlayerPosition(Player player){
     Position diffPos = player.getPosition() - position;
-    float timeBulletTravel = sqrt(diffPos.x*diffPos.x + diffPos.y*diffPos.y)/speedBullet;
+    float timeBulletTravel = std::sqrt(diffPos.x*diffPos.x + diffPos.y*diffPos.y)/speedBullet;
 
     Position playerNewPos = player.getPosition();
 
@@ -208,25 +206,25 @@ struct NodeComparator {
 };
 
 float heuristicCostEstimate(Position start, Position target){
-    return sqrt((start.x - target.x)*(start.x - target.x) + (start.y - target.y)*(start.y - target.y));
+    return std::sqrt((start.x - target.x)*(start.x - target.x) + (start.y - target.y)*(start.y - target.y));
 }
 
 float dist_between(Node* nodeA, Node* nodeB) {
     float dx = nodeB->position.x - nodeA->position.x;
     float dy = nodeB->position.y - nodeA->position.y;
-    return sqrt(dx * dx + dy * dy);
+    return std::sqrt(dx * dx + dy * dy);
 }
 
-bool isIndexInWall(Position pos, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls){
-    for(int w=0; w<walls->size(); w++){
-        if(walls->at(w)->isIndexInWall(pos)){
+bool isIndexInWall(Position pos, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls){
+    for(const auto & wall : *walls){
+        if(wall->isIndexInWall(pos)){
             return true;
         }
     }
     return false;
 }
 
-std::vector<Node*> getNeighbors(Node* node, Position target ,std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls){
+std::vector<Node*> getNeighbors(Node* node, Position target ,const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls){
     std::vector<Node*> neighbors;
     Position neighborPos;
     for(int x=-1; x<=1; x++){
@@ -238,7 +236,7 @@ std::vector<Node*> getNeighbors(Node* node, Position target ,std::shared_ptr<std
                 //Diagonal movement
                 if(x == y || x == -y){
                     if(!isIndexInWall(node->position + Position(x, 0), walls) && !isIndexInWall(node->position + Position(0, y), walls)){
-                        neighbors.push_back(new Node(neighborPos, node->gScore + 1.5, heuristicCostEstimate(neighborPos, target), node));
+                        neighbors.push_back(new Node(neighborPos, node->gScore + 1.5f, heuristicCostEstimate(neighborPos, target), node));
                     }
                 }
                 //Straight movement
@@ -252,7 +250,7 @@ std::vector<Node*> getNeighbors(Node* node, Position target ,std::shared_ptr<std
     return neighbors;
 }
 
-std::vector<Position> Enemy::aStar(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls){
+std::vector<Position> Enemy::aStar(Position target, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls){
     std::priority_queue<Node*, std::vector<Node*>, NodeComparator> openSet;
     std::vector<Node*> closedSet;
     std::vector<Position> openSetLookup;
@@ -263,13 +261,13 @@ std::vector<Position> Enemy::aStar(Position target, std::shared_ptr<std::vector<
     Node* startNode = new Node(positionGrid, 0, heuristicCostEstimate(positionGrid, targetGrid), nullptr);
     openSet.push(startNode);
 
-    float weight = 5;
+    float weight = 50;
 
     while(!openSet.empty()){
         Node* current = openSet.top();
         openSet.pop();
 
-        if(current->position == targetGrid){
+        if(current->position == targetGrid || hasLineOfSight(target, walls)){
             Node* temp = current;
             
             while(temp != nullptr){
@@ -315,13 +313,13 @@ std::vector<Position> Enemy::aStar(Position target, std::shared_ptr<std::vector<
 
 // END A STAR ALGORITHM
 
-float Enemy::pathFinding(Position target, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime){
-    if(hasLineOfSight(target, size, walls)){
-        float angle = getAngleToTarget(target);
-        position += Position(cos(angle),-sin(angle)) * speed * deltaTime * 60;
-        return angle;
+float Enemy::pathFinding(Position target, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, float deltaTime){
+    if(hasLineOfSight(target, walls)){
+        float angleTarget = getAngleToTarget(target);
+        position += Position(std::cos(angleTarget),-std::sin(angleTarget)) * speed * deltaTime * 60;
+        return angleTarget;
     } else {
-        std::vector<Position> path = aStar(target, walls);   
+        std::vector<Position> path = aStar(target, walls);
         Position vector;
 
         std::vector<Position> pathReduced = {path[0]};
@@ -329,7 +327,7 @@ float Enemy::pathFinding(Position target, std::shared_ptr<std::vector<std::uniqu
             if(vector == path[i]-pathReduced[pathReduced.size()-1]){
                 pathReduced[pathReduced.size()-1] = path[i];
             } else {
-                vector = path[i]-pathReduced[pathReduced.size()-1];
+                path[i] - pathReduced[pathReduced.size() - 1];
                 pathReduced.push_back(path[i]);
             }
         }
@@ -340,10 +338,8 @@ float Enemy::pathFinding(Position target, std::shared_ptr<std::vector<std::uniqu
             if(pathReduced[i].x == pathReduced[i].y || pathReduced[i].x == -pathReduced[i].y){
                 pathScaled.push_back(pathReduced[i]*50 + Position(25,25));
             } else {
-                vector = pathReduced[i]-pathReduced[i-1];
                 //Left
                 if(vector.x > 0){
-                    vector = pathReduced[i+1]-pathReduced[i];
                     if(vector.y > 0){
                         pathScaled.push_back(pathReduced[i]*50+Position((size+5),50-(size+5)));
                     } else {
@@ -352,7 +348,6 @@ float Enemy::pathFinding(Position target, std::shared_ptr<std::vector<std::uniqu
                 }
                 //Right
                 else if(vector.x < 0){
-                    vector = pathReduced[i+1]-pathReduced[i];
                     if(vector.y > 0){
                         pathScaled.push_back(pathReduced[i]*50+Position(50-(size+5),50-(size+5)));
                     } else {
@@ -361,7 +356,6 @@ float Enemy::pathFinding(Position target, std::shared_ptr<std::vector<std::uniqu
                 } 
                 //Down
                 else if(vector.y > 0){
-                    vector = pathReduced[i+1]-pathReduced[i];
                     if(vector.x > 0){
                         pathScaled.push_back(pathReduced[i]*50+Position(50-(size+5),50-(size+5)));
                     } else {
@@ -370,7 +364,6 @@ float Enemy::pathFinding(Position target, std::shared_ptr<std::vector<std::uniqu
                 }
                 //Up
                 else{
-                    vector = pathReduced[i+1]-pathReduced[i];
                     if(vector.x > 0){
                         pathScaled.push_back(pathReduced[i]*50+Position(50-(size+5),(size+5)));
                     } else {
@@ -383,18 +376,18 @@ float Enemy::pathFinding(Position target, std::shared_ptr<std::vector<std::uniqu
         
         float distanceToMove = speed * deltaTime * 60;
         float distanceCheckpoint;
-        Position chechpoint;
+        Position checkpoint;
         while(distanceToMove > 0 && pathScaled.size() > 1){
-            chechpoint = pathScaled[1]-position;
-            distanceCheckpoint = chechpoint.x*chechpoint.x + chechpoint.y*chechpoint.y;
+            checkpoint = pathScaled[1] - position;
+            distanceCheckpoint = checkpoint.x * checkpoint.x + checkpoint.y * checkpoint.y;
             if(distanceToMove*distanceToMove >= distanceCheckpoint){
-                distanceToMove -= sqrt(distanceCheckpoint);
+                distanceToMove -= std::sqrt(distanceCheckpoint);
                 position = pathScaled[1];
                 pathScaled.erase(pathScaled.begin());
             } else {
-                Position vector = pathScaled[1]-position;
-                vector /= (float)sqrt(distanceCheckpoint);
-                position += vector*distanceToMove;
+                Position vectorScaled = pathScaled[1]-position;
+                vectorScaled /= std::sqrt(distanceCheckpoint);
+                position += vectorScaled*distanceToMove;
                 distanceToMove = 0;
             }
         }
@@ -403,19 +396,38 @@ float Enemy::pathFinding(Position target, std::shared_ptr<std::vector<std::uniqu
     }
 }
 
-bool Enemy::hasLineOfSight(Position target, int size, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls){
-    Position vectorLine = target - position;
-    Position discretisationPos;
-    int discretisation = 100;
-    
-    for(int i=0; i<discretisation; i++){
-        discretisationPos = position + vectorLine*i/discretisation;
-        for(int w=0; w<walls->size(); w++){
-            if(walls->at(w)->isEntityInWall(discretisationPos, size)){
-                return false;
+bool lineIntersectsWall(Position enemy, Position target, const Wall& wall) {
+    float a1 = target.y - enemy.y;
+    float b1 = enemy.x - target.x;
+    float c1 = a1 * enemy.x + b1 * enemy.y;
+
+    for (int i = 0; i < 4; ++i) {
+        Position wallPoint1 = wall.getPoint(i);
+        Position wallPoint2 = wall.getPoint((i + 1) % 4);
+
+        float a2 = wallPoint2.y - wallPoint1.y;
+        float b2 = wallPoint1.x - wallPoint2.x;
+        float c2 = a2 * wallPoint1.x + b2 * wallPoint1.y;
+
+        float determinant = a1 * b2 - a2 * b1;
+
+        if (determinant != 0) {
+            float x = (b2 * c1 - b1 * c2) / determinant;
+            float y = (a1 * c2 - a2 * c1) / determinant;
+
+            if (std::min(wallPoint1.x, wallPoint2.x) <= x && x <= std::max(wallPoint1.x, wallPoint2.x) &&
+                std::min(wallPoint1.y, wallPoint2.y) <= y && y <= std::max(wallPoint1.y, wallPoint2.y) &&
+                std::min(enemy.x, target.x) <= x && x <= std::max(enemy.x, target.x) &&
+                std::min(enemy.y, target.y) <= y && y <= std::max(enemy.y, target.y)) {
+                return true;
             }
         }
     }
-    
-    return true;
+
+    return false;
+}
+
+bool Enemy::hasLineOfSight(Position target, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls) {
+    return std::all_of(walls->begin(), walls->end(), [this, target](const std::unique_ptr<Wall>& wall) {
+        return !lineIntersectsWall(position, target, *wall);});
 }

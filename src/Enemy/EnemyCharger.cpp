@@ -5,16 +5,14 @@
 #include "../Position.h"
 #include "../Projectile/Bullet.h"
 #include "EnemyCharger.h"
-#include "../Wall.h"
 #include "EnemyStats.h"
-#include "../Player/Player.h"
 
 EnemyStats EnemyCharger::stats;
 
-EnemyCharger::EnemyCharger(Position position) : Enemy(position, 13*stats.speedFactor, M_PI*3/2, 0, 5*stats.speedBulletFactor, 20, 30*stats.sizeFactor, false) {}
+EnemyCharger::EnemyCharger(Position position) : Enemy(position, 13, M_PI*3/2, 0, 5, 20, 30, false) {}
 
-void EnemyCharger::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, 
-                          std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
+void EnemyCharger::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player,
+                          const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {
     
     shootTimer += deltaTime;
     if (shootTimer > 10) 
@@ -23,8 +21,8 @@ void EnemyCharger::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> 
         angle = getAngleToTarget(player.getPosition());
 }
 
-void EnemyCharger::move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, float deltaTime) {
-    position += Position(cos(angle), -sin(angle)) * speed * deltaTime * 60;
+void EnemyCharger::move(const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, float deltaTime) {
+    position += Position(std::cos(angle), -std::sin(angle)) * speed * deltaTime * 60;
 
     //If the enemy touch a wall or the screen border, it stops
     if(adjustPositionBasedOnWalls(walls)) shootTimer = 0;
@@ -37,14 +35,14 @@ void EnemyCharger::drawWarningZone(sf::RenderWindow &window) {
 
         for(unsigned int i = 0; i < 4; i++) warningZone[i].color = sf::Color(255, 0, 0, 100);
 
-        sf::Vector2f lengthWarningZone = sf::Vector2f(cos(angle), -sin(angle))*length;
-        sf::Vector2f totalLengthWarningZone = sf::Vector2f(cos(angle), -sin(angle))*(float)1500;
+        sf::Vector2f lengthWarningZone = sf::Vector2f(std::cos(angle), -std::sin(angle))*length;
+        sf::Vector2f totalLengthWarningZone = sf::Vector2f(std::cos(angle), -std::sin(angle))*(float)1500;
 
-        warningZone[0].position = sf::Vector2f(position.x + cos(angle + 2 * M_PI / 5)*size,
-                                               position.y - sin(angle + 2 * M_PI / 5)*size);
+        warningZone[0].position = sf::Vector2f(static_cast<float>(position.x + std::cos(angle + 2 * M_PI / 5)*size),
+                                               static_cast<float>(position.y - std::sin(angle + 2 * M_PI / 5)*size));
 
-        warningZone[1].position = sf::Vector2f(position.x + cos(angle + 8 * M_PI / 5)*size,
-                                               position.y - sin(angle + 8 * M_PI / 5)*size);
+        warningZone[1].position = sf::Vector2f(static_cast<float>(position.x + std::cos(angle + 8 * M_PI / 5)*size),
+                                               static_cast<float>(position.y - std::sin(angle + 8 * M_PI / 5)*size));
         
         warningZone[2].position = warningZone[1].position + totalLengthWarningZone;
         warningZone[3].position = warningZone[0].position + totalLengthWarningZone;
@@ -67,7 +65,7 @@ void EnemyCharger::draw(sf::RenderWindow &window) {
     sf::Vector2f chargerCenter = sf::Vector2f(position.x,position.y);
 
     side[0].position = chargerCenter;
-    side[2].position = chargerCenter + sf::Vector2f(cos(angle), -sin(angle))*(float)size;
+    side[2].position = chargerCenter + sf::Vector2f(std::cos(angle), -std::sin(angle))*(float)size;
 
     //side[1].position = side[2].position because we take the last point of the previous triangle as the first point of the next triangle
     //We could do it like this :
@@ -77,8 +75,8 @@ void EnemyCharger::draw(sf::RenderWindow &window) {
     for (unsigned int i = 1; i < 6; i++) {
         side[1].position = side[2].position;
 
-        side[2].position = chargerCenter + sf::Vector2f(cos(angle + i * 2 * M_PI / 5), 
-                                                        -sin(angle + i * 2 * M_PI / 5))*(float)size;
+        side[2].position = chargerCenter + sf::Vector2f(static_cast<float>(std::cos(angle + i * 2 * M_PI / 5)*size),
+                                                        static_cast<float>(-std::sin(angle + i * 2 * M_PI / 5)*size));
 
         window.draw(side);
     }

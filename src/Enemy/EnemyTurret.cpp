@@ -4,17 +4,14 @@
 
 #include "../Position.h"
 #include "Enemy.h"
-#include "../Projectile/Bullet.h"
-#include "../Projectile/Bullet.h"
-#include "../Wall.h"
 #include "EnemyTurret.h"
 #include "EnemyStats.h"
 
 EnemyStats EnemyTurret::stats;
 
-EnemyTurret::EnemyTurret(Position position) : Enemy(position, 5*stats.speedFactor, 0, 0, 3, 10, 30*stats.sizeFactor, false) {}
+EnemyTurret::EnemyTurret(Position position) : Enemy(position, 5, 0, 0, 3, 10, 30, false) {}
 
-void EnemyTurret::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
+void EnemyTurret::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {
     shootTimer += deltaTime;
     if(shootTimer >= 0.5){
         shoot(bullets);
@@ -22,14 +19,14 @@ void EnemyTurret::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> b
     }
 }
 
-void EnemyTurret::shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets){
+void EnemyTurret::shoot(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets){
     for(int i=0;i<4;i++){
         bullets->push_back(std::make_unique<Bullet>(position, angle+M_PI*i/2, speedBullet, 15, false, true));
     }
     angle += M_PI/6;
 }
 
-void EnemyTurret::move(std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls){
+void EnemyTurret::move(const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls){
     //Nothing
 }
 

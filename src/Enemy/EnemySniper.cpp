@@ -5,17 +5,13 @@
 #include "../Position.h"
 #include "EnemySniper.h"
 #include "Enemy.h"
-#include "../Projectile/Bullet.h"
-#include "../Projectile/Bullet.h"
-#include "../Wall.h"
 #include "EnemyStats.h"
-#include "../Player/Player.h"
 
 EnemyStats EnemySniper::stats;
 
-EnemySniper::EnemySniper(Position position) : Enemy(position, 0.4*stats.speedFactor, M_PI*3/2, 0, 12*stats.speedBulletFactor, 5, 19*stats.sizeFactor, true) {}
+EnemySniper::EnemySniper(Position position) : Enemy(position, 0.4, M_PI*3/2, 0, 12, 5, 19, true) {}
 
-void EnemySniper::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets, Player player, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
+void EnemySniper::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {
     float targetAngle = getAngleToFuturPlayerPosition(player);
     move(targetAngle, walls, enemies, deltaTime);
 
@@ -27,14 +23,14 @@ void EnemySniper::update(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> b
     }
 }
 
-void EnemySniper::shoot(std::shared_ptr<std::vector<std::unique_ptr<Bullet>>> bullets){
-    bullets->push_back(std::make_unique<Bullet>(position + Position(cos(angle),sin(angle))*size, angle, speedBullet, 14, false, false));
+void EnemySniper::shoot(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets){
+    bullets->push_back(std::make_unique<Bullet>(position + Position(std::cos(angle),std::sin(angle))*size, angle, speedBullet, 14, false, false));
 }
 
-void EnemySniper::move(float targetAngle, std::shared_ptr<std::vector<std::unique_ptr<Wall>>> walls, std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies, float deltaTime) {
+void EnemySniper::move(float targetAngle, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {
     smoothTurn(targetAngle, 0.1, deltaTime);
 
-    position += Position(-cos(angle),sin(angle)) * speed * deltaTime * 60;
+    position += Position(-std::cos(angle),std::sin(angle)) * speed * deltaTime * 60;
     
     adjustPositionBasedOnEnemies(enemies);
     adjustPositionBasedOnWalls(walls);
@@ -50,22 +46,22 @@ void EnemySniper::draw(sf::RenderWindow &window) {
     for(unsigned int i=0; i<3; i++) enemy_half_part[i].color = enemiesColor;
 
     //Init the left and right points of the enemy
-    enemy_half_part[0].position = sf::Vector2f(position.x + cos(angle + M_PI / 2) * width,
-                                               position.y - sin(angle + M_PI / 2) * width);
+    enemy_half_part[0].position = sf::Vector2f(position.x + std::cos(angle + M_PI / 2) * width,
+                                               position.y - std::sin(angle + M_PI / 2) * width);
 
 
-    enemy_half_part[1].position = sf::Vector2f(position.x + cos(angle - M_PI / 2) * width,
-                                               position.y - sin(angle - M_PI / 2) * width);
+    enemy_half_part[1].position = sf::Vector2f(position.x + std::cos(angle - M_PI / 2) * width,
+                                               position.y - std::sin(angle - M_PI / 2) * width);
 
     //Draw the top part
-    enemy_half_part[2].position = sf::Vector2f(position.x + cos(angle) * height, 
-                                               position.y - sin(angle) * height);
+    enemy_half_part[2].position = sf::Vector2f(position.x + std::cos(angle) * height,
+                                               position.y - std::sin(angle) * height);
 
     window.draw(enemy_half_part);
 
     //Draw the bottom part
-    enemy_half_part[2].position = sf::Vector2f(position.x - cos(angle) * height / 3, 
-                                               position.y + sin(angle) * height / 3);
+    enemy_half_part[2].position = sf::Vector2f(position.x - std::cos(angle) * height / 3,
+                                               position.y + std::sin(angle) * height / 3);
 
     window.draw(enemy_half_part);
 }

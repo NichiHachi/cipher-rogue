@@ -10,14 +10,13 @@ class Bullet{
         Bullet(Position position, float angle, float speed, float size, bool ally, bool destructible);
         ~Bullet() = default;
         void update(float deltaTime);
-        void draw(sf::RenderWindow &window);
+        void draw(sf::RenderWindow &window) const;
 
 
-        Position getPosition() const { return position; };
-        float getSize() const { return size; };
-        float getAngle() const { return angle; };
-        bool isDestructible() const { return destructible; };
-        std::string getType() const { return "Bullet"; };
+        Position getPosition() const;
+        float getSize() const;
+        float getAngle() const;
+        bool isDestructible() const;
 
     private :
         Position position;

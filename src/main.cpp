@@ -12,7 +12,7 @@ const int displayY = 1000;
 const sf::Color backgroundColor(0,0,0);
 const int FPS = 120;
 
-int main(void){
+int main(){
     sf::RenderWindow window(sf::VideoMode(displayX,displayY), "Nichi Hachi");
 
     //Time track and Framerate
@@ -20,10 +20,10 @@ int main(void){
     float deltaTime;
     window.setFramerateLimit(FPS);
 
-    Game game(FPS);
+    Game game;
 
     while(window.isOpen()){
-        sf::Event event;
+        sf::Event event{};
         while (window.pollEvent(event)){
             if (event.type == sf::Event::Closed) window.close();
         }

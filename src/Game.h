@@ -19,21 +19,20 @@ class Game{
         std::shared_ptr<std::vector<std::unique_ptr<Enemy>>> enemies;
         std::vector<std::string> messageTerminal;
 
-        Game(int FPS);
+        Game();
         ~Game();
 
         void update(sf::RenderWindow& window, float deltaTime);
         void draw(sf::RenderWindow& window, float deltaTime);
     
     private:
-        std::string displayedMessage = "";
+        std::string displayedMessage;
         float displayedMessageTimer = 0;
         float cursorTimer = 0;
         bool cursorVisible = true;
         sf::Text text;
         sf::Font font;
-        
-        void setStatsScaleWithFPS(int FPS);
+
         void drawFakeTerminal(sf::RenderWindow& window, float deltaTime);
         void drawCursorTerminal(sf::RenderWindow& window, float deltaTime);
         void destroyWalls();
