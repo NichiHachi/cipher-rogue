@@ -21,6 +21,7 @@ int main(){
     window.setFramerateLimit(FPS);
 
     Game game;
+    game.initLevel();
 
     while(window.isOpen()){
         sf::Event event{};
@@ -32,9 +33,9 @@ int main(){
 
         deltaTime = clock.restart().asSeconds();
 
-        game.update(window, deltaTime);
+        game.update(window, deltaTime>0.2f ? 0.2f : deltaTime);
         
-        game.draw(window, deltaTime);
+        game.draw(window, deltaTime>0.2f ? 0.2f : deltaTime);
 
         window.display();
     }

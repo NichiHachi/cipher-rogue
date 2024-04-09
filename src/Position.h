@@ -1,6 +1,5 @@
 #pragma once
-class Position {
-public:
+struct Position {
     float x;
     float y;
 
@@ -84,4 +83,13 @@ public:
     bool operator==(const Position& other) const {
         return x == other.x && y == other.y;
     }
+
+    bool operator!=(const Position& other) const {
+        return x != other.x || y != other.y;
+    }
+
+    bool operator<(const Position& other) const {
+        return y*y+x*x < other.y*other.y+other.x*other.x;
+    }
+
 };

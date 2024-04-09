@@ -269,7 +269,7 @@ std::vector<Position> Enemy::aStar(Position target, const std::shared_ptr<std::v
 
         if(current->position == targetGrid || hasLineOfSight(target, walls)){
             Node* temp = current;
-            
+
             while(temp != nullptr){
                 path.push_back(temp->position);
                 temp = temp->parent;
@@ -320,79 +320,34 @@ float Enemy::pathFinding(Position target, const std::shared_ptr<std::vector<std:
         return angleTarget;
     } else {
         std::vector<Position> path = aStar(target, walls);
-        Position vector;
 
-        std::vector<Position> pathReduced = {path[0]};
-        for(int i=1; i<path.size(); i++){
-            if(vector == path[i]-pathReduced[pathReduced.size()-1]){
-                pathReduced[pathReduced.size()-1] = path[i];
-            } else {
-                path[i] - pathReduced[pathReduced.size() - 1];
-                pathReduced.push_back(path[i]);
-            }
+        if (path.empty()) {
+            return angle;
         }
 
-        //REDO THIS PART because when the enemy goes to an other tile, it reset the good trajectory 
-        std::vector<Position> pathScaled = {position};
-        for(int i=1; i<pathReduced.size()-1; i++){
-            if(pathReduced[i].x == pathReduced[i].y || pathReduced[i].x == -pathReduced[i].y){
-                pathScaled.push_back(pathReduced[i]*50 + Position(25,25));
-            } else {
-                //Left
-                if(vector.x > 0){
-                    if(vector.y > 0){
-                        pathScaled.push_back(pathReduced[i]*50+Position((size+5),50-(size+5)));
-                    } else {
-                        pathScaled.push_back(pathReduced[i]*50+Position((size+5),(size+5)));
-                    }
-                }
-                //Right
-                else if(vector.x < 0){
-                    if(vector.y > 0){
-                        pathScaled.push_back(pathReduced[i]*50+Position(50-(size+5),50-(size+5)));
-                    } else {
-                        pathScaled.push_back(pathReduced[i]*50+Position(50-(size+5),(size+5)));
-                    }
-                } 
-                //Down
-                else if(vector.y > 0){
-                    if(vector.x > 0){
-                        pathScaled.push_back(pathReduced[i]*50+Position(50-(size+5),50-(size+5)));
-                    } else {
-                        pathScaled.push_back(pathReduced[i]*50+Position((size+5),50-(size+5)));
-                    }
-                }
-                //Up
-                else{
-                    if(vector.x > 0){
-                        pathScaled.push_back(pathReduced[i]*50+Position(50-(size+5),(size+5)));
-                    } else {
-                        pathScaled.push_back(pathReduced[i]*50+Position((size+5),(size+5)));
-                    }
-                }
-            }
+        for(auto & pos : path){
+            pos = pos*50 + Position(25, 25);
         }
-        pathScaled.push_back(target);
         
         float distanceToMove = speed * deltaTime * 60;
         float distanceCheckpoint;
         Position checkpoint;
-        while(distanceToMove > 0 && pathScaled.size() > 1){
-            checkpoint = pathScaled[1] - position;
+        while(distanceToMove > 0 && path.size() > 1){
+            checkpoint = path[1] - position;
             distanceCheckpoint = checkpoint.x * checkpoint.x + checkpoint.y * checkpoint.y;
             if(distanceToMove*distanceToMove >= distanceCheckpoint){
                 distanceToMove -= std::sqrt(distanceCheckpoint);
-                position = pathScaled[1];
-                pathScaled.erase(pathScaled.begin());
+                position = path[1];
+                path.erase(path.begin());
             } else {
-                Position vectorScaled = pathScaled[1]-position;
+                Position vectorScaled = path[1]-position;
                 vectorScaled /= std::sqrt(distanceCheckpoint);
                 position += vectorScaled*distanceToMove;
                 distanceToMove = 0;
             }
         }
 
-        return getAngleToTarget(pathScaled[1]);
+        return getAngleToTarget(path[1]);
     }
 }
 

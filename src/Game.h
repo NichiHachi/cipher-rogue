@@ -1,6 +1,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "Projectile/Bullet.h"
 #include "Projectile/Bombshell.h"
@@ -24,12 +25,15 @@ class Game{
 
         void update(sf::RenderWindow& window, float deltaTime);
         void draw(sf::RenderWindow& window, float deltaTime);
+        void initLevel();
     
     private:
         std::string displayedMessage;
         float displayedMessageTimer = 0;
         float cursorTimer = 0;
+        unsigned int level;
         bool cursorVisible = true;
+        int mapSelectionHistory[10];
         sf::Text text;
         sf::Font font;
 
@@ -40,4 +44,8 @@ class Game{
         void checkBulletsCollisionWithBombshells();
         void checkBulletsOOB();
         void checkBulletAllyCollisionBulletEnemy();
+        int selectMap();
+        void putWallFromTo(Position from, Position to);
+        void fillWallFromTo(Position from, Position to);
+        void createMap();
 };

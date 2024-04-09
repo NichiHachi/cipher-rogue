@@ -15,18 +15,14 @@
 #include "Enemy/EnemyCharger.h"
 #include "Enemy/EnemySeeker.h"
 #include "Enemy/EnemyStats.h"
+#include <random>
 
-Game::Game() {
-    player = Player();
-    player.spawn();
-
-    bulletsEnemy = std::make_shared<std::vector<std::unique_ptr<Bullet>>>();
-    bulletsAlly = std::make_shared<std::vector<std::unique_ptr<Bullet>>>();
-    bombshells = std::make_shared<std::vector<std::unique_ptr<Bombshell>>>();
-    walls = std::make_shared<std::vector<std::unique_ptr<Wall>>>();
-    enemies = std::make_shared<std::vector<std::unique_ptr<Enemy>>>();
-
-    if (!font.loadFromFile("../fonts/FiraCode.ttf")) {
+Game::Game() : player(Player()), bulletsEnemy(std::make_shared<std::vector<std::unique_ptr<Bullet>>>()), bulletsAlly(std::make_shared<std::vector<std::unique_ptr<Bullet>>>()), bombshells(std::make_shared<std::vector<std::unique_ptr<Bombshell>>>()), walls(std::make_shared<std::vector<std::unique_ptr<Wall>>>()), enemies(std::make_shared<std::vector<std::unique_ptr<Enemy>>>()), messageTerminal(std::vector<std::string>()){    
+    for(unsigned int i=0; i<10; i++){
+        mapSelectionHistory[i] = 0;
+    }
+    
+    if (!font.loadFromFile("./fonts/FiraCode.ttf")) {
         std::cout << "Error loading font" << std::endl;
     }
     
@@ -34,62 +30,6 @@ Game::Game() {
     text.setFillColor(sf::Color::White);
     text.setPosition(10, 975);
     text.setCharacterSize(15);
-
-    //A CHANGER --- DEBUG ROOM ---
-    walls->push_back(std::make_unique<Wall>(Position(9, 9)));
-    walls->push_back(std::make_unique<Wall>(Position(10, 9)));
-    walls->push_back(std::make_unique<Wall>(Position(11, 9)));
-    walls->push_back(std::make_unique<Wall>(Position(12, 9)));
-    walls->push_back(std::make_unique<Wall>(Position(13, 9)));
-    walls->push_back(std::make_unique<Wall>(Position(14, 9)));
-    walls->push_back(std::make_unique<Wall>(Position(15, 9)));
-    walls->push_back(std::make_unique<Wall>(Position(16, 9)));
-    walls->push_back(std::make_unique<Wall>(Position(10, 9)));
-
-    walls->push_back(std::make_unique<Wall>(Position(9, 10)));
-
-    walls->push_back(std::make_unique<Wall>(Position(9, 11)));
-    walls->push_back(std::make_unique<Wall>(Position(11, 11)));
-    walls->push_back(std::make_unique<Wall>(Position(12, 11)));
-    walls->push_back(std::make_unique<Wall>(Position(13, 11)));
-    walls->push_back(std::make_unique<Wall>(Position(14, 11)));
-    walls->push_back(std::make_unique<Wall>(Position(15, 11)));
-    walls->push_back(std::make_unique<Wall>(Position(16, 11)));
-    walls->push_back(std::make_unique<Wall>(Position(17, 11)));
-    walls->push_back(std::make_unique<Wall>(Position(18, 11)));
-    walls->push_back(std::make_unique<Wall>(Position(19, 11)));
-    walls->push_back(std::make_unique<Wall>(Position(20, 11)));
-
-    walls->push_back(std::make_unique<Wall>(Position(9, 12)));
-
-    walls->push_back(std::make_unique<Wall>(Position(9, 13)));
-    walls->push_back(std::make_unique<Wall>(Position(10, 13)));
-    walls->push_back(std::make_unique<Wall>(Position(11, 13)));
-    walls->push_back(std::make_unique<Wall>(Position(12, 13)));
-    walls->push_back(std::make_unique<Wall>(Position(13, 13)));
-    walls->push_back(std::make_unique<Wall>(Position(14, 13)));
-    walls->push_back(std::make_unique<Wall>(Position(15, 13)));
-    walls->push_back(std::make_unique<Wall>(Position(16, 13)));
-    walls->push_back(std::make_unique<Wall>(Position(10, 13)));
-
-
-    walls->push_back(std::make_unique<Wall>(Position(9, 14)));
-    walls->push_back(std::make_unique<Wall>(Position(9, 15)));
-    walls->push_back(std::make_unique<Wall>(Position(9, 16)));
-    walls->push_back(std::make_unique<Wall>(Position(9, 17)));
-    walls->push_back(std::make_unique<Wall>(Position(9, 18)));
-    walls->push_back(std::make_unique<Wall>(Position(9, 19)));
-    walls->push_back(std::make_unique<Wall>(Position(9, 20)));
-
-
-    walls->push_back(std::make_unique<Wall>(Position(6, 10)));
-    
-    enemies->push_back(std::make_unique<EnemyShooter>(Position(100, 100)));
-    enemies->push_back(std::make_unique<EnemyTurret>(Position(200, 200)));
-    enemies->push_back(std::make_unique<EnemySeeker>(Position(200, 200), 0));
-    enemies->push_back(std::make_unique<EnemySpawner>(Position(300, 300)));
-    enemies->push_back(std::make_unique<EnemySniper>(Position(400, 400)));
-    enemies->push_back(std::make_unique<EnemyCharger>(Position(400, 300)));
 }
 
 Game::~Game() = default;
@@ -270,7 +210,9 @@ void Game::update(sf::RenderWindow& window, float deltaTime){
         //-----ENEMIES DEAD-----
         auto enemy = enemies->begin();
         while (enemy != enemies->end()) {
-            if(enemy->get()->isDead()){
+            if(*enemy == nullptr){
+              enemy = enemies->erase(enemy);
+            } else if(enemy->get()->isDead()) {
                 messageTerminal.push_back("delete " + (*enemy)->getType());
                 enemy = enemies->erase(enemy);
             } else {
@@ -348,5 +290,209 @@ void Game::drawCursorTerminal(sf::RenderWindow& window, float deltaTime) {
     if (cursorTimer >= 0.5) {
         cursorVisible = !cursorVisible;
         cursorTimer = 0;
+    }
+}
+
+int Game::selectMap() {
+    std::vector<double> weights;
+
+    for (int i = 0; i < 10; i++) {
+        double weight = level - mapSelectionHistory[i] + 1;
+        weights.push_back(weight);
+    }
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::discrete_distribution<> dist(weights.begin(), weights.end());
+
+    int selectedIndex = dist(gen);
+    mapSelectionHistory[selectedIndex]++;
+    return selectedIndex;
+}
+
+void Game::initLevel(){
+    createMap();
+}
+
+void Game::createMap(){
+    walls->clear();
+    int selectedMap = selectMap();
+    switch(selectedMap){
+        case 0:
+            putWallFromTo(Position(3,3), Position(5,3));
+            putWallFromTo(Position(3,4), Position(3,5));
+
+            putWallFromTo(Position(11,6), Position(13,6));
+            putWallFromTo(Position(13,7), Position(13,8));
+
+            putWallFromTo(Position(6,11), Position(6,13));
+            putWallFromTo(Position(7,13), Position(8,13));
+
+            putWallFromTo(Position(14,16), Position(16,16));
+            putWallFromTo(Position(16,15), Position(16,14));
+            break;
+        case 1:
+            putWallFromTo(Position(2,5), Position(8,5));
+            putWallFromTo(Position(11,5), Position(17,5));
+
+            putWallFromTo(Position(2,14), Position(8,14));
+            putWallFromTo(Position(11,14), Position(17,14));
+            break;
+        case 2:
+            putWallFromTo(Position(4,5), Position(4,14));
+            putWallFromTo(Position(15,5), Position(15,14));
+            putWallFromTo(Position(5,14), Position(14,14));
+
+            putWallFromTo(Position(7,11), Position(7,7));
+            putWallFromTo(Position(12,11), Position(12,7));
+            putWallFromTo(Position(8,7), Position(11,7));
+            break;
+        case 3:
+            putWallFromTo(Position(3,5), Position(3,13));
+            putWallFromTo(Position(16,5), Position(16,13));
+            putWallFromTo(Position(6,6), Position(13,6));
+            putWallFromTo(Position(6,12), Position(13,12));
+            break;
+        case 4:
+            putWallFromTo(Position(6,2),Position(6,6));
+            putWallFromTo(Position(5,6),Position(2,6));
+
+            putWallFromTo(Position(13,2),Position(13,6));
+            putWallFromTo(Position(14,6),Position(17,6));
+
+            putWallFromTo(Position(6,13),Position(6,17));
+            putWallFromTo(Position(5,13),Position(2,13));
+
+            putWallFromTo(Position(13,13),Position(13,17));
+            putWallFromTo(Position(14,13),Position(17,13));
+            break;
+        case 5:
+            putWallFromTo(Position(2,2), Position(3,2));
+            putWallFromTo(Position(2,3), Position(3,3));
+            putWallFromTo(Position(4,4), Position(5,4));
+            putWallFromTo(Position(4,5), Position(5,5));
+
+            putWallFromTo(Position(16,2), Position(17,2));
+            putWallFromTo(Position(16,3), Position(17,3));
+            putWallFromTo(Position(14,4), Position(15,4));
+            putWallFromTo(Position(14,5), Position(15,5));
+
+            putWallFromTo(Position(2,16), Position(3,16));
+            putWallFromTo(Position(2,17), Position(3,17));
+            putWallFromTo(Position(4,14), Position(5,14));
+            putWallFromTo(Position(4,15), Position(5,15));
+
+            putWallFromTo(Position(16,16), Position(17,16));
+            putWallFromTo(Position(16,17), Position(17,17));
+            putWallFromTo(Position(14,14), Position(15,14));
+            putWallFromTo(Position(14,15), Position(15,15));
+            break;
+        case 6:
+            putWallFromTo(Position(0,0), Position(0,19));
+            putWallFromTo(Position(0,0), Position(19,0));
+            putWallFromTo(Position(19,0), Position(19,19));
+            putWallFromTo(Position(0,19), Position(19,19));
+
+            putWallFromTo(Position(5,5), Position(5,14));
+            putWallFromTo(Position(14,5), Position(14,14));
+            putWallFromTo(Position(5,5), Position(8,5));
+            putWallFromTo(Position(11,5), Position(14,5));
+            putWallFromTo(Position(5,14), Position(8,14));
+            putWallFromTo(Position(11,14), Position(14,14));
+
+            putWallFromTo(Position(9,9), Position(10,9));
+            putWallFromTo(Position(9,10), Position(10,10));
+            break;
+        case 7:
+            walls->push_back(std::make_unique<Wall>(Position(14,16)));
+            walls->push_back(std::make_unique<Wall>(Position(15,15)));
+            putWallFromTo(Position(16,14), Position(16,13));
+            putWallFromTo(Position(17,12), Position(17,7));
+            putWallFromTo(Position(16,6), Position(16,5));
+            walls->push_back(std::make_unique<Wall>(Position(15,4)));
+            putWallFromTo(Position(14,3), Position(13,3));
+            putWallFromTo(Position(12,2), Position(7,2));
+            putWallFromTo(Position(6,3), Position(4,5));
+            putWallFromTo(Position(3,6), Position(3,10));
+            putWallFromTo(Position(4,11), Position(6,13));
+            putWallFromTo(Position(7,14), Position(10,14));
+            putWallFromTo(Position(11,13), Position(12,12));
+            putWallFromTo(Position(13,11), Position(13,10));
+            putWallFromTo(Position(12,9), Position(11,8));
+            putWallFromTo(Position(10,7), Position(9,7));
+            putWallFromTo(Position(8,8), Position(7,9));
+            break;
+        case 8:
+            fillWallFromTo(Position(3,3),Position(5,9));
+            fillWallFromTo(Position(14,3),Position(16,9));
+
+            fillWallFromTo(Position(6,5),Position(7,7));
+            fillWallFromTo(Position(12,5),Position(13,7));
+
+            fillWallFromTo(Position(3,13),Position(5,15));
+            fillWallFromTo(Position(14,13),Position(16,15));
+            break;
+        case 9:
+            //C
+            walls->push_back(std::make_unique<Wall>(Position(7,3)));
+            putWallFromTo(Position(6,2), Position(4,2));
+            putWallFromTo(Position(3,3), Position(3,5));
+            putWallFromTo(Position(4,6), Position(6,6));
+            walls->push_back(std::make_unique<Wall>(Position(7,5)));
+            //I
+            putWallFromTo(Position(9,2), Position(11,2));
+            putWallFromTo(Position(9,6), Position(11,6));
+            putWallFromTo(Position(10,3), Position(10,5));
+            //P
+            putWallFromTo(Position(13,2), Position(13,6));
+            putWallFromTo(Position(14,2), Position(15,2));
+            putWallFromTo(Position(14,4), Position(15,4));
+            walls->push_back(std::make_unique<Wall>(Position(16,3)));
+            //H
+            putWallFromTo(Position(3,10), Position(3,14));
+            putWallFromTo(Position(6,10), Position(6,14));
+            putWallFromTo(Position(4,12), Position(5,12));
+            //E
+            putWallFromTo(Position(8,10), Position(8,14));
+            putWallFromTo(Position(9,10), Position(11,10));
+            putWallFromTo(Position(9,12), Position(10,12));
+            putWallFromTo(Position(9,14), Position(11,14));
+            //R
+            putWallFromTo(Position(13,10), Position(13,14));
+            putWallFromTo(Position(14,10), Position(15,10));
+            putWallFromTo(Position(14,12), Position(15,12));
+            walls->push_back(std::make_unique<Wall>(Position(16,11)));
+            putWallFromTo(Position(15,13), Position(16,14));
+            break;
+        default:   
+            break;
+    }
+}
+
+void Game::putWallFromTo(Position from, Position to){
+    Position direction = to - from;
+    if (direction.x != 0) {
+        direction.x /= std::abs(direction.x);
+    }
+    if (direction.y != 0) {
+        direction.y /= std::abs(direction.y);
+    }
+    Position current = from;
+    for (Position current = from; current != to; current += direction){
+        walls->push_back(std::make_unique<Wall>(current));
+    }
+
+    walls->push_back(std::make_unique<Wall>(to));
+}
+
+void Game::fillWallFromTo(Position from, Position to){
+    int directionX = to.x - from.x;
+    if(directionX != 0){
+        directionX /= std::abs(directionX);
+    }
+
+    Position current = from;
+    for (Position current = from; current.x != to.x+directionX; current.x += directionX){
+        putWallFromTo(current, Position(current.x, to.y));
     }
 }
