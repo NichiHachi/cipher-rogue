@@ -23,4 +23,5 @@ class EnemyTurret : public Enemy{
         void shoot(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets);
 
     private:
+        void drawSprite(sf::RenderWindow &window, float sizeFactor, sf::Color color);
 };

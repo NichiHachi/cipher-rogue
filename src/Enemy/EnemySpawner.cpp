@@ -24,12 +24,16 @@ void EnemySpawner::update(const std::shared_ptr<std::vector<std::unique_ptr<Bull
 }
 
 void EnemySpawner::draw(sf::RenderWindow &window) {
-    int height = size;
-    int width = size*7/20;
-    sf::Color enemiesColor(100, 100, 100);
+    drawSprite(window, 1, sf::Color::Green);
+    drawSprite(window, 0.7, sf::Color::Black);
+}
+
+void EnemySpawner::drawSprite(sf::RenderWindow &window, float sizeFactor, sf::Color color){
+    int height = size * sizeFactor;
+    int width = size * 7/20 * sizeFactor;
     sf::VertexArray quad(sf::Quads, 4);
 
-    for(unsigned int i = 0; i < 4; i++) quad[i].color = enemiesColor;
+    for(unsigned int i = 0; i < 4; i++) quad[i].color = color;
 
     quad[0].position = sf::Vector2f(position.x + height, position.y + width);
     quad[1].position = sf::Vector2f(position.x - height, position.y + width);

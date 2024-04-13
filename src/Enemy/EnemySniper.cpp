@@ -38,12 +38,16 @@ void EnemySniper::move(float targetAngle, const std::shared_ptr<std::vector<std:
 }
 
 void EnemySniper::draw(sf::RenderWindow &window) {
-    int height = size*50/19;
-    int width = size;
-    sf::Color enemiesColor(100, 100, 100);
+    drawSprite(window, 1, sf::Color::Red);
+    drawSprite(window, 0.5, sf::Color::Black);
+}
+
+void EnemySniper::drawSprite(sf::RenderWindow &window, float sizeFactor, sf::Color color){
+    int height = size * 50/19 * sizeFactor;
+    int width = size * sizeFactor;
 
     sf::VertexArray enemy_half_part(sf::Triangles, 3);
-    for(unsigned int i=0; i<3; i++) enemy_half_part[i].color = enemiesColor;
+    for(unsigned int i=0; i<3; i++) enemy_half_part[i].color = color;
 
     //Init the left and right points of the enemy
     enemy_half_part[0].position = sf::Vector2f(position.x + std::cos(angle + M_PI / 2) * width,

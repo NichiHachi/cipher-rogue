@@ -30,6 +30,13 @@ Game::Game() : player(Player()), bulletsEnemy(std::make_shared<std::vector<std::
     text.setFillColor(sf::Color::White);
     text.setPosition(10, 975);
     text.setCharacterSize(15);
+
+    enemies->push_back(std::make_unique<EnemyShooter>(Position(100,100)));
+    enemies->push_back(std::make_unique<EnemyTurret>(Position(200,200)));
+    enemies->push_back(std::make_unique<EnemySpawner>(Position(300,300)));
+    enemies->push_back(std::make_unique<EnemySniper>(Position(400,400)));
+    enemies->push_back(std::make_unique<EnemyCharger>(Position(500,500)));
+    enemies->push_back(std::make_unique<EnemySeeker>(Position(600,600), 0));
 }
 
 Game::~Game() = default;
@@ -293,23 +300,6 @@ void Game::drawCursorTerminal(sf::RenderWindow& window, float deltaTime) {
     }
 }
 
-int Game::selectMap() {
-    std::vector<double> weights;
-
-    for (int i = 0; i < 10; i++) {
-        double weight = level - mapSelectionHistory[i] + 1;
-        weights.push_back(weight);
-    }
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::discrete_distribution<> dist(weights.begin(), weights.end());
-
-    int selectedIndex = dist(gen);
-    mapSelectionHistory[selectedIndex]++;
-    return selectedIndex;
-}
-
 void Game::initLevel(){
     createMap();
 }
@@ -467,6 +457,23 @@ void Game::createMap(){
         default:   
             break;
     }
+}
+
+int Game::selectMap() {
+    std::vector<double> weights;
+
+    for (int i = 0; i < 10; i++) {
+        double weight = level - mapSelectionHistory[i] + 1;
+        weights.push_back(weight);
+    }
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::discrete_distribution<> dist(weights.begin(), weights.end());
+
+    int selectedIndex = dist(gen);
+    mapSelectionHistory[selectedIndex]++;
+    return selectedIndex;
 }
 
 void Game::putWallFromTo(Position from, Position to){

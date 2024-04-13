@@ -20,4 +20,5 @@ class EnemySpawner : public Enemy{
         std::string getType() override { return "Spawner"; };
 
     private:
+       void drawSprite(sf::RenderWindow &window, float sizeFactor, sf::Color color);
 };

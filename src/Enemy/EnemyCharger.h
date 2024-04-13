@@ -23,4 +23,5 @@ class EnemyCharger : public Enemy{
 
     private:
         void move(const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, float deltaTime);
+        void drawSprite(sf::RenderWindow &window, float sizeFactor, sf::Color color);
 };

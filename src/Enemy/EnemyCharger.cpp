@@ -58,14 +58,18 @@ void EnemyCharger::drawWarningZone(sf::RenderWindow &window) {
 }
 
 void EnemyCharger::draw(sf::RenderWindow &window) {
-    sf::Color enemiesColor(100, 100, 100);
+    drawSprite(window, 1, sf::Color::Magenta);
+    drawSprite(window, 0.5, sf::Color::Black);
+}
+
+void EnemyCharger::drawSprite(sf::RenderWindow &window, float sizeFactor, sf::Color color){
     sf::VertexArray side(sf::Triangles, 3);
-    for(unsigned int i = 0; i < 3; i++) side[i].color = enemiesColor;
+    for(unsigned int i = 0; i < 3; i++) side[i].color = color;
 
     sf::Vector2f chargerCenter = sf::Vector2f(position.x,position.y);
 
     side[0].position = chargerCenter;
-    side[2].position = chargerCenter + sf::Vector2f(std::cos(angle), -std::sin(angle))*(float)size;
+    side[2].position = chargerCenter + sf::Vector2f(std::cos(angle), -std::sin(angle)) * static_cast<float>(size) * sizeFactor;
 
     //side[1].position = side[2].position because we take the last point of the previous triangle as the first point of the next triangle
     //We could do it like this :
@@ -75,8 +79,8 @@ void EnemyCharger::draw(sf::RenderWindow &window) {
     for (unsigned int i = 1; i < 6; i++) {
         side[1].position = side[2].position;
 
-        side[2].position = chargerCenter + sf::Vector2f(static_cast<float>(std::cos(angle + i * 2 * M_PI / 5)*size),
-                                                        static_cast<float>(-std::sin(angle + i * 2 * M_PI / 5)*size));
+        side[2].position = chargerCenter + sf::Vector2f(static_cast<float>(std::cos(angle + i * 2 * M_PI / 5) * static_cast<float>(size) * sizeFactor),
+                                                        static_cast<float>(-std::sin(angle + i * 2 * M_PI / 5) * static_cast<float>(size) * sizeFactor));
 
         window.draw(side);
     }

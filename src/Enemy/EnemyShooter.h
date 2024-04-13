@@ -22,5 +22,5 @@ class EnemyShooter : public Enemy{
     private:
         void shoot(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets);
         void move(float targetAngle, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime);
-
+        void drawSprite(sf::RenderWindow &window, float sizeFactor, sf::Color color);
 };

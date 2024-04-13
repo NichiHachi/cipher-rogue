@@ -37,17 +37,21 @@ void EnemyShooter::move(float targetAngle, const std::shared_ptr<std::vector<std
 }
 
 void EnemyShooter::draw(sf::RenderWindow &window) {
-    int height = size*24/19;
-    int width = size;
+    drawSprite(window, 1, sf::Color::Red);
+    drawSprite(window, 0.5, sf::Color::Black);
+}
+
+void EnemyShooter::drawSprite(sf::RenderWindow &window, float sizeFactor, sf::Color color){
+    int height = size * 24/19 * sizeFactor;
+    int width = size * sizeFactor;
     double angle_point_triangle_1 = std::atan2(height, width);
     double angle_point_triangle_2 = std::atan2(height, -width);
     double distance_point_triangle = std::sqrt(height * height + width * width);
-    sf::Color enemiesColor(100, 100, 100);
 
     sf::VertexArray shooter_half_part(sf::Triangles, 3);
 
     //Define the color of the shooter
-    for(unsigned int i = 0; i < 3; i++) shooter_half_part[i].color = enemiesColor;
+    for(unsigned int i = 0; i < 3; i++) shooter_half_part[i].color = color;
 
     //Define the coordonate of the shooter's point that are aline with the mouse
     Position shooter_down = position + Position(-std::cos(angle),std::sin(angle)) * height * 0.6f;

@@ -22,4 +22,5 @@ class EnemySeeker : public Enemy{
 
     private:
         void move(Position target, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime);
+        void drawSprite(sf::RenderWindow &window, float sizeFactor, sf::Color color);
 };
