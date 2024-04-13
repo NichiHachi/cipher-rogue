@@ -17,7 +17,7 @@
 #include "Enemy/EnemyStats.h"
 #include <random>
 
-Game::Game() : player(Player()), bulletsEnemy(std::make_shared<std::vector<std::unique_ptr<Bullet>>>()), bulletsAlly(std::make_shared<std::vector<std::unique_ptr<Bullet>>>()), bombshells(std::make_shared<std::vector<std::unique_ptr<Bombshell>>>()), walls(std::make_shared<std::vector<std::unique_ptr<Wall>>>()), enemies(std::make_shared<std::vector<std::unique_ptr<Enemy>>>()), messageTerminal(std::vector<std::string>()){    
+Game::Game() : player(Player()), bulletsEnemy(std::make_shared<std::vector<std::unique_ptr<Bullet>>>()), bulletsAlly(std::make_shared<std::vector<std::unique_ptr<Bullet>>>()), bombshells(std::make_shared<std::vector<std::unique_ptr<Bombshell>>>()), walls(std::make_shared<std::vector<std::unique_ptr<Wall>>>()), enemies(std::make_shared<std::vector<std::unique_ptr<Enemy>>>()), messageTerminal(std::vector<std::string>()), levelStarted(false), level(1){    
     for(unsigned int i=0; i<10; i++){
         mapSelectionHistory[i] = 0;
     }
@@ -35,7 +35,7 @@ Game::Game() : player(Player()), bulletsEnemy(std::make_shared<std::vector<std::
     enemies->push_back(std::make_unique<EnemyTurret>(Position(200,200)));
     enemies->push_back(std::make_unique<EnemySpawner>(Position(300,300)));
     enemies->push_back(std::make_unique<EnemySniper>(Position(400,400)));
-    enemies->push_back(std::make_unique<EnemyCharger>(Position(500,500)));
+    enemies->push_back(std::make_unique<EnemyCharger>(Position(400,500)));
     enemies->push_back(std::make_unique<EnemySeeker>(Position(600,600), 0));
 }
 
@@ -176,6 +176,13 @@ void Game::bulletCollisions() {
 }
 
 void Game::update(sf::RenderWindow& window, float deltaTime){
+    if(!levelStarted){
+        startTime += deltaTime;
+        if(startTime > 3){
+            startTime = 0;
+            levelStarted = true;
+        }
+    } else {
         //-----PLAYER UPDATE-----
         player.update(window,bulletsAlly,bombshells,walls,deltaTime);
         player.receiveDamageIfShot(bulletsEnemy, bombshells);
@@ -226,6 +233,17 @@ void Game::update(sf::RenderWindow& window, float deltaTime){
                 enemy = std::next(enemy);
             }
         }
+
+        //-----LEVEL COMPLETED-----
+        if(enemies->empty()){
+            startTime += deltaTime;
+            if(startTime > 3){
+                messageTerminal.push_back("Level " + std::to_string(level) + " completed");
+                level++;
+                initLevel();
+            }
+        }
+    }
 }
 
 void Game::draw(sf::RenderWindow& window, float deltaTime){
@@ -264,6 +282,10 @@ void Game::draw(sf::RenderWindow& window, float deltaTime){
         }
 
         player.drawHealth(window);
+
+        if(startTime > 0){
+            displayTimer(window);
+        }
 }
 
 
@@ -302,6 +324,12 @@ void Game::drawCursorTerminal(sf::RenderWindow& window, float deltaTime) {
 
 void Game::initLevel(){
     createMap();
+
+    bulletsAlly->clear();
+    bulletsEnemy->clear();
+    bombshells->clear();
+    startTime = 0;
+    levelStarted = false;
 }
 
 void Game::createMap(){
@@ -463,7 +491,7 @@ int Game::selectMap() {
     std::vector<double> weights;
 
     for (int i = 0; i < 10; i++) {
-        double weight = level - mapSelectionHistory[i] + 1;
+        double weight = level - mapSelectionHistory[i];
         weights.push_back(weight);
     }
 
@@ -472,8 +500,38 @@ int Game::selectMap() {
     std::discrete_distribution<> dist(weights.begin(), weights.end());
 
     int selectedIndex = dist(gen);
-    mapSelectionHistory[selectedIndex]++;
+    mapSelectionHistory[selectedIndex]+=1;
     return selectedIndex;
+}
+
+
+void Game::displayTimer(sf::RenderWindow& window) {
+    double secondsLeft = 3.0f - startTime;
+    int thickness = 5;
+
+    for (int t = 0; t < thickness; ++t) {
+        sf::VertexArray timerArc(sf::LinesStrip, 50);
+        for (int i = 0; i < timerArc.getVertexCount(); ++i) {
+            float angle = i * 2 * M_PI / (timerArc.getVertexCount() - 1) - M_PI / 2;
+            float x = cos(angle) * (50 - t);
+            float y = sin(angle) * (50 - t);
+            timerArc[i].position = sf::Vector2f(window.getSize().x / 2 + x, window.getSize().y / 2 + y);
+            timerArc[i].color = sf::Color::Red;
+            if (i >= timerArc.getVertexCount() * secondsLeft / 3.0) {
+                timerArc[i].color = sf::Color::Transparent;
+            }
+        }
+
+        sf::Text timerText;
+        timerText.setFont(font);
+        timerText.setString(std::to_string(static_cast<int>(secondsLeft)+1));
+        timerText.setCharacterSize(50);
+        timerText.setFillColor(sf::Color::Red);
+        timerText.setPosition(window.getSize().x / 2 - 15, window.getSize().y / 2 - 32);
+
+        window.draw(timerArc);
+        window.draw(timerText);
+    }
 }
 
 void Game::putWallFromTo(Position from, Position to){

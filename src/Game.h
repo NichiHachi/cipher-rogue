@@ -33,6 +33,8 @@ class Game{
         float cursorTimer = 0;
         unsigned int level;
         bool cursorVisible = true;
+        bool levelStarted;
+        double startTime;
         int mapSelectionHistory[10];
         sf::Text text;
         sf::Font font;
@@ -48,4 +50,5 @@ class Game{
         void putWallFromTo(Position from, Position to);
         void fillWallFromTo(Position from, Position to);
         void createMap();
+        void displayTimer(sf::RenderWindow& window);
 };
