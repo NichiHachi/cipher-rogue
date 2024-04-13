@@ -386,3 +386,13 @@ bool Enemy::hasLineOfSight(Position target, const std::shared_ptr<std::vector<st
     return std::all_of(walls->begin(), walls->end(), [this, target](const std::unique_ptr<Wall>& wall) {
         return !lineIntersectsWall(position, target, *wall);});
 }
+
+void Enemy::setPosition(Position newPosition) { this->position = newPosition; };
+void Enemy::receiveDamage(int damage) { hp -= damage; };
+
+Position Enemy::getPosition() const { return position; };
+int Enemy::getSize() const { return size; };
+bool Enemy::isMovable() const { return movable; };
+bool Enemy::isDead() const { return hp <= 0; };
+float Enemy::getSpeedBullet() const { return speedBullet; };  
+int Enemy::getHp() const { return hp; };

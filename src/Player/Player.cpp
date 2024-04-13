@@ -69,7 +69,7 @@ void Player::shoot(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         if (shootTimer > 0.2) {
             bullets->push_back(std::make_unique<Bullet>(position, angle, speedBullet, 10, true, true));
-            bombshells->push_back(std::make_unique<Bombshell>(position, targetPosition, speedBullet, 10, true));
+            //bombshells->push_back(std::make_unique<Bombshell>(position, targetPosition, speedBullet, 10, true));
             shootTimer = 0;
         }
     }

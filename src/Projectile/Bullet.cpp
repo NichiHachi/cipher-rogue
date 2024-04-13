@@ -48,3 +48,4 @@ Position Bullet::getPosition() const { return position; }
 float Bullet::getSize() const { return size; }
 float Bullet::getAngle() const { return angle; }
 bool Bullet::isDestructible() const { return destructible; }
+int Bullet::getDamage() const { return 1; }

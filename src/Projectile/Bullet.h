@@ -17,6 +17,7 @@ class Bullet{
         float getSize() const;
         float getAngle() const;
         bool isDestructible() const;
+        int getDamage() const;
 
     private :
         Position position;

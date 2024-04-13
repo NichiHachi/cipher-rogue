@@ -22,14 +22,15 @@ class Enemy{
         virtual ~Enemy(){};
 
         void receiveDamageIfShot(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, const std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>>& bombshells);
-        void setPosition(Position newPosition) {this->position = newPosition;};
-        void receiveDamage(int damage) {hp -= damage;};
+        void setPosition(Position newPosition);
+        void receiveDamage(int damage);
 
-        Position getPosition() const { return position; }
-        int getSize() const { return size; };
-        bool isMovable() const { return movable; };
-        bool isDead() const { return hp <= 0; };
-        float getSpeedBullet() const { return speedBullet; };     
+        Position getPosition() const;
+        int getSize() const;
+        bool isMovable() const;
+        bool isDead() const;
+        float getSpeedBullet() const;
+        int getHp() const;   
 
     protected:
         Position position;
