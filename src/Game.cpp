@@ -176,9 +176,9 @@ void Game::bulletCollisions() {
 }
 
 
-bool isClose(Position pos1, Position pos2){
-    Position diffPos = pos1 - pos2;
-    return diffPos.x*diffPos.x + diffPos.y*diffPos.y <= 10000;
+bool isClose(const Bullet& bullet, const Enemy& enemy){
+    Position diffPos = bullet.getPosition() - enemy.getPosition();
+    return diffPos.x*diffPos.x + diffPos.y*diffPos.y <= 10000 + bullet.getSize()*bullet.getSize() + enemy.getSize()*enemy.getSize();
 }
 
 void Game::update(sf::RenderWindow& window, float deltaTime){
@@ -191,7 +191,7 @@ void Game::update(sf::RenderWindow& window, float deltaTime){
     } else {
         if(enemies->size() == 1){
             for(unsigned int i=0; i<bulletsAlly->size(); i++){
-                if(isClose(bulletsAlly->at(i)->getPosition(), enemies->at(0)->getPosition()) && bulletsAlly->at(i)->getDamage() >= enemies->at(0)->getHp()){
+                if(isClose(*bulletsAlly->at(i), *enemies->at(0)) && bulletsAlly->at(i)->getDamage() >= enemies->at(0)->getHp()){
                     deltaTime/=5;
                         break;
                 }
