@@ -106,7 +106,7 @@ Projet réalisé dans le cadre de L'UE LIFAP4 à l'université Claude Bernard Ly
 
 6. Player: Contient la classe du joueur
 
-7. Projectile: Contient la classe des projectiles
+7. Projectile: Contient les classes des projectiles
     - Bullet
     - Bombshell
 
