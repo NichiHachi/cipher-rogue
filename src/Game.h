@@ -25,6 +25,7 @@ class Game{
 
         void update(sf::RenderWindow& window, float deltaTime);
         void draw(sf::RenderWindow& window, float deltaTime);
+        bool isPlayerDead() const;
         void initLevel();
     
     private:
@@ -34,6 +35,7 @@ class Game{
         unsigned int level;
         bool cursorVisible = true;
         bool levelStarted;
+        int enemySpawnCost;
         double startTime;
         int mapSelectionHistory[10];
         sf::Text text;
@@ -51,4 +53,5 @@ class Game{
         void fillWallFromTo(Position from, Position to);
         void createMap();
         void displayTimer(sf::RenderWindow& window);
+        void spawnEnemy();
 };

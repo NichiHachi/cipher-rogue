@@ -32,6 +32,10 @@ class Enemy{
         float getSpeedBullet() const;
         int getHp() const;   
 
+        bool adjustPositionBasedOnEnemies(const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies);
+        bool adjustPositionBasedOnWalls(const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls);
+        bool adjustPositionBasedOnOOB();
+
     protected:
         Position position;
         float speed, angle, shootTimer, speedBullet;
@@ -39,9 +43,6 @@ class Enemy{
         const bool movable;
 
         Enemy(Position position, float speed, float angle, float shootTimer, float speedBullet, int hp, int size, bool movable);
-        bool adjustPositionBasedOnEnemies(const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies);
-        bool adjustPositionBasedOnWalls(const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls);
-        bool adjustPositionBasedOnOOB();
         float getAngleToTarget(Position target) const;
         float getAngleToFuturPlayerPosition(Player player);
         void smoothTurn(float targetAngle, float turnSpeedFactor, float deltaTime);

@@ -18,7 +18,7 @@ void gameLoop(sf::RenderWindow& window){
     float deltaTime;
     Game game;
     game.initLevel();
-    while(window.isOpen()){
+    while(window.isOpen() && !game.isPlayerDead()){
         sf::Event event{};
         while (window.pollEvent(event)){
             if (event.type == sf::Event::Closed) window.close();
@@ -48,7 +48,9 @@ int main(){
             if (event.type == sf::Event::Closed) window.close();
         }
 
+        window.clear(backgroundColor);
         homepage.draw(window);
+        
         switch(homepage.handleClick(window)){
             case 1:
                 gameLoop(window);

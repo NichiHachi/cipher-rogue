@@ -8,7 +8,7 @@
 
 PlayerStats Player::stats;
 
-Player::Player() : position(Position(500,900)), speed(5), hp(49), hpMax(10), shootTimer(0), hitTimer(2), size(19), speedBullet(10), angle(0) {}
+Player::Player() : position(Position(500,900)), speed(5), hp(3), hpMax(10), shootTimer(0), hitTimer(2), size(19), speedBullet(10), angle(M_PI/2) {}
 
 void Player::update(sf::RenderWindow& window, const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, const std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>>& bombshells,
                     const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, float deltaTime) {
@@ -195,3 +195,4 @@ void Player::receiveDamage(int damage){
 
 Position Player::getPosition() const {return position;}
 float Player::getSpeed() const {return speed;}
+bool Player::isDead() const {return hp <= 0;};

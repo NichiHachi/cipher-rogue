@@ -27,6 +27,7 @@ class Player{
         void receiveDamage(int damage);
         void draw(sf::RenderWindow& window);
         void drawHealth(sf::RenderWindow& window) const;
+        bool isDead() const;
 
         Position getPosition() const;
         float getSpeed() const;
