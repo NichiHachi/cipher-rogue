@@ -1,5 +1,7 @@
 # Cipher Rogue 
 
+Projet réalisé dans le cadre de L'UE LIFAP4 à l'université Claude Bernard Lyon 1, dans le cadre de notre deuxième année de cursus préparatoire aux écoles d'ingénieur Polytech (Peip). Les cours magistraux de cette UE ont été assurés par Alexandre Meyer et Nicolas Pronost, tous deux chercheurs à LIRIS, un laboratoire du CNRS. 
+
 ## Requirement
 ### Arch Linux
 1. C++ compiler:
