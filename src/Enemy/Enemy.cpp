@@ -217,7 +217,7 @@ float dist_between(Node* nodeA, Node* nodeB) {
 
 bool isIndexInWall(Position pos, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls){
     for(const auto & wall : *walls){
-        if(wall->isIndexInWall(pos)){
+        if(wall->isInWall(pos*50+Position(25,25))){
             return true;
         }
     }

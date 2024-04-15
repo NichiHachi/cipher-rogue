@@ -24,9 +24,25 @@ void EnemyCharger::update(const std::shared_ptr<std::vector<std::unique_ptr<Bull
 void EnemyCharger::move(const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, float deltaTime) {
     position += Position(std::cos(angle), -std::sin(angle)) * speed * deltaTime * 60;
 
-    //If the enemy touch a wall or the screen border, it stops
-    if(adjustPositionBasedOnWalls(walls)) shootTimer = 0;
-    if(adjustPositionBasedOnOOB()) shootTimer = 0;
+    //If the enemy touch the screen border, it stops
+    Position wallPos;
+    float angleEnemyWall;
+    int wallSize;
+    for (auto wall = walls->begin(); wall != walls->end();) {
+        wallPos = (*wall)->getPosition();
+        angleEnemyWall = std::atan2(wallPos.y - position.y, position.x - wallPos.x);
+        //If the enemy nearest point from the middle of the wall is in the wall
+        if ((*wall)->isInWall(position + Position(-std::cos(angleEnemyWall), std::sin(angleEnemyWall)) * size)) {
+            wall = walls->erase(wall);
+        }
+        else{
+            wall++;
+        }
+    }
+
+    if (adjustPositionBasedOnOOB()) {
+        shootTimer = 0;
+    }
 }
 
 void EnemyCharger::drawWarningZone(sf::RenderWindow &window) {

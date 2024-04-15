@@ -24,12 +24,6 @@ bool Wall::isInWall(Position pos) const {
             pos.y - size < position.y && position.y < pos.y + size); 
 }
 
-bool Wall::isIndexInWall(Position index) const { 
-    Position newIndex = index*50+Position(25,25);
-    return (newIndex.x - size < position.x && position.x < newIndex.x + size && 
-            newIndex.y - size < position.y && position.y < newIndex.y + size); 
-}
-
 Position Wall::getPoint(unsigned int index) const {
     switch(index){
         case 0:
