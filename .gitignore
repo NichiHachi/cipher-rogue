@@ -2,3 +2,5 @@
 main
 .vscode
 .idea
+doc/html
+doc/latex

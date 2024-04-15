@@ -55,3 +55,10 @@
     ```bash
     ./bin/main
     ```
+
+3. Build the documentation use the make file :
+
+
+    ```bash
+    make documentation
+    ```

@@ -57,6 +57,11 @@ $(OBJDIR)/Enemy.o: $(SRCDIR)/Enemy/Enemy.cpp $(SRCDIR)/Enemy/Enemy.h
 $(OBJDIR)/Homepage.o: $(SRCDIR)/Homepage.cpp $(SRCDIR)/Homepage.h
 	$(cc) -g -c $(SRCDIR)/Homepage.cpp -o $@
 
+documentation:
+	doxygen doc/Doxyfile
+	mv latex doc/
+	mv html doc/
+
 clean:
 	rm $(OBJDIR)/*.o
 	rm $(BINDIR)/main
