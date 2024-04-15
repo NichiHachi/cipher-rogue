@@ -26,10 +26,6 @@ void EnemyTurret::shoot(const std::shared_ptr<std::vector<std::unique_ptr<Bullet
     angle += M_PI/6;
 }
 
-void EnemyTurret::move(const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls){
-    //Nothing
-}
-
 void EnemyTurret::draw(sf::RenderWindow &window) {
     drawSprite(window, 1, sf::Color::Green);
     drawSprite(window, 0.7, sf::Color::Black);

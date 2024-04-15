@@ -25,7 +25,7 @@ void EnemySpawner::update(const std::shared_ptr<std::vector<std::unique_ptr<Bull
 
 void EnemySpawner::draw(sf::RenderWindow &window) {
     drawSprite(window, 1, sf::Color::Green);
-    drawSprite(window, 0.7, sf::Color::Black);
+    drawSprite(window, 0.5, sf::Color::Black);
 }
 
 void EnemySpawner::drawSprite(sf::RenderWindow &window, float sizeFactor, sf::Color color){
