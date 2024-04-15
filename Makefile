@@ -5,7 +5,7 @@ BINDIR = ./bin
 SRCDIR = ./src
 LIBS = -lsfml-graphics -lsfml-window -lsfml-system
 
-all: directories main
+all: directories main test
 
 directories: ${OBJDIR} ${BINDIR}
 
@@ -17,6 +17,9 @@ ${BINDIR}:
 
 main: $(SRCDIR)/main.cpp $(OBJC)
 	$(cc) -g $(SRCDIR)/main.cpp $(OBJC) -o $(BINDIR)/main $(LIBS)
+
+test: $(SRCDIR)/test.cpp $(OBJC)
+	$(cc) -g $(SRCDIR)/test.cpp $(OBJC) -o $(BINDIR)/test $(LIBS)
 
 $(OBJDIR)/Game.o: $(SRCDIR)/Game.cpp $(SRCDIR)/Game.h
 	$(cc) -g -c $(SRCDIR)/Game.cpp -o $@

@@ -28,10 +28,10 @@ void Player::spawn(){
 
 void Player::move(const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, float deltaTime) {
     int xAxisMove, yAxisMove = 0;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) yAxisMove++;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) xAxisMove--;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)) yAxisMove--;
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)) xAxisMove++;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) yAxisMove++;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Q) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) xAxisMove--;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) yAxisMove--;
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) xAxisMove++;
 
     if (yAxisMove != 0 && xAxisMove != 0) {
         position += Position(xAxisMove*std::sqrt(2)/2,-yAxisMove*sqrt(2)/2) * speed * deltaTime * 60;
@@ -66,10 +66,15 @@ void Player::move(const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& wal
 }
 
 void Player::shoot(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, const std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>>& bombshells, Position targetPosition) {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
         if (shootTimer > 0.2) {
             bullets->push_back(std::make_unique<Bullet>(position, angle, speedBullet, 10, true, true));
-            //bombshells->push_back(std::make_unique<Bombshell>(position, targetPosition, speedBullet, 10, true));
+            shootTimer = 0;
+        }
+    }
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+        if (shootTimer > 0.2) {
+            bombshells->push_back(std::make_unique<Bombshell>(position, targetPosition, speedBullet, 10, true));
             shootTimer = 0;
         }
     }

@@ -12,31 +12,31 @@ Homepage::Homepage() {
     // Set up the title
     title.setFont(font);
     title.setString("Cipher Rogue");
-    title.setCharacterSize(50); // Adjust as needed
+    title.setCharacterSize(50);  
     title.setFillColor(sf::Color::White);
-    title.setPosition(320, 240); // Adjust as needed
+    title.setPosition(320, 240);  
 
     // Set up the play button
-    playButton.setSize(sf::Vector2f(200, 50)); // Adjust as needed
-    playButton.setPosition(400, 320); // Adjust as needed
+    playButton.setSize(sf::Vector2f(200, 50));  
+    playButton.setPosition(400, 320);  
     playButtonText.setFont(font);
     playButtonText.setString("PLAY");
-    playButtonText.setCharacterSize(40); // Adjust as needed
+    playButtonText.setCharacterSize(40);  
     playButtonText.setFillColor(sf::Color::Black);
-    playButtonText.setPosition(450, 320); // Adjust as needed
+    playButtonText.setPosition(450, 320);  
 
     // Set up the quit button
-    quitButton.setSize(sf::Vector2f(200, 50)); // Adjust as needed
-    quitButton.setPosition(400, 400); // Adjust as needed
+    quitButton.setSize(sf::Vector2f(200, 50));  
+    quitButton.setPosition(400, 400);  
     quitButtonText.setFont(font);
     quitButtonText.setString("QUIT");
-    quitButtonText.setCharacterSize(40); // Adjust as needed
+    quitButtonText.setCharacterSize(40);  
     quitButtonText.setFillColor(sf::Color::Black);
-    quitButtonText.setPosition(450, 400); // Adjust as needed
+    quitButtonText.setPosition(450, 400);  
 
     // Set up the FPS slider
-    fpsSlider.setPosition(320, 480); // Adjust as needed
-    fpsSlider.setRange(30, 240); // Adjust as needed
+    fpsSlider.setPosition(320, 480);  
+    fpsSlider.setRange(30, 240);  
 }
 
 void Homepage::draw(sf::RenderWindow& window) {
@@ -66,10 +66,10 @@ int Homepage::handleClick(sf::RenderWindow& window) {
 }
 
 Slider::Slider() {
-    track.setSize(sf::Vector2f(200, 10)); // Adjust as needed
+    track.setSize(sf::Vector2f(200, 10));  
     track.setFillColor(sf::Color::White);
 
-    handle.setRadius(15); // Adjust as needed
+    handle.setRadius(15);  
     handle.setFillColor(sf::Color::Red);
 
     minValue = 0;
@@ -92,5 +92,3 @@ void Slider::draw(sf::RenderWindow& window) {
     window.draw(track);
     window.draw(handle);
 }
-
-    // Add functions to handle mouse events and move the handle...

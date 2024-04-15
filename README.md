@@ -78,7 +78,13 @@ Projet réalisé dans le cadre de L'UE LIFAP4 à l'université Claude Bernard Ly
     ./bin/main
     ```
 
-3. Build the documentation with Doxygen :
+3. Run the test file:
+
+    ```bash
+    ./bin/test
+    ```
+
+4. Build the documentation with Doxygen :
     
 
     ```bash

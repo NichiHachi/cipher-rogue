@@ -112,15 +112,15 @@ class Player{
         float getSpeed() const;
         
     private:
-        Position position; /**< The position of the player. */
-        float speed; /**< The speed of the player. */
-        float shootTimer; /**< The timer for shooting. */
-        float hitTimer; /**< The timer for receiving hits. */
-        float speedBullet; /**< The speed of the player's bullets. */
-        int size; /**< The size of the player. */
-        int hp; /**< The current health points of the player. */
-        int hpMax; /**< The maximum health points of the player. */
-        double angle; /**< The angle of the player's movement. */
+        Position position;
+        float speed;
+        float shootTimer;
+        float hitTimer;
+        float speedBullet;
+        int size;
+        int hp;
+        int hpMax;
+        double angle;
 
         /**
          * @brief Moves the player based on the given parameters.

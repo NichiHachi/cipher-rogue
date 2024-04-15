@@ -163,6 +163,14 @@ class Enemy{
          */
         bool adjustPositionBasedOnOOB();
 
+        /**
+         * Calculates the angle between the enemy and the target position.
+         * 
+         * @param target The position of the target.
+         * @return The angle between the enemy and the target in radians.
+         */
+        float getAngleToTarget(Position target) const;
+
     protected:
         Position position;
         float speed, angle, shootTimer, speedBullet;
@@ -185,13 +193,7 @@ class Enemy{
          * @param movable Indicates whether the enemy is movable or not.
          */
         Enemy(Position position, float speed, float angle, float shootTimer, float speedBullet, int hp, int size, bool movable);
-        /**
-         * Calculates the angle between the enemy and the target position.
-         * 
-         * @param target The position of the target.
-         * @return The angle between the enemy and the target in radians.
-         */
-        float getAngleToTarget(Position target) const;
+        
         /**
          * Calculates the angle between the enemy and the future position of the player.
          * 
@@ -199,6 +201,7 @@ class Enemy{
          * @return The angle in radians between the enemy and the player's future position.
          */
         float getAngleToFuturPlayerPosition(Player player);
+        
         /**
          * Smoothly turns the enemy towards the target angle.
          * 
@@ -207,6 +210,7 @@ class Enemy{
          * @param deltaTime The time elapsed since the last frame.
          */
         void smoothTurn(float targetAngle, float turnSpeedFactor, float deltaTime);
+        
         /**
          * Calculates the path to the target position using a aStar algorithm.
          * 

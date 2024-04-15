@@ -1,5 +1,6 @@
 *.o
 main
+test
 .vscode
 .idea
 doc/html
