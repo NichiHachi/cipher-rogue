@@ -87,15 +87,17 @@ Projet réalisé dans le cadre de L'UE LIFAP4 à l'université Claude Bernard Ly
 
 ## Organisation de l'archive
 
-1. src: Contient les fichiers sources du projet.
+1. `src` : Contient les fichiers sources du projet.
 
-2. doc: Contient la documentation du projet, le diagramme des classes, ma présantation orale, ainsi que le diagramme de Gantt.
+2. `doc` : Contient la documentation du projet, le diagramme des classes, ma présantation orale, ainsi que le diagramme de Gantt.
 
-3. bin: Contient les exécutables du projet, le dossier et son contenu sont générés lors de la compilation.
+3. `bin` : Contient les exécutables du projet, le dossier et son contenu sont générés lors de la compilation.
 
-4. obj: Contient les fichiers objets du projet, le dossier et son contenu sont générés lors de la compilation.
+4. `obj` : Contient les fichiers objets du projet, le dossier et son contenu sont générés lors de la compilation.
 
-5. Enemy: Contient les classes des ennemis
+5. `fonts` : Contient les polices d'écriture utilisées dans le projet
+
+5. `Enemy` : Contient les classes des ennemis
     - Enemy (Classe parent)
     - EnemyCharger
     - EnemySeeker
@@ -104,12 +106,12 @@ Projet réalisé dans le cadre de L'UE LIFAP4 à l'université Claude Bernard Ly
     - EnemySpawner
     - EnemyTurret
 
-6. Player: Contient la classe du joueur
+6. `Player` : Contient la classe du joueur
 
-7. Projectile: Contient les classes des projectiles
+7. `Projectile` : Contient les classes des projectiles
     - Bullet
     - Bombshell
 
-8. makefile: Fichier permettant de compiler le projet sous Linux.
+8. `Makefile` : Fichier permettant de compiler le projet sous Linux.
 
-9. README.md: Fichier contenant les informations relatives au projet.
+9. `README.md` : Fichier contenant les informations relatives au projet.

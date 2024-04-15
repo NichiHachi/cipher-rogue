@@ -18,21 +18,21 @@ Homepage::Homepage() {
 
     // Set up the play button
     playButton.setSize(sf::Vector2f(200, 50)); // Adjust as needed
-    playButton.setPosition(320, 320); // Adjust as needed
+    playButton.setPosition(400, 320); // Adjust as needed
     playButtonText.setFont(font);
-    playButtonText.setString("Play");
-    playButtonText.setCharacterSize(24); // Adjust as needed
-    playButtonText.setFillColor(sf::Color::White);
-    playButtonText.setPosition(320, 320); // Adjust as needed
+    playButtonText.setString("PLAY");
+    playButtonText.setCharacterSize(40); // Adjust as needed
+    playButtonText.setFillColor(sf::Color::Black);
+    playButtonText.setPosition(450, 320); // Adjust as needed
 
     // Set up the quit button
     quitButton.setSize(sf::Vector2f(200, 50)); // Adjust as needed
-    quitButton.setPosition(320, 400); // Adjust as needed
+    quitButton.setPosition(400, 400); // Adjust as needed
     quitButtonText.setFont(font);
-    quitButtonText.setString("Quit");
-    quitButtonText.setCharacterSize(24); // Adjust as needed
-    quitButtonText.setFillColor(sf::Color::White);
-    quitButtonText.setPosition(320, 400); // Adjust as needed
+    quitButtonText.setString("QUIT");
+    quitButtonText.setCharacterSize(40); // Adjust as needed
+    quitButtonText.setFillColor(sf::Color::Black);
+    quitButtonText.setPosition(450, 400); // Adjust as needed
 
     // Set up the FPS slider
     fpsSlider.setPosition(320, 480); // Adjust as needed
