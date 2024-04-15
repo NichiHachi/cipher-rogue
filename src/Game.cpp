@@ -669,6 +669,7 @@ void Game::fillWallFromTo(Position from, Position to)
 
 void Game::spawnEnemy()
 {
+    srand(time(NULL));
     int costLeft = enemySpawnCost;
     int randomCost;
     while (costLeft > 0)
@@ -681,28 +682,28 @@ void Game::spawnEnemy()
             positionEnemy = Position(rand() % 1000, rand() % 1000);
             posEnemyPlayer = player.getPosition() - positionEnemy;
         }
-        while(posEnemyPlayer.x*posEnemyPlayer.x + posEnemyPlayer.y*posEnemyPlayer.y >= 9000 || 
+        while(posEnemyPlayer.x*posEnemyPlayer.x + posEnemyPlayer.y*posEnemyPlayer.y <= 10000 || 
             std::find_if(walls->begin(), walls->end(), [&positionEnemy](const std::unique_ptr<Wall>& wall){
             return wall->getPosition() == positionEnemy;}) != walls->end());
         switch(randomCost){
         case 1:
-            enemy = std::make_unique<EnemyShooter>(Position(rand() % 900 + 50, rand() % 900 + 50));
+            enemy = std::make_unique<EnemyShooter>(positionEnemy);
             break;
         case 2:
             if (rand() % 2 == 0)
             {
-                enemy = std::make_unique<EnemySniper>(Position(rand() % 1000, rand() % 1000));
+                enemy = std::make_unique<EnemySniper>(positionEnemy);
             }
             else
             {
-                enemy = std::make_unique<EnemyTurret>(Position(rand() % 1000, rand() % 1000));
+                enemy = std::make_unique<EnemyTurret>(positionEnemy);
             }
             break;
         case 3:
-            enemy = std::make_unique<EnemyCharger>(Position(rand() % 1000, rand() % 1000));
+            enemy = std::make_unique<EnemyCharger>(positionEnemy);
             break;
         case 4:
-            enemy = std::make_unique<EnemySpawner>(Position(rand() % 1000, rand() % 1000));
+            enemy = std::make_unique<EnemySpawner>(positionEnemy);
             break;
         }
         enemy->adjustPositionBasedOnEnemies(enemies);
