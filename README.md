@@ -101,7 +101,9 @@ Projet réalisé dans le cadre de L'UE LIFAP4 à l'université Claude Bernard Ly
 
 4. `obj` : Contient les fichiers objets du projet, le dossier et son contenu sont générés lors de la compilation.
 
-5. `fonts` : Contient les polices d'écriture utilisées dans le projet
+5. `fonts` : Contient les polices d'écriture utilisées dans le projet.
+
+6. `assets` : Contient les ressources graphiques utilisées dans le projet.
 
 5. `Enemy` : Contient les classes des ennemis
     - Enemy (Classe parent)
