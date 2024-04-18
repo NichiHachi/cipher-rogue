@@ -2,22 +2,23 @@
 
 #include "Deathpage.h"
 
-Deathpage::Deathpage(int levelAchieved) : level(levelAchieved) {
-    // Initialize your text and buttons here
-    // For example:
-    message.setString("You Lost");
-    levelText.setString("Level achieved: " + std::to_string(level));
-
+Deathpage::Deathpage(int levelAchieved) : level(levelAchieved-1) {
     if (!font.loadFromFile("./fonts/FiraCode.ttf")) {
         std::cout << "Error loading font" << std::endl;
     }
 
     // Set up the title
     message.setFont(font);
-    message.setString("You lost");
+    message.setString("You lost!");
     message.setCharacterSize(50);  
     message.setFillColor(sf::Color::White);
-    message.setPosition(320, 240);  
+    message.setPosition(380, 340);  
+
+    levelText.setFont(font);
+    levelText.setString("Level achieved: " + std::to_string(level));
+    levelText.setCharacterSize(50);
+    levelText.setFillColor(sf::Color::White);
+    levelText.setPosition(250, 420); 
 
     // Set up the play button
     menuButton.setSize(sf::Vector2f(200, 50));  
@@ -40,6 +41,7 @@ Deathpage::Deathpage(int levelAchieved) : level(levelAchieved) {
 
 void Deathpage::draw(sf::RenderWindow& window) {
     window.draw(message);
+    window.draw(levelText);
     window.draw(menuButton);
     window.draw(quitButton);
     window.draw(menuButtonText);
