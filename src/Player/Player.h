@@ -114,13 +114,8 @@ class Player{
         
     private:
         Position position;
-        float speed;
-        float shootTimer;
-        float hitTimer;
-        float speedBullet;
-        int size;
-        int hp;
-        int hpMax;
+        float speed, shootTimer, hitTimer, speedBullet;
+        int size, hp;
         double angle;
 
         /**

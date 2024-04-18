@@ -15,6 +15,7 @@
 #include "Enemy/EnemySniper.h"
 #include "Enemy/EnemyCharger.h"
 #include "Enemy/EnemySeeker.h"
+#include "Enemy/EnemyBomber.h"
 #include "Enemy/EnemyStats.h"
 #include <random>
 
@@ -245,12 +246,13 @@ void Game::update(sf::RenderWindow &window, float deltaTime)
         player.receiveDamageIfHit(enemies);
 
         //-----ENEMIES UPDATE-----
-        for (const auto &enemy : *enemies)
+        int enemyTotal = enemies->size();
+        for(unsigned int i=0; i<enemyTotal; i++)
         {
-            if (enemy == nullptr)
+            if (enemies->at(i) == nullptr)
                 continue;
-            enemy->update(bulletsEnemy, player, walls, enemies, deltaTime);
-            enemy->receiveDamageIfShot(bulletsAlly, bombshells);
+            enemies->at(i)->update(bulletsEnemy, player, walls, enemies, deltaTime, bombshells);
+            enemies->at(i)->receiveDamageIfShot(bulletsAlly, bombshells);
         }
 
         //-----BULLETS UPDATE-----
@@ -700,7 +702,12 @@ void Game::spawnEnemy()
             }
             break;
         case 3:
-            enemy = std::make_unique<EnemyCharger>(positionEnemy);
+            if (rand() % 2 == 0){
+                enemy = std::make_unique<EnemyCharger>(positionEnemy);
+            }
+            else{
+                enemy = std::make_unique<EnemyBomber>(positionEnemy);
+            }
             break;
         case 4:
             enemy = std::make_unique<EnemySpawner>(positionEnemy);

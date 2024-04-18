@@ -11,7 +11,7 @@ EnemyStats EnemySeeker::stats;
 
 EnemySeeker::EnemySeeker(Position position, float angleSpawn) : Enemy(position, 3.75*stats.speedFactor, angleSpawn, 0, 5, 4*stats.healthFactor, 15*stats.sizeFactor, true) {}
 
-void EnemySeeker::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {
+void EnemySeeker::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime, const std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>>& bombshells) {
     move(player.getPosition(), walls, enemies, deltaTime);
 }
 

@@ -11,7 +11,7 @@ EnemyStats EnemySniper::stats;
 
 EnemySniper::EnemySniper(Position position) : Enemy(position, 0.4*stats.speedFactor, M_PI*3/2, 0, 12*stats.bulletSpeedFactor, 5*stats.healthFactor, 19*stats.sizeFactor, true) {}
 
-void EnemySniper::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {
+void EnemySniper::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime, const std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>>& bombshells) {
     float targetAngle = getAngleToFuturPlayerPosition(player);
     move(targetAngle, walls, enemies, deltaTime);
 

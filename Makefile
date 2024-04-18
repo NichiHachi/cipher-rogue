@@ -1,6 +1,6 @@
 cc = g++
 OBJDIR = ./obj
-OBJC = $(OBJDIR)/Bullet.o $(OBJDIR)/Bombshell.o $(OBJDIR)/Wall.o $(OBJDIR)/Player.o $(OBJDIR)/Enemy.o $(OBJDIR)/EnemyCharger.o $(OBJDIR)/EnemyShooter.o $(OBJDIR)/EnemySniper.o $(OBJDIR)/EnemySpawner.o $(OBJDIR)/EnemySeeker.o $(OBJDIR)/EnemyTurret.o $(OBJDIR)/Game.o $(OBJDIR)/Homepage.o $(OBJDIR)/Deathpage.o
+OBJC = $(OBJDIR)/Bullet.o $(OBJDIR)/Bombshell.o $(OBJDIR)/Wall.o $(OBJDIR)/Player.o $(OBJDIR)/Enemy.o $(OBJDIR)/EnemyCharger.o $(OBJDIR)/EnemyShooter.o $(OBJDIR)/EnemySniper.o $(OBJDIR)/EnemySpawner.o $(OBJDIR)/EnemySeeker.o $(OBJDIR)/EnemyBomber.o $(OBJDIR)/EnemyTurret.o $(OBJDIR)/Game.o $(OBJDIR)/Homepage.o $(OBJDIR)/Deathpage.o
 BINDIR = ./bin
 SRCDIR = ./src
 LIBS = -lsfml-graphics -lsfml-window -lsfml-system
@@ -53,6 +53,9 @@ $(OBJDIR)/EnemyTurret.o: $(SRCDIR)/Enemy/EnemyTurret.cpp $(SRCDIR)/Enemy/EnemyTu
 
 $(OBJDIR)/EnemySeeker.o: $(SRCDIR)/Enemy/EnemySeeker.cpp $(SRCDIR)/Enemy/EnemySeeker.h
 	$(cc) -g -c $(SRCDIR)/Enemy/EnemySeeker.cpp -o $@
+
+$(OBJDIR)/EnemyBomber.o: $(SRCDIR)/Enemy/EnemyBomber.cpp $(SRCDIR)/Enemy/EnemyBomber.h
+	$(cc) -g -c $(SRCDIR)/Enemy/EnemyBomber.cpp -o $@
 
 $(OBJDIR)/Enemy.o: $(SRCDIR)/Enemy/Enemy.cpp $(SRCDIR)/Enemy/Enemy.h
 	$(cc) -g -c $(SRCDIR)/Enemy/Enemy.cpp -o $@

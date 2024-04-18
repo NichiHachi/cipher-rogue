@@ -113,6 +113,7 @@ Projet réalisé dans le cadre de L'UE LIFAP4 à l'université Claude Bernard Ly
     - EnemySniper
     - EnemySpawner
     - EnemyTurret
+    - EnemyBomber
 
 6. `Player` : Contient la classe du joueur
 

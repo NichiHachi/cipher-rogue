@@ -37,7 +37,7 @@ class EnemyCharger : public Enemy{
          * @param enemies A shared pointer to a vector of unique pointers to Enemy objects.
          * @param deltaTime The time elapsed since the last update.
          */
-        void update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) override;
+        void update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime, const std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>>& bombshells) override;
         /**
          * @brief Draws the EnemyCharger object on the specified window.
          * 
