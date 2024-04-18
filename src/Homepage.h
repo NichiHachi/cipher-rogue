@@ -45,8 +45,9 @@ public:
  */
 class Homepage {
 private:
-    sf::Font font;                  
-    sf::Text title;                 
+    sf::Font font;     
+    sf::Texture titleTexture;
+    sf::Sprite titleSprite;              
     sf::RectangleShape playButton; 
     sf::RectangleShape quitButton;  
     sf::Text playButtonText;       

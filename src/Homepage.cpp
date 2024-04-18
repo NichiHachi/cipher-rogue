@@ -10,29 +10,30 @@ Homepage::Homepage() {
     }
 
     // Set up the title
-    title.setFont(font);
-    title.setString("Cipher Rogue");
-    title.setCharacterSize(50);  
-    title.setFillColor(sf::Color::White);
-    title.setPosition(320, 240);  
+    if(!titleTexture.loadFromFile("./assets/CipherRogue.png")) {
+        std::cout << "Error loading title image" << std::endl;
+    }
+    titleSprite.setTexture(titleTexture);
+    titleSprite.setPosition(150, 50);
+    titleSprite.setScale(0.3, 0.3);
 
     // Set up the play button
     playButton.setSize(sf::Vector2f(200, 50));  
-    playButton.setPosition(400, 320);  
+    playButton.setPosition(400, 700);  
     playButtonText.setFont(font);
     playButtonText.setString("PLAY");
     playButtonText.setCharacterSize(40);  
     playButtonText.setFillColor(sf::Color::Black);
-    playButtonText.setPosition(450, 320);  
+    playButtonText.setPosition(450, 700);  
 
     // Set up the quit button
     quitButton.setSize(sf::Vector2f(200, 50));  
-    quitButton.setPosition(400, 400);  
+    quitButton.setPosition(400, 780);  
     quitButtonText.setFont(font);
     quitButtonText.setString("QUIT");
     quitButtonText.setCharacterSize(40);  
     quitButtonText.setFillColor(sf::Color::Black);
-    quitButtonText.setPosition(450, 400);  
+    quitButtonText.setPosition(450, 780);  
 
     // Set up the FPS slider
     fpsSlider.setPosition(320, 480);  
@@ -40,7 +41,7 @@ Homepage::Homepage() {
 }
 
 void Homepage::draw(sf::RenderWindow& window) {
-    window.draw(title);
+    window.draw(titleSprite);
     window.draw(playButton);
     window.draw(quitButton);
     window.draw(playButtonText);
