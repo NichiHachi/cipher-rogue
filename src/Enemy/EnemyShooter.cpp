@@ -8,7 +8,7 @@
 
 EnemyStats EnemyShooter::stats;
 
-EnemyShooter::EnemyShooter(Position position) : Enemy(position, 1, M_PI*3/2, 0, 7, 6, 19, true) {}
+EnemyShooter::EnemyShooter(Position position) : Enemy(position, 1*stats.speedFactor, M_PI*3/2, 0, 7*stats.bulletSpeedFactor, 6*stats.healthFactor, 19*stats.sizeFactor, true) {}
 
 void EnemyShooter::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {
     float targetAngle = getAngleToTarget(player.getPosition());

@@ -9,7 +9,7 @@
 
 EnemyStats EnemyCharger::stats;
 
-EnemyCharger::EnemyCharger(Position position) : Enemy(position, 13, M_PI*3/2, 0, 5, 20, 30, false) {}
+EnemyCharger::EnemyCharger(Position position) : Enemy(position, 13*stats.speedFactor, M_PI*3/2, 0, 5*stats.bulletSpeedFactor, 15*stats.healthFactor, 30*stats.sizeFactor, false) {}
 
 void EnemyCharger::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player,
                           const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {

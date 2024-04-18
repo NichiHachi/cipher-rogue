@@ -9,7 +9,7 @@
 
 EnemyStats EnemyTurret::stats;
 
-EnemyTurret::EnemyTurret(Position position) : Enemy(position, 5, 0, 0, 3, 10, 30, false) {}
+EnemyTurret::EnemyTurret(Position position) : Enemy(position, 5*stats.speedFactor, 0, 0, 3*stats.bulletSpeedFactor, 10*stats.healthFactor, 30*stats.sizeFactor, false) {}
 
 void EnemyTurret::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {
     shootTimer += deltaTime;

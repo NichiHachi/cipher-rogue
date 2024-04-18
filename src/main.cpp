@@ -7,13 +7,14 @@
 
 #include "Game.h"
 #include "Homepage.h"
+#include "Deathpage.h"
 
 const int displayX = 1000;
 const int displayY = 1000;
 const sf::Color backgroundColor(0,0,0);
 const int FPS = 120;
 
-void gameLoop(sf::RenderWindow& window){
+int gameLoop(sf::RenderWindow& window){
     sf::Clock clock;
     float deltaTime;
     Game game;
@@ -32,6 +33,33 @@ void gameLoop(sf::RenderWindow& window){
 
         window.display();
     }
+
+    return game.levelAchieved();
+}
+
+void deathLoop(sf::RenderWindow& window, int levelAchieved){
+    Deathpage deathpage(levelAchieved);
+    bool returnToMenu = false;
+    while(window.isOpen() && !returnToMenu){
+        sf::Event event{};
+        while (window.pollEvent(event)){
+            if (event.type == sf::Event::Closed) window.close();
+        }
+
+        window.clear(backgroundColor);
+        deathpage.draw(window);
+        
+        switch(deathpage.handleClick(window)){
+            case 1:
+                returnToMenu = true;
+                break;
+            case 2:
+                window.close();
+                break;
+        }
+
+        window.display();
+    }
 }
 
 int main(){
@@ -41,6 +69,7 @@ int main(){
     window.setFramerateLimit(FPS);
 
     Homepage homepage;
+    int level;
 
     while(window.isOpen()){
         sf::Event event{};
@@ -53,7 +82,8 @@ int main(){
         
         switch(homepage.handleClick(window)){
             case 1:
-                gameLoop(window);
+                level = gameLoop(window);
+                deathLoop(window, level);
                 break;
             case 2:
                 window.close();

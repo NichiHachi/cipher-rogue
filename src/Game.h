@@ -64,6 +64,13 @@ class Game{
          * @brief Initializes a new level.
          */
         void initLevel();
+
+        /**
+         * @brief Return the level achieved by the player.
+         * 
+         * @return The level achieved by the player.
+        */
+        int levelAchieved() const;
     
     private:
         std::string displayedMessage;

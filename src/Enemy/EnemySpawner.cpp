@@ -10,7 +10,7 @@
 
 EnemyStats EnemySpawner::stats;
 
-EnemySpawner::EnemySpawner(Position position) : Enemy(position, 5, 0, 0, 0, 10, 20, false){}
+EnemySpawner::EnemySpawner(Position position) : Enemy(position, 5*stats.speedFactor, 0, 0, 0, 10*stats.healthFactor, 20*stats.sizeFactor, false){}
 
 void EnemySpawner::update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime) {
     shootTimer += deltaTime;

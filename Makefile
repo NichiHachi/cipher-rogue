@@ -1,6 +1,6 @@
 cc = g++
 OBJDIR = ./obj
-OBJC = $(OBJDIR)/Bullet.o $(OBJDIR)/Bombshell.o $(OBJDIR)/Wall.o $(OBJDIR)/Player.o $(OBJDIR)/Enemy.o $(OBJDIR)/EnemyCharger.o $(OBJDIR)/EnemyShooter.o $(OBJDIR)/EnemySniper.o $(OBJDIR)/EnemySpawner.o $(OBJDIR)/EnemySeeker.o $(OBJDIR)/EnemyTurret.o $(OBJDIR)/Game.o $(OBJDIR)/Homepage.o
+OBJC = $(OBJDIR)/Bullet.o $(OBJDIR)/Bombshell.o $(OBJDIR)/Wall.o $(OBJDIR)/Player.o $(OBJDIR)/Enemy.o $(OBJDIR)/EnemyCharger.o $(OBJDIR)/EnemyShooter.o $(OBJDIR)/EnemySniper.o $(OBJDIR)/EnemySpawner.o $(OBJDIR)/EnemySeeker.o $(OBJDIR)/EnemyTurret.o $(OBJDIR)/Game.o $(OBJDIR)/Homepage.o $(OBJDIR)/Deathpage.o
 BINDIR = ./bin
 SRCDIR = ./src
 LIBS = -lsfml-graphics -lsfml-window -lsfml-system
@@ -60,6 +60,9 @@ $(OBJDIR)/Enemy.o: $(SRCDIR)/Enemy/Enemy.cpp $(SRCDIR)/Enemy/Enemy.h
 $(OBJDIR)/Homepage.o: $(SRCDIR)/Homepage.cpp $(SRCDIR)/Homepage.h
 	$(cc) -g -c $(SRCDIR)/Homepage.cpp -o $@
 
+$(OBJDIR)/Deathpage.o: $(SRCDIR)/Deathpage.cpp $(SRCDIR)/Deathpage.h
+	$(cc) -g -c $(SRCDIR)/Deathpage.cpp -o $@
+
 documentation:
 	doxygen doc/Doxyfile
 	mv latex doc/
@@ -67,4 +70,4 @@ documentation:
 
 clean:
 	rm $(OBJDIR)/*.o
-	rm $(BINDIR)/main
+	rm $(BINDIR)/*

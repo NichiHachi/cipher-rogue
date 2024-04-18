@@ -718,3 +718,7 @@ bool Game::isPlayerDead() const
 {
     return player.isDead();
 }
+
+int Game::levelAchieved() const{
+    return level;
+}
