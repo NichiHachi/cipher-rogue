@@ -34,6 +34,7 @@ class EnemyShooter : public Enemy{
          * @param walls A shared pointer to a vector of unique pointers to Wall objects.
          * @param enemies A shared pointer to a vector of unique pointers to Enemy objects.
          * @param deltaTime The time elapsed since the last update.
+         * @param bombshells A shared pointer to a vector of unique pointers to Bombshell objects.
          */
         void update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime, const std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>>& bombshells) override;
         /**

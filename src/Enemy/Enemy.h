@@ -37,6 +37,7 @@ class Enemy{
          * @param walls A shared pointer to a vector of unique pointers to Wall objects representing the walls in the game.
          * @param enemies A shared pointer to a vector of unique pointers to Enemy objects representing the other enemies in the game.
          * @param deltaTime The time interval between the current and previous update calls.
+         * @param bombshells A shared pointer to a vector of unique pointers to Bombshell objects.
          */
         virtual void update(const std::shared_ptr<std::vector<std::unique_ptr<Bullet>>>& bullets, Player player, const std::shared_ptr<std::vector<std::unique_ptr<Wall>>>& walls, const std::shared_ptr<std::vector<std::unique_ptr<Enemy>>>& enemies, float deltaTime, const std::shared_ptr<std::vector<std::unique_ptr<Bombshell>>>& bombshells)=0;
         
